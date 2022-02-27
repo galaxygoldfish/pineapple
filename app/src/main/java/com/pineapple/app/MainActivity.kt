@@ -26,9 +26,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            rememberSystemUiController().apply {
-                setSystemBarsColor(color = MaterialTheme.colorScheme.surface, darkIcons = true)
-            }
             PineappleTheme {
                 NavigationHost()
             }
