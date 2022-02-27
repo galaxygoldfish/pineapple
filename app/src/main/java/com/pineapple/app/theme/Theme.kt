@@ -8,7 +8,6 @@ import androidx.compose.runtime.Composable
 import com.pineapple.app.theme.AppTypography
 
 private val LightThemeColors = lightColorScheme(
-
 	primary = light_primary,
 	onPrimary = light_onPrimary,
 	primaryContainer = light_primaryContainer,
