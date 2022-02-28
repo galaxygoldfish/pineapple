@@ -11,6 +11,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.pineapple.app.NavDestination
 import com.pineapple.app.R
 
 @Composable
@@ -53,7 +54,9 @@ fun WelcomeView(navController: NavController) {
                     )
                 }
                 OutlinedButton(
-                    onClick = { /*TODO*/ },
+                    onClick = {
+                        navController.navigate(NavDestination.HomePageView)
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 10.dp)

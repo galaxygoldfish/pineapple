@@ -5,9 +5,21 @@
     <string name="ic_welcome_leaves_content_desc">Pineapple leaves</string>
     <string name="ic_reddit_logo_content_desc">Reddit logo</string>
     <string name="ic_user_icon_content_desc">User icon</string>
+    <string name="ic_menu_icon_content_desc">Menu icon</string>
+    <string name="ic_user_circle_content_desc">Profile</string>
+    <string name="ic_filter_config_icon_content_desc">Filter items</string>
+    <string name="ic_search_glyph_content_desc">Search</string>
+    <string name="ic_chat_bubbles_content_desc">Messages</string>
+    <string name="ic_home_icon_content_desc">Browse</string>
 
     <string name="welcome_slogan_text">A new way to browse the frontpage of the internet.</string>
     <string name="welcome_reddit_log_in_button">Sign in with Reddit</string>
     <string name="welcome_continue_guest_button">Continue as a guest</string>
+
+    <string name="home_top_bar_title_default">Home</string>
+    <string name="home_bottom_bar_item_browse">Browse</string>
+    <string name="home_bottom_bar_item_search">Search</string>
+    <string name="home_bottom_bar_item_chats">Chats</string>
+    <string name="home_bottom_bar_item_account">Account</string>
 
 </resources>

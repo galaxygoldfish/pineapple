@@ -4,19 +4,19 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.core.view.WindowCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.pineapple.app.theme.PineappleTheme
+import com.pineapple.app.view.HomePageView
 import com.pineapple.app.view.WelcomeView
 
 object NavDestination {
     const val WelcomeView = "welcome"
+    const val HomePageView = "home"
 }
 
 class MainActivity : ComponentActivity() {
@@ -43,6 +43,9 @@ class MainActivity : ComponentActivity() {
         ) {
             composable(NavDestination.WelcomeView) {
                 WelcomeView(navController = navigationController)
+            }
+            composable(NavDestination.HomePageView) {
+                HomePageView(navController = navigationController)
             }
         }
     }
