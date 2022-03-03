@@ -2,6 +2,7 @@ package com.pineapple.app.view
 
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -15,7 +16,7 @@ import com.pineapple.app.viewmodel.HomePageViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 fun HomePageView(navController: NavController) {
     val viewModel = LocalContext.current.getViewModel(HomePageViewModel::class.java)
-    rememberSystemUiController().setSystemBarsColor(MaterialTheme.colorScheme.surfaceVariant)
+    rememberSystemUiController().setSystemBarsColor(MaterialTheme.colorScheme.inverseOnSurface)
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -33,7 +34,7 @@ fun HomePageView(navController: NavController) {
                         )
                     }
                 },
-                colors = TopAppBarDefaults.smallTopAppBarColors(MaterialTheme.colorScheme.surfaceVariant),
+                colors = TopAppBarDefaults.smallTopAppBarColors(MaterialTheme.colorScheme.inverseOnSurface),
                 actions = {
                     IconButton(onClick = { /*TODO*/ }) {
                         Icon(
@@ -56,9 +57,7 @@ fun HomePageView(navController: NavController) {
                 NavItem(R.string.home_bottom_bar_item_account,
                     R.drawable.ic_user_circle, R.string.ic_user_circle_content_desc)
             )
-            NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            ) {
+            NavigationBar(containerColor = MaterialTheme.colorScheme.inverseOnSurface) {
                 navbarItems.forEachIndexed { index, item ->
                     NavigationBarItem(
                         selected = viewModel.selectedTabItem == index,
@@ -76,12 +75,14 @@ fun HomePageView(navController: NavController) {
                         },
                         onClick = { viewModel.selectedTabItem = index },
                         colors = NavigationBarItemDefaults.colors(
-                            indicatorColor = MaterialTheme.colorScheme.secondaryContainer
+                            indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
+                            selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer
                         )
                     )
                 }
             }
         }
     ) {
+        PostListView(navController = navController, subreddit = "all", sort = "hot")
     }
 }
