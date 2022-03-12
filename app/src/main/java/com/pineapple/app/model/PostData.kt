@@ -84,7 +84,7 @@ data class PostData(
     val userReports: List<Any?>,
 
     @SerializedName("secure_media")
-    val secureMedia: Any? = null,
+    val secureMedia: SecureMedia? = null,
 
     @SerializedName("is_reddit_media_domain")
     val isRedditMediaDomain: Boolean,

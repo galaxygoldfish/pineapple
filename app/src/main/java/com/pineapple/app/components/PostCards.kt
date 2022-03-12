@@ -1,6 +1,5 @@
 package com.pineapple.app.components
 
-import android.graphics.Paint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -10,14 +9,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import coil.annotation.ExperimentalCoilApi
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.pineapple.app.R
 import com.pineapple.app.model.PostData
+import kotlin.contracts.contract
 
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalCoilApi::class)
 fun TextPostCard(postData: PostData) {
     Card(
         shape = RoundedCornerShape(10.dp),
@@ -44,6 +49,16 @@ fun TextPostCard(postData: PostData) {
                 modifier = Modifier.padding(top = 10.dp)
             )
         }
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(postData.urlOverriddenByDest)
+                .placeholder(R.drawable.placeholder_image)
+                .crossfade(true)
+                .build().data,
+            contentDescription = null,
+            modifier = Modifier.fillMaxWidth(),
+            contentScale = ContentScale.FillWidth,
+        )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -82,7 +97,8 @@ fun PostCardIconButton(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(start = 15.dp, top = 10.dp, bottom = 10.dp)
+        modifier = Modifier
+            .padding(start = 15.dp, top = 10.dp, bottom = 10.dp)
             .clickable { onClick.invoke() }
     ) {
         Icon(
