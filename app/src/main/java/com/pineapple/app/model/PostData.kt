@@ -115,7 +115,7 @@ data class PostData(
     val authorPremium: Boolean,
 
     val thumbnail: String,
-    val edited: Boolean,
+    val edited: Any?,
 
     @SerializedName("author_flair_css_class")
     val authorFlairCSSClass: Any? = null,

@@ -1,11 +1,13 @@
 package com.pineapple.app.components
 
+import android.os.Build.VERSION.SDK_INT
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
@@ -14,11 +16,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import coil.ImageLoader
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.AsyncImage
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
+import coil.decode.VideoFrameDecoder
 import coil.request.ImageRequest
 import com.pineapple.app.R
 import com.pineapple.app.model.PostData
+import kotlinx.coroutines.launch
 import kotlin.contracts.contract
 
 @Composable
@@ -51,10 +58,10 @@ fun TextPostCard(postData: PostData) {
         }
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(postData.urlOverriddenByDest)
-                .placeholder(R.drawable.placeholder_image)
-                .crossfade(true)
-                .build().data,
+                    .data(postData.urlOverriddenByDest)
+                    .placeholder(R.drawable.placeholder_image)
+                    .crossfade(true)
+                    .build().data,
             contentDescription = null,
             modifier = Modifier.fillMaxWidth(),
             contentScale = ContentScale.FillWidth,

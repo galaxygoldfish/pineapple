@@ -4,14 +4,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.paging.*
+import androidx.paging.compose.collectAsLazyPagingItems
+import com.pineapple.app.model.PostItem
 import com.pineapple.app.model.PostListing
+import com.pineapple.app.network.NetworkPagingSource
+import com.pineapple.app.network.NetworkRepository
 import com.pineapple.app.network.NetworkServiceBuilder
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.forEach
+import kotlinx.coroutines.flow.map
 
 class PostListViewModel : ViewModel() {
 
@@ -20,22 +23,15 @@ class PostListViewModel : ViewModel() {
 
     private val networkService by lazy { NetworkServiceBuilder.apiService() }
 
-    fun performRequest(name: String, sort: String) {
-        isRefreshing = true
-        CoroutineScope(Dispatchers.Default).launch {
-            val forecastAPICall: Call<PostListing> = networkService.fetchSubreddit(name, sort)
-            forecastAPICall.enqueue(object : Callback<PostListing> {
-                override fun onResponse(call: Call<PostListing>, response: Response<PostListing>) {
-                    if (response.isSuccessful && response.body() != null) {
-                        data = response.body()
-                        isRefreshing = false
-                    }
-                }
-                override fun onFailure(call: Call<PostListing>, t: Throwable) {
-                    isRefreshing = false
-                    TODO("Not yet implemented")
-                }
-            })
-        }
+
+    fun posts(name: String, sort: String): Flow<PagingData<PostItem>> = Pager(PagingConfig(3)) {
+        NetworkPagingSource(networkService, name, sort)
+    }.flow
+
+
+    fun performRequest(name: String, sort: String) : Flow<PagingData<PostItem>> {
+        return NetworkRepository(networkService)
+            .fetchSubreddit(name, sort)
+            .cachedIn(viewModelScope)
     }
 }

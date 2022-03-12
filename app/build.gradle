@@ -58,6 +58,8 @@ dependencies {
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
     implementation 'androidx.compose.material3:material3:1.0.0-alpha07'
+    implementation "androidx.paging:paging-runtime:$paging_version"
+    implementation "androidx.paging:paging-compose:1.0.0-alpha14"
 
     implementation "com.google.accompanist:accompanist-navigation-animation:$accompanist_version"
     implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
@@ -67,8 +69,13 @@ dependencies {
     implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
     implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
     implementation 'com.squareup.okhttp3:okhttp:4.9.3'
+    implementation "com.squareup.okhttp3:logging-interceptor:4.0.1"
 
-    implementation "io.coil-kt:coil-compose:2.0.0-rc01"
-    implementation "io.coil-kt:coil:2.0.0-rc01"
+    implementation "io.coil-kt:coil:$coil_version"
+    implementation "io.coil-kt:coil-video:$coil_version"
+    implementation "io.coil-kt:coil-compose:$coil_version"
+    implementation "io.coil-kt:coil-gif:$coil_version"
+
+
 
 }
