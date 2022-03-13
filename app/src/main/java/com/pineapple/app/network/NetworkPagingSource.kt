@@ -29,11 +29,10 @@ class NetworkPagingSource(
     }
 
     override suspend fun load(params: LoadParams<String>): LoadResult<String, PostItem> {
-        val currentAfterValue = params.key
         val completableDeferred = CompletableDeferred<LoadResult<String, PostItem>>()
         try {
             Log.e("0", "starting request")
-            service.fetchSubreddit(name = subreddit, sort = sort, after = currentAfterValue)
+            service.fetchSubreddit(name = subreddit, sort = sort, after = params.key)
                 .enqueue(object : Callback<PostListing> {
                     override fun onResponse(call: Call<PostListing>, response: Response<PostListing>) {
                         Log.e("0", "response received")
