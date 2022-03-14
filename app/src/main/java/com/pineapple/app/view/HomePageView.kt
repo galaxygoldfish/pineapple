@@ -2,10 +2,10 @@ package com.pineapple.app.view
 
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.pineapple.app.R
@@ -16,7 +16,7 @@ import com.pineapple.app.viewmodel.HomePageViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 fun HomePageView(navController: NavController) {
     val viewModel = LocalContext.current.getViewModel(HomePageViewModel::class.java)
-    rememberSystemUiController().setSystemBarsColor(MaterialTheme.colorScheme.inverseOnSurface)
+    rememberSystemUiController().setSystemBarsColor(MaterialTheme.colorScheme.surface)
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -34,7 +34,6 @@ fun HomePageView(navController: NavController) {
                         )
                     }
                 },
-                colors = TopAppBarDefaults.smallTopAppBarColors(MaterialTheme.colorScheme.inverseOnSurface),
                 actions = {
                     IconButton(onClick = { /*TODO*/ }) {
                         Icon(
@@ -42,7 +41,8 @@ fun HomePageView(navController: NavController) {
                             contentDescription = stringResource(id = R.string.ic_filter_config_icon_content_desc)
                         )
                     }
-                }
+                },
+                scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
             )
         },
         bottomBar = {
@@ -57,7 +57,7 @@ fun HomePageView(navController: NavController) {
                 NavItem(R.string.home_bottom_bar_item_account,
                     R.drawable.ic_user_circle, R.string.ic_user_circle_content_desc)
             )
-            NavigationBar(containerColor = MaterialTheme.colorScheme.inverseOnSurface) {
+            NavigationBar(tonalElevation = 0.dp) {
                 navbarItems.forEachIndexed { index, item ->
                     NavigationBarItem(
                         selected = viewModel.selectedTabItem == index,
@@ -73,11 +73,7 @@ fun HomePageView(navController: NavController) {
                                 contentDescription = stringResource(id = item.contentDesc)
                             )
                         },
-                        onClick = { viewModel.selectedTabItem = index },
-                        colors = NavigationBarItemDefaults.colors(
-                            indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
-                            selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
+                        onClick = { viewModel.selectedTabItem = index }
                     )
                 }
             }

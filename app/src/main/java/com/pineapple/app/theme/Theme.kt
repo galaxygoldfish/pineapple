@@ -1,11 +1,10 @@
 package com.pineapple.app.theme
 
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.lightColorScheme
-import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import com.pineapple.app.theme.AppTypography
+import androidx.compose.ui.platform.LocalContext
 
 private val LightThemeColors = lightColorScheme(
 	primary = light_primary,
@@ -66,11 +65,15 @@ private val LightThemeColors = lightColorScheme(
 )
 
 @Composable
-fun PineappleTheme(useDarkTheme: Boolean = isSystemInDarkTheme(), content: @Composable() () -> Unit) {
-	val colors = if (!useDarkTheme) {
-		LightThemeColors
+fun PineappleTheme(useDarkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
+	val colors = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+		if (!useDarkTheme) {
+			dynamicLightColorScheme(LocalContext.current)
+		} else {
+			dynamicDarkColorScheme(LocalContext.current)
+		}
 	} else {
-		DarkThemeColors
+		if (!useDarkTheme) LightThemeColors else DarkThemeColors
 	}
 	MaterialTheme(
 		colorScheme = colors,

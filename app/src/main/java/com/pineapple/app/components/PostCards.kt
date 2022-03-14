@@ -3,6 +3,7 @@ package com.pineapple.app.components
 import android.os.Build.VERSION.SDK_INT
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -33,7 +34,7 @@ import kotlin.contracts.contract
 fun TextPostCard(postData: PostData) {
     Card(
         shape = RoundedCornerShape(10.dp),
-        containerColor = MaterialTheme.colorScheme.inverseOnSurface,
+        containerColor = MaterialTheme.colorScheme.surfaceVariant,
         modifier = Modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp)
     ) {
         Column(
@@ -67,9 +68,7 @@ fun TextPostCard(postData: PostData) {
             contentScale = ContentScale.FillWidth,
         )
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceVariant),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row {
