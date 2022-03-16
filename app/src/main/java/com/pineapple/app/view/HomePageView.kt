@@ -16,7 +16,7 @@ import com.pineapple.app.viewmodel.HomePageViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 fun HomePageView(navController: NavController) {
     val viewModel = LocalContext.current.getViewModel(HomePageViewModel::class.java)
-    rememberSystemUiController().setSystemBarsColor(MaterialTheme.colorScheme.surface)
+    rememberSystemUiController().setSystemBarsColor(MaterialTheme.colorScheme.surfaceVariant)
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -42,7 +42,10 @@ fun HomePageView(navController: NavController) {
                         )
                     }
                 },
-                scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+                scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(),
+                colors = TopAppBarDefaults.smallTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
             )
         },
         bottomBar = {
@@ -57,7 +60,10 @@ fun HomePageView(navController: NavController) {
                 NavItem(R.string.home_bottom_bar_item_account,
                     R.drawable.ic_user_circle, R.string.ic_user_circle_content_desc)
             )
-            NavigationBar(tonalElevation = 0.dp) {
+            NavigationBar(
+                tonalElevation = 0.dp,
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            ) {
                 navbarItems.forEachIndexed { index, item ->
                     NavigationBarItem(
                         selected = viewModel.selectedTabItem == index,

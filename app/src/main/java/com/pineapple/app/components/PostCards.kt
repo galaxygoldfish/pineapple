@@ -1,14 +1,10 @@
 package com.pineapple.app.components
 
-import android.os.Build.VERSION.SDK_INT
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
@@ -17,24 +13,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import coil.ImageLoader
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.AsyncImage
-import coil.decode.GifDecoder
-import coil.decode.ImageDecoderDecoder
-import coil.decode.VideoFrameDecoder
 import coil.request.ImageRequest
 import com.pineapple.app.R
 import com.pineapple.app.model.PostData
-import kotlinx.coroutines.launch
-import kotlin.contracts.contract
+import com.pineapple.app.util.prettyNumber
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalCoilApi::class)
 fun TextPostCard(postData: PostData) {
     Card(
         shape = RoundedCornerShape(10.dp),
-        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        containerColor = MaterialTheme.colorScheme.surface,
         modifier = Modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp)
     ) {
         Column(
@@ -75,12 +66,12 @@ fun TextPostCard(postData: PostData) {
                 PostCardIconButton(
                     icon = painterResource(id = R.drawable.ic_comments_bubble),
                     contentDescription = stringResource(id = R.string.ic_comments_bubble_content_desc),
-                    text = postData.numComments.toString()
+                    text = postData.numComments.toInt().prettyNumber()
                 )
                 PostCardIconButton(
                     icon = painterResource(id = R.drawable.ic_thumbs_up),
                     contentDescription = stringResource(id = R.string.ic_thumbs_up_content_desc),
-                    text = postData.ups.toString()
+                    text = postData.ups.toInt().prettyNumber()
                 )
             }
             Row(modifier = Modifier.padding(end = 15.dp)) {

@@ -1,7 +1,9 @@
 package com.pineapple.app.view
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -43,6 +45,7 @@ fun PostListView(
             }
         },
         modifier = Modifier.fillMaxSize()
+            .background(MaterialTheme.colorScheme.surfaceVariant)
     ) {
         LazyColumn {
             items(currentPosts) { item ->
