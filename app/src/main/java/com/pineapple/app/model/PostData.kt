@@ -26,7 +26,7 @@ data class PostData(
     val title: String,
 
     @SerializedName("link_flair_richtext")
-    val linkFlairRichtext: List<Any?>,
+    val linkFlairRichtext: List<FlairRichItem>?,
 
     @SerializedName("subreddit_name_prefixed")
     val subredditNamePrefixed: String,
@@ -98,7 +98,7 @@ data class PostData(
     val secureMediaEmbed: MediaEmbed,
 
     @SerializedName("link_flair_text")
-    val linkFlairText: String,
+    val linkFlairText: String?,
 
     @SerializedName("can_mod_post")
     val canModPost: Boolean,

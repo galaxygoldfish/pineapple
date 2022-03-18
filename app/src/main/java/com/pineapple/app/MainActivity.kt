@@ -11,11 +11,13 @@ import androidx.navigation.compose.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.pineapple.app.theme.PineappleTheme
 import com.pineapple.app.view.HomePageView
+import com.pineapple.app.view.PostDetailView
 import com.pineapple.app.view.WelcomeView
 
 object NavDestination {
     const val WelcomeView = "welcome"
     const val HomePageView = "home"
+    const val PostDetailView = "detail"
 }
 
 class MainActivity : ComponentActivity() {
@@ -45,6 +47,9 @@ class MainActivity : ComponentActivity() {
             }
             composable(NavDestination.HomePageView) {
                 HomePageView(navController = navigationController)
+            }
+            composable(NavDestination.PostDetailView) {
+                PostDetailView(navController = navigationController, "")
             }
         }
     }

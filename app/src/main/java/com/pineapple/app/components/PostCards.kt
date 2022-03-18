@@ -1,12 +1,16 @@
 package com.pineapple.app.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -18,6 +22,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.pineapple.app.R
 import com.pineapple.app.model.PostData
+import com.pineapple.app.util.parseFlair
 import com.pineapple.app.util.prettyNumber
 
 @Composable
@@ -47,10 +52,31 @@ fun TextPostCard(postData: PostData) {
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(top = 10.dp)
             )
+            postData.linkFlairRichtext?.let { list ->
+                if (list.isNotEmpty()) {
+                    list.parseFlair().let { pair ->
+                        Column(
+                            modifier = Modifier
+                                .padding(top = 10.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            BasicText(
+                                text = pair.first,
+                                style = MaterialTheme.typography.labelMedium,
+                                inlineContent = pair.second,
+                                modifier = Modifier.padding(vertical = 5.dp, horizontal = 8.dp)
+                            )
+                        }
+                    }
+                }
+            }
         }
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                    .data(postData.urlOverriddenByDest)
+                    .data(postData.url)
                     .placeholder(R.drawable.placeholder_image)
                     .crossfade(true)
                     .build().data,
