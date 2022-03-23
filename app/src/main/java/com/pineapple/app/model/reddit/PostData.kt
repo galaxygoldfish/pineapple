@@ -1,4 +1,4 @@
-package com.pineapple.app.model
+package com.pineapple.app.model.reddit
 
 import com.google.gson.JsonObject
 import com.google.gson.annotations.SerializedName

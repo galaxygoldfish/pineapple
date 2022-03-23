@@ -13,8 +13,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.pineapple.app.R
-import com.pineapple.app.model.FlairRichItem
+import com.pineapple.app.model.reddit.FlairRichItem
 import java.util.Locale
 import kotlin.math.ln
 import kotlin.math.pow
@@ -49,8 +48,6 @@ fun List<FlairRichItem>.parseFlair() : Pair<AnnotatedString, Map<String, InlineT
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(url)
-                    .placeholder(R.drawable.placeholder_image)
-                    .crossfade(true)
                     .build().data,
                 contentDescription = null,
                 modifier = Modifier.fillMaxWidth(),

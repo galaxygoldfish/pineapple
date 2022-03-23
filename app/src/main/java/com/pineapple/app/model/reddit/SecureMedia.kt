@@ -1,4 +1,4 @@
-package com.pineapple.app.model
+package com.pineapple.app.model.reddit
 
 data class SecureMedia(
     var reddit_video: RedditVideo

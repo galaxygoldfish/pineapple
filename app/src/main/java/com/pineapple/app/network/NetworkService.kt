@@ -1,7 +1,9 @@
 package com.pineapple.app.network
 
-import com.pineapple.app.model.PostListing
+import com.pineapple.app.model.reddit.PostItem
+import com.pineapple.app.model.reddit.PostListing
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -14,5 +16,12 @@ interface NetworkService {
         @Path("sort") sort: String,
         @Query("after") after: String? = null
     ) : Call<PostListing>
+
+    @GET("r/{name}/comments/{id}/{post}")
+    suspend fun fetchPost(
+        @Path("name") subreddit: String,
+        @Path("id") postID: String,
+        @Path("post") post: String
+    ) : List<PostListing>
 
 }

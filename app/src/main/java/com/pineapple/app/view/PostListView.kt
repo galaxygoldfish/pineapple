@@ -1,5 +1,6 @@
 package com.pineapple.app.view
 
+import android.os.Bundle
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,6 +13,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.pineapple.app.NavDestination
 import com.pineapple.app.components.TextPostCard
 import com.pineapple.app.util.getViewModel
 import com.pineapple.app.util.isLoading
@@ -44,12 +46,22 @@ fun PostListView(
                 }
             }
         },
-        modifier = Modifier.fillMaxSize()
-            .background(MaterialTheme.colorScheme.surfaceVariant)
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)
     ) {
         LazyColumn {
             items(currentPosts) { item ->
-                TextPostCard(postData = item!!.data)
+                TextPostCard(
+                    postData = item!!.data,
+                    onClick = {
+                        val permalink = item.data.permalink.split("/")
+                        val sub = permalink[2]
+                        val uid = permalink[4]
+                        val link = permalink[5]
+                        navController.navigate("${NavDestination.PostDetailView}/$sub/$uid/$link")
+                    }
+                )
             }
         }
     }

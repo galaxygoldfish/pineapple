@@ -11,7 +11,9 @@ object NetworkServiceBuilder {
     private const val BASE_URL = "https://api.reddit.com/"
 
     private val gsonObject = GsonBuilder().setLenient().create()
-    private val okHttpClient = OkHttpClient.Builder().build()
+    private val okHttpClient = OkHttpClient.Builder().addInterceptor(
+        HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
+    ).build()
 
     private fun getRetrofit(): Retrofit {
         return Retrofit.Builder()

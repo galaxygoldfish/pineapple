@@ -4,8 +4,8 @@ import android.util.Log
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.pineapple.app.model.PostItem
-import com.pineapple.app.model.PostListing
+import com.pineapple.app.model.reddit.PostItem
+import com.pineapple.app.model.reddit.PostListing
 import kotlinx.coroutines.CompletableDeferred
 import retrofit2.Call
 import retrofit2.Callback

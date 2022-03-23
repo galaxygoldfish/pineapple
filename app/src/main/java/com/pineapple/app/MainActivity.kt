@@ -48,8 +48,13 @@ class MainActivity : ComponentActivity() {
             composable(NavDestination.HomePageView) {
                 HomePageView(navController = navigationController)
             }
-            composable(NavDestination.PostDetailView) {
-                PostDetailView(navController = navigationController, "")
+            composable("${NavDestination.PostDetailView}/{subreddit}/{uid}/{link}") {
+                PostDetailView(
+                    navController = navigationController,
+                    subreddit = it.arguments!!.getString("subreddit")!!,
+                    uid = it.arguments!!.getString("uid")!!,
+                    link = it.arguments!!.getString("link")!!
+                )
             }
         }
     }
