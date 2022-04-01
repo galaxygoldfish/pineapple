@@ -33,9 +33,9 @@ val AppTypography = Typography(
 	),
 	displaySmall = TextStyle(
 		fontFamily = Rubik,
-		fontWeight = FontWeight.W400,
-		fontSize = 36.sp,
-		lineHeight = 44.sp,
+		fontWeight = FontWeight.W500,
+		fontSize = 25.sp,
+		lineHeight = 28.sp,
 		letterSpacing = 0.sp,
 	),
 	headlineLarge = TextStyle(
@@ -97,8 +97,8 @@ val AppTypography = Typography(
 	bodyMedium = TextStyle(
 		fontFamily = Rubik,
 		fontWeight = FontWeight.W400,
-		fontSize = 14.sp,
-		lineHeight = 20.sp,
+		fontSize = 15.sp,
+		lineHeight = 18.sp,
 		letterSpacing = 0.25.sp,
 	),
 	bodySmall = TextStyle(

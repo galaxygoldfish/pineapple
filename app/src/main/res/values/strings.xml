@@ -14,6 +14,7 @@
     <string name="ic_comments_bubble_content_desc">Comments</string>
     <string name="ic_thumbs_up_content_desc">Upvote</string>
     <string name="ic_share_glyph_content_desc">Share</string>
+    <string name="ic_arrow_back_content_desc">Back</string>
 
     <string name="welcome_slogan_text">A new way to browse the frontpage of the internet.</string>
     <string name="welcome_reddit_log_in_button">Sign in with Reddit</string>
@@ -24,5 +25,7 @@
     <string name="home_bottom_bar_item_search">Search</string>
     <string name="home_bottom_bar_item_chats">Chats</string>
     <string name="home_bottom_bar_item_account">Account</string>
+
+    <string name="post_view_title_placeholder_text">View post</string>
 '
 </resources>

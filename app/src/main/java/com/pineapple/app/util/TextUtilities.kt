@@ -3,13 +3,12 @@ package com.pineapple.app.util
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.Placeholder
-import androidx.compose.ui.text.PlaceholderVerticalAlign
-import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.*
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -27,13 +26,21 @@ fun Int.prettyNumber() : String {
     )
 }
 
-fun List<FlairRichItem>.parseFlair() : Pair<AnnotatedString, Map<String, InlineTextContent>> {
+fun List<FlairRichItem>.parseFlair(darkTheme: Boolean) : Pair<AnnotatedString, Map<String, InlineTextContent>> {
     val iconUrlData = mutableListOf<String>()
     val iconImageData = mutableMapOf<String, InlineTextContent>()
     val annotatedString = buildAnnotatedString {
         forEachIndexed { index, flairRichItem ->
             when (flairRichItem.e) {
-                "text" -> append(flairRichItem.t!!.replace("&amp;", "&"))
+                "text" -> {
+                    val text = flairRichItem.t!!.replace("&amp;", "&")
+                    append(text)
+                    addStyle(
+                        style = SpanStyle(color = if (darkTheme) Color.White else Color.Black),
+                        start = 0,
+                        end = text.length
+                    )
+                }
                 "emoji" -> {
                     appendInlineContent(id = "icon${index - 1}")
                     iconUrlData.add(flairRichItem.u!!)
