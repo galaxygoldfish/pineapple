@@ -15,6 +15,7 @@
     <string name="ic_thumbs_up_content_desc">Upvote</string>
     <string name="ic_share_glyph_content_desc">Share</string>
     <string name="ic_arrow_back_content_desc">Back</string>
+    <string name="ic_trending_indicator_content_desc">Trending</string>
 
     <string name="welcome_slogan_text">A new way to browse the frontpage of the internet.</string>
     <string name="welcome_reddit_log_in_button">Sign in with Reddit</string>
@@ -27,5 +28,9 @@
     <string name="home_bottom_bar_item_account">Account</string>
 
     <string name="post_view_title_placeholder_text">View post</string>
-'
+
+    <string name="search_query_hint_text">Search all of reddit…</string>
+    <string name="search_trending_subreddit_header">Trending communities</string>
+    <string name="search_trending_users_header">Trending users</string>
+
 </resources>

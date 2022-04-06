@@ -1,7 +1,6 @@
 package com.pineapple.app.network
 
-import com.pineapple.app.model.reddit.PostItem
-import com.pineapple.app.model.reddit.PostListing
+import com.pineapple.app.model.reddit.*
 import retrofit2.Call
 import retrofit2.Response
 import retrofit2.http.GET
@@ -23,5 +22,8 @@ interface NetworkService {
         @Path("id") postID: String,
         @Path("post") post: String
     ) : List<PostListing>
+
+    @GET("subreddits/popular")
+    suspend fun fetchTopSubreddits() : Listing<SubredditItem>
 
 }

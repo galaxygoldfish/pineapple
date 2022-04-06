@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.*
@@ -12,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -23,6 +25,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.pineapple.app.R
 import com.pineapple.app.model.reddit.PostData
+import com.pineapple.app.model.reddit.SubredditItem
 import com.pineapple.app.theme.PineappleTheme
 import com.pineapple.app.util.parseFlair
 import com.pineapple.app.util.prettyNumber
@@ -145,6 +148,52 @@ fun PostCardIconButton(
             text = text,
             style = MaterialTheme.typography.labelMedium,
             modifier = Modifier.padding(start = 8.dp)
+        )
+    }
+}
+
+@Composable
+fun SubredditListCard(item: SubredditItem) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 5.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(MaterialTheme.colorScheme.secondaryContainer.copy(0.4F)),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        val communityIcon = item.data.iconUrl.replace(";", "").replace("amp", "")
+        if (communityIcon.isNotEmpty()) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(communityIcon)
+                    .error(R.drawable.placeholder_image)
+                    .crossfade(true)
+                    .build().data,
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(12.dp)
+                    .size(25.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.FillWidth,
+            )
+        } else {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_reddit_logo),
+                contentDescription = stringResource(id = R.string.ic_reddit_logo_content_desc),
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .padding(12.dp) // Actual container padding
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .size(25.dp)
+                    .padding(4.dp) // Reddit icon padding
+            )
+        }
+        Text(
+            text = item.data.displayNamePrefixed,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(start = 4.dp)
         )
     }
 }
