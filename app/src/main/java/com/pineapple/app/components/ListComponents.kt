@@ -3,18 +3,15 @@ package com.pineapple.app.components
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -28,12 +25,12 @@ import com.pineapple.app.R
 import com.pineapple.app.model.reddit.PostData
 import com.pineapple.app.model.reddit.SubredditItem
 import com.pineapple.app.theme.PineappleTheme
-import com.pineapple.app.util.parseFlair
 import com.pineapple.app.util.prettyNumber
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalCoilApi::class)
 fun TextPostCard(postData: PostData, onClick: () -> Unit) {
+
     PineappleTheme {
         Surface(
             tonalElevation = 0.dp,
@@ -64,30 +61,7 @@ fun TextPostCard(postData: PostData, onClick: () -> Unit) {
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(top = 10.dp)
                     )
-                    postData.linkFlairRichtext?.let { list ->
-                        if (list.isNotEmpty()) {
-                            list.parseFlair(isSystemInDarkTheme()).let { pair ->
-                                Column(
-                                    modifier = Modifier
-                                        .padding(top = 10.dp)
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(MaterialTheme.colorScheme.secondaryContainer.copy(0.8F)),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-                                    BasicText(
-                                        text = pair.first,
-                                        style = MaterialTheme.typography.labelMedium,
-                                        inlineContent = pair.second,
-                                        modifier = Modifier.padding(
-                                            vertical = 5.dp,
-                                            horizontal = 8.dp
-                                        )
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    FlairBar(postData = postData)
                 }
                 // val imageLink = postData.preview.images?.get(0)?.source?.url?.replace("amp;", "")?.ifEmpty { postData.url }
                 AsyncImage(

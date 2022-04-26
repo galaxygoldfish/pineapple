@@ -31,6 +31,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsCompat.toWindowInsetsCompat
+import androidx.navigation.NavController
+import com.pineapple.app.NavDestination
 import com.pineapple.app.R
 import com.pineapple.app.components.Chip
 import com.pineapple.app.components.SubredditListCard
@@ -46,7 +48,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
-fun SearchView() {
+fun SearchView(navController: NavController) {
     val viewModel = LocalContext.current.getViewModel(SearchViewModel::class.java)
     val topSubredditList = remember { mutableStateListOf<SubredditItem>() }
     LaunchedEffect(true) {
@@ -133,7 +135,11 @@ fun SearchView() {
                     ) {
                         itemsIndexed(viewModel.currentPostList) { _, item ->
                             TextPostCard(postData = item.data) {
-
+                                val permalink = item.data.permalink.split("/")
+                                val sub = permalink[2]
+                                val uid = permalink[4]
+                                val link = permalink[5]
+                                navController.navigate("${NavDestination.PostDetailView}/$sub/$uid/$link")
                             }
                         }
                     }

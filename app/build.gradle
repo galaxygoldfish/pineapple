@@ -57,7 +57,7 @@ dependencies {
     implementation 'androidx.activity:activity-compose:1.4.0'
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
-    implementation 'androidx.compose.material3:material3:1.0.0-alpha07'
+    implementation 'androidx.compose.material3:material3:1.0.0-alpha08' // don't update to alpha10 -> top app bar no longer has padding & content is overlapped
     implementation "androidx.paging:paging-runtime:$paging_version"
     implementation "androidx.paging:paging-compose:1.0.0-alpha14"
 
@@ -65,6 +65,7 @@ dependencies {
     implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
     implementation "com.google.accompanist:accompanist-swiperefresh:$accompanist_version"
     implementation 'com.google.code.gson:gson:2.8.9'
+    implementation "com.google.android.exoplayer:exoplayer:2.17.1"
 
     implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
     implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"

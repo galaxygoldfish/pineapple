@@ -1,6 +1,10 @@
 package com.pineapple.app.view
 
+import android.content.Intent
 import android.graphics.Paint
+import android.net.Uri
+import android.text.Html
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
@@ -18,13 +22,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.pineapple.app.R
+import com.pineapple.app.components.FlairBar
 import com.pineapple.app.model.RequestResult
 import com.pineapple.app.model.RequestStatus
 import com.pineapple.app.model.reddit.PostData
@@ -108,6 +117,10 @@ fun PostDetailView(
                                     )
                                 }
                             }
+                            FlairBar(
+                                postData = post,
+                                modifier = Modifier.padding(start = 20.dp)
+                            )
                             when {
                                 post.selftext.isNotEmpty() -> {
                                     Text(
@@ -116,16 +129,52 @@ fun PostDetailView(
                                         modifier = Modifier.padding(start = 18.dp, end = 18.dp, top = 15.dp)
                                     )
                                 }
-                                post.urlOverriddenByDest.isNotEmpty() -> {
+                                post.urlOverriddenByDest.let {
+                                    it.isNotEmpty() && !it.contains("png") &&
+                                            !it.contains("jpg") && !it.contains("v.redd.it")
+                                } -> {
                                     Card(
                                         shape = RoundedCornerShape(10.dp),
-                                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 20.dp, vertical = 15.dp),
+                                        onClick = {
+                                            Intent(Intent.ACTION_VIEW).apply {
+                                                data = Uri.parse(post.url)
+                                                navController.context.startActivity(this)
+                                            }
+                                        }
                                     ) {
-Text("r")
+                                        Column(modifier = Modifier.padding(vertical = 10.dp, horizontal = 15.dp)) {
+                                            Text(
+                                                text = post.domain,
+                                                style = MaterialTheme.typography.headlineSmall,
+                                                textDecoration = TextDecoration.Underline
+                                            )
+                                            Text(
+                                                text = stringResource(id = R.string.post_view_link_proceed_text),
+                                                style = MaterialTheme.typography.titleMedium
+                                            )
+                                        }
                                     }
                                 }
+                                post.url.isNotEmpty() -> {
+                                    AsyncImage(
+                                        model = ImageRequest.Builder(LocalContext.current)
+                                            .data(post.url)
+                                            .placeholder(R.drawable.placeholder_image)
+                                            .crossfade(true)
+                                            .build().data,
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 20.dp, vertical = 15.dp)
+                                            .clip(RoundedCornerShape(10.dp)),
+                                        contentScale = ContentScale.FillWidth,
+                                    )
+                                }
                             }
-
                         }
                     }
                 }

@@ -136,7 +136,7 @@ fun HomePageView(navController: NavController) {
                 }
             }
             composable(BottomNavDestinations.Search) {
-                SearchView()
+                SearchView(navController)
             }
             // Chats
             // Account

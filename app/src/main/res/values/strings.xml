@@ -28,6 +28,7 @@
     <string name="home_bottom_bar_item_account">Account</string>
 
     <string name="post_view_title_placeholder_text">View post</string>
+    <string name="post_view_link_proceed_text">Visit site →</string>
 
     <string name="search_query_hint_text">Search all of reddit…</string>
     <string name="search_trending_subreddit_header">Trending communities</string>

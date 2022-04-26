@@ -188,7 +188,7 @@ data class PostData(
     @SerializedName("over_18")
     val over18: Boolean,
 
-    val preview: Preview,
+    val preview: Preview?,
 
     @SerializedName("all_awardings")
     val allAwardings: List<AllAwarding>,
