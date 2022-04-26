@@ -1,5 +1,6 @@
 package com.pineapple.app.components
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -70,7 +71,7 @@ fun TextPostCard(postData: PostData, onClick: () -> Unit) {
                                     modifier = Modifier
                                         .padding(top = 10.dp)
                                         .clip(RoundedCornerShape(8.dp))
-                                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                                        .background(MaterialTheme.colorScheme.secondaryContainer.copy(0.8F)),
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.Center
                                 ) {
@@ -88,6 +89,7 @@ fun TextPostCard(postData: PostData, onClick: () -> Unit) {
                         }
                     }
                 }
+                // val imageLink = postData.preview.images?.get(0)?.source?.url?.replace("amp;", "")?.ifEmpty { postData.url }
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(postData.url)

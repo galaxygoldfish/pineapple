@@ -8,6 +8,7 @@ import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -16,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -106,11 +108,24 @@ fun PostDetailView(
                                     )
                                 }
                             }
-                            Text(
-                                text = post.selftext,
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(start = 18.dp, end = 18.dp, top = 15.dp)
-                            )
+                            when {
+                                post.selftext.isNotEmpty() -> {
+                                    Text(
+                                        text = post.selftext,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        modifier = Modifier.padding(start = 18.dp, end = 18.dp, top = 15.dp)
+                                    )
+                                }
+                                post.urlOverriddenByDest.isNotEmpty() -> {
+                                    Card(
+                                        shape = RoundedCornerShape(10.dp),
+                                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                                    ) {
+Text("r")
+                                    }
+                                }
+                            }
+
                         }
                     }
                 }

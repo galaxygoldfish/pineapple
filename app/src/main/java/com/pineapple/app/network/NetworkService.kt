@@ -26,4 +26,7 @@ interface NetworkService {
     @GET("subreddits/popular")
     suspend fun fetchTopSubreddits() : Listing<SubredditItem>
 
+    @GET("search")
+    suspend fun searchPosts(@Query("q") query: String) : Listing<PostItem>
+
 }

@@ -3,8 +3,10 @@ package com.pineapple.app.util
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.drawable.Drawable
+import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.annotation.DrawableRes
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.CombinedLoadStates
@@ -23,3 +25,7 @@ fun Context.drawableResource(@DrawableRes id: Int): Drawable
 
 fun CombinedLoadStates.isLoading() : Boolean
     = refresh is LoadState.Loading || append is LoadState.Loading
+
+fun View.keyboardIsVisible(): Boolean = WindowInsetsCompat
+        .toWindowInsetsCompat(rootWindowInsets)
+        .isVisible(WindowInsetsCompat.Type.ime())
