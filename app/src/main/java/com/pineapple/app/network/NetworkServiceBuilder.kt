@@ -5,6 +5,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.scalars.ScalarsConverterFactory
 
 object NetworkServiceBuilder {
 
@@ -23,8 +24,20 @@ object NetworkServiceBuilder {
             .build()
     }
 
+    private fun getRetrofitRaw(): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(ScalarsConverterFactory.create())
+            .build()
+    }
+
     fun apiService(): NetworkService {
         return getRetrofit().create(NetworkService::class.java)
+    }
+
+    fun rawApiService(): NetworkService {
+        return getRetrofitRaw().create(NetworkService::class.java)
     }
 
 

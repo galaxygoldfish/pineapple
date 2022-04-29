@@ -10,6 +10,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,13 +34,20 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.internal.LinkedTreeMap
 import com.pineapple.app.R
+import com.pineapple.app.components.CommentBubble
 import com.pineapple.app.components.FlairBar
 import com.pineapple.app.model.RequestResult
 import com.pineapple.app.model.RequestStatus
-import com.pineapple.app.model.reddit.PostData
+import com.pineapple.app.model.reddit.*
 import com.pineapple.app.util.getViewModel
 import com.pineapple.app.viewmodel.PostDetailViewModel
+import org.json.JSONArray
+import org.json.JSONObject
+import org.w3c.dom.Comment
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,12 +58,24 @@ fun PostDetailView(
     link: String
 ) {
     val viewModel = LocalContext.current.getViewModel(PostDetailViewModel::class.java)
-    rememberSystemUiController().setStatusBarColor(color = MaterialTheme.colorScheme.surfaceVariant)
-    var postData by remember { mutableStateOf<RequestResult<PostData>?>(null) }
+    var postData by remember { mutableStateOf<PostData?>(null) }
+    var commentData by remember { mutableStateOf<List<CommentPreData>?>(null) }
+    val requestStatus = remember { mutableStateOf<RequestResult<Any>?>(null) }
+
     viewModel.postData = Triple(subreddit, uid, link)
+    rememberSystemUiController().setStatusBarColor(color = MaterialTheme.colorScheme.surfaceVariant)
+
     LaunchedEffect(true) {
         viewModel.postRequestFlow().collect { result ->
-            postData = result
+            requestStatus.value = result
+            result.data?.apply {
+                postData = Gson()
+                    .fromJson(this[0].toString(), PostListing::class.java)
+                    .data.children[0].data
+                commentData = Gson()
+                    .fromJson(this[1].toString(), CommentListing::class.java)
+                    .data.children
+            }
         }
     }
     Scaffold(
@@ -75,8 +96,8 @@ fun PostDetailView(
             )
         }
     ) {
-        postData?.let { request ->
-            when (request.status) {
+        requestStatus.let { request ->
+            when (request.value?.status) {
                 RequestStatus.LOADING -> {
                     Column(
                         modifier = Modifier.fillMaxSize(),
@@ -87,12 +108,17 @@ fun PostDetailView(
                     }
                 }
                 RequestStatus.SUCCESS -> {
-                    request.data?.let { post ->
+                    postData?.let { post ->
                         Column {
                             Text(
                                 text = post.title,
                                 style = MaterialTheme.typography.displaySmall,
-                                modifier = Modifier.padding(start = 17.dp, top = 25.dp, end = 18.dp)
+                                modifier = Modifier
+                                    .padding(
+                                        start = 17.dp,
+                                        top = 25.dp,
+                                        end = 18.dp
+                                    )
                             )
                             Row(modifier = Modifier.padding(top = 15.dp, start = 17.dp)) {
                                 Icon(
@@ -126,7 +152,11 @@ fun PostDetailView(
                                     Text(
                                         text = post.selftext,
                                         style = MaterialTheme.typography.bodyMedium,
-                                        modifier = Modifier.padding(start = 18.dp, end = 18.dp, top = 15.dp)
+                                        modifier = Modifier.padding(
+                                            start = 18.dp,
+                                            end = 18.dp,
+                                            top = 15.dp
+                                        )
                                     )
                                 }
                                 post.urlOverriddenByDest.let {
@@ -146,7 +176,12 @@ fun PostDetailView(
                                             }
                                         }
                                     ) {
-                                        Column(modifier = Modifier.padding(vertical = 10.dp, horizontal = 15.dp)) {
+                                        Column(
+                                            modifier = Modifier.padding(
+                                                vertical = 10.dp,
+                                                horizontal = 15.dp
+                                            )
+                                        ) {
                                             Text(
                                                 text = post.domain,
                                                 style = MaterialTheme.typography.headlineSmall,
@@ -173,6 +208,23 @@ fun PostDetailView(
                                             .clip(RoundedCornerShape(10.dp)),
                                         contentScale = ContentScale.FillWidth,
                                     )
+                                }
+                            }
+                            Column {
+                                Text(
+                                    text = String.format(
+                                        stringResource(id = R.string.post_view_comments_overview_format),
+                                        post.numComments.toString()
+                                    ),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    modifier = Modifier.padding(start = 20.dp)
+                                )
+                                commentData?.let { comments ->
+                                    LazyColumn {
+                                        itemsIndexed(comments) { index, item ->
+                                            CommentBubble(commentData = item.data as CommentData)
+                                        }
+                                    }
                                 }
                             }
                         }

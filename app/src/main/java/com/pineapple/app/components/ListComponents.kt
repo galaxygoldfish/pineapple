@@ -22,6 +22,7 @@ import coil.annotation.ExperimentalCoilApi
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.pineapple.app.R
+import com.pineapple.app.model.reddit.CommentData
 import com.pineapple.app.model.reddit.PostData
 import com.pineapple.app.model.reddit.SubredditItem
 import com.pineapple.app.theme.PineappleTheme
@@ -30,7 +31,6 @@ import com.pineapple.app.util.prettyNumber
 @Composable
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalCoilApi::class)
 fun TextPostCard(postData: PostData, onClick: () -> Unit) {
-
     PineappleTheme {
         Surface(
             tonalElevation = 0.dp,
@@ -171,5 +171,23 @@ fun SubredditListCard(item: SubredditItem) {
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(start = 4.dp)
         )
+    }
+}
+
+@Composable
+fun CommentBubble(commentData: CommentData) {
+    commentData.body?.let {
+        Column(
+            modifier = Modifier
+                .padding(start = 20.dp, top = 10.dp, end = 17.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+
+        ) {
+            Text(
+                text = commentData.body!!,
+                modifier = Modifier.padding(10.dp)
+            )
+        }
     }
 }
