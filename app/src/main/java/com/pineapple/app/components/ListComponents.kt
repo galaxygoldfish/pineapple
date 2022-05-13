@@ -1,23 +1,28 @@
 package com.pineapple.app.components
 
+import android.icu.number.IntegerWidth
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
+import androidx.compose.ui.unit.min
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -27,6 +32,7 @@ import com.pineapple.app.model.reddit.PostData
 import com.pineapple.app.model.reddit.SubredditItem
 import com.pineapple.app.theme.PineappleTheme
 import com.pineapple.app.util.prettyNumber
+import kotlin.math.min
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalCoilApi::class)
@@ -177,17 +183,45 @@ fun SubredditListCard(item: SubredditItem) {
 @Composable
 fun CommentBubble(commentData: CommentData) {
     commentData.body?.let {
-        Column(
-            modifier = Modifier
-                .padding(start = 20.dp, top = 10.dp, end = 17.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-
-        ) {
-            Text(
-                text = commentData.body!!,
-                modifier = Modifier.padding(10.dp)
-            )
+        var currentTextLines by remember { mutableStateOf(Integer.MAX_VALUE) }
+        var shouldShowExpansion by remember { mutableStateOf(false) }
+        AnimatedVisibility(visible = true) {
+            Column(
+                modifier = Modifier
+                    .widthIn(max = LocalConfiguration.current.screenWidthDp.dp)
+                    .padding(start = 20.dp, top = 10.dp, end = 17.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Text(
+                    text = it,
+                    modifier = Modifier.padding(10.dp),
+                    maxLines = currentTextLines,
+                    onTextLayout = { textLayoutResult ->
+                        if (textLayoutResult.lineCount > 5 && !shouldShowExpansion) {
+                            shouldShowExpansion = true
+                            currentTextLines = 5
+                        }
+                    }
+                )
+                if (shouldShowExpansion) {
+                    Text(
+                        text = if (currentTextLines != Integer.MAX_VALUE) {
+                            stringResource(id = R.string.post_view_comments_expand_bubble)
+                        } else {
+                            stringResource(id = R.string.post_view_comments_collapse_bubble)
+                        },
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier
+                            .padding(top = 2.dp, bottom = 10.dp, start = 10.dp)
+                            .clickable {
+                                currentTextLines.let {
+                                    currentTextLines = if (it == Integer.MAX_VALUE) 5 else Integer.MAX_VALUE
+                                }
+                            }
+                    )
+                }
+            }
         }
     }
 }

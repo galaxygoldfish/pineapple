@@ -33,6 +33,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.google.accompanist.flowlayout.FlowColumn
+import com.google.accompanist.flowlayout.SizeMode
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -44,7 +46,9 @@ import com.pineapple.app.model.RequestResult
 import com.pineapple.app.model.RequestStatus
 import com.pineapple.app.model.reddit.*
 import com.pineapple.app.util.getViewModel
+import com.pineapple.app.util.prettyNumber
 import com.pineapple.app.viewmodel.PostDetailViewModel
+import org.intellij.lang.annotations.JdkConstants
 import org.json.JSONArray
 import org.json.JSONObject
 import org.w3c.dom.Comment
@@ -96,133 +100,152 @@ fun PostDetailView(
             )
         }
     ) {
-        requestStatus.let { request ->
-            when (request.value?.status) {
-                RequestStatus.LOADING -> {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                }
-                RequestStatus.SUCCESS -> {
-                    postData?.let { post ->
-                        Column {
-                            Text(
-                                text = post.title,
-                                style = MaterialTheme.typography.displaySmall,
-                                modifier = Modifier
-                                    .padding(
-                                        start = 17.dp,
-                                        top = 25.dp,
-                                        end = 18.dp
-                                    )
-                            )
-                            Row(modifier = Modifier.padding(top = 15.dp, start = 17.dp)) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_avatar_placeholder),
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier
-                                        .clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.primaryContainer)
-                                        .size(35.dp)
-                                        .padding(top = 5.dp)
-                                )
-                                Column(modifier = Modifier.padding(start = 10.dp)) {
-                                    Text(
-                                        text = post.author,
-                                        style = MaterialTheme.typography.labelMedium
-                                    )
-                                    Text(
-                                        text = "r/${post.subreddit}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        modifier = Modifier.padding(top = 2.dp)
-                                    )
-                                }
+        LazyColumn {
+            requestStatus.let { request ->
+                when (request.value?.status) {
+                    RequestStatus.LOADING -> {
+                        item {
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                CircularProgressIndicator()
                             }
-                            FlairBar(
-                                postData = post,
-                                modifier = Modifier.padding(start = 20.dp)
-                            )
-                            when {
-                                post.selftext.isNotEmpty() -> {
+                        }
+                    }
+                    RequestStatus.SUCCESS -> {
+                        postData?.let { post ->
+                            item {
+                                Column {
                                     Text(
-                                        text = post.selftext,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        modifier = Modifier.padding(
-                                            start = 18.dp,
-                                            end = 18.dp,
-                                            top = 15.dp
-                                        )
-                                    )
-                                }
-                                post.urlOverriddenByDest.let {
-                                    it.isNotEmpty() && !it.contains("png") &&
-                                            !it.contains("jpg") && !it.contains("v.redd.it")
-                                } -> {
-                                    Card(
-                                        shape = RoundedCornerShape(10.dp),
-                                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                        text = post.title,
+                                        style = MaterialTheme.typography.displaySmall,
                                         modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 20.dp, vertical = 15.dp),
-                                        onClick = {
-                                            Intent(Intent.ACTION_VIEW).apply {
-                                                data = Uri.parse(post.url)
-                                                navController.context.startActivity(this)
+                                            .padding(
+                                                start = 17.dp,
+                                                top = 25.dp,
+                                                end = 18.dp
+                                            )
+                                    )
+                                    Row(modifier = Modifier.padding(top = 15.dp, start = 17.dp)) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_avatar_placeholder),
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier
+                                                .clip(CircleShape)
+                                                .background(MaterialTheme.colorScheme.primaryContainer)
+                                                .size(35.dp)
+                                                .padding(top = 5.dp)
+                                        )
+                                        Column(modifier = Modifier.padding(start = 10.dp)) {
+                                            Text(
+                                                text = post.author,
+                                                style = MaterialTheme.typography.labelMedium
+                                            )
+                                            Text(
+                                                text = "r/${post.subreddit}",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                modifier = Modifier.padding(top = 2.dp)
+                                            )
+                                        }
+                                    }
+                                    FlairBar(
+                                        postData = post,
+                                        modifier = Modifier.padding(start = 20.dp)
+                                    )
+                                    when {
+                                        post.selftext.isNotEmpty() -> {
+                                            Text(
+                                                text = post.selftext,
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                modifier = Modifier.padding(
+                                                    start = 18.dp,
+                                                    end = 18.dp,
+                                                    top = 15.dp
+                                                )
+                                            )
+                                        }
+                                        post.urlOverriddenByDest.let {
+                                            it.isNotEmpty() && !it.contains("png") &&
+                                                    !it.contains("jpg") && !it.contains("v.redd.it")
+                                        } -> {
+                                            Card(
+                                                shape = RoundedCornerShape(10.dp),
+                                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(horizontal = 20.dp, vertical = 15.dp),
+                                                onClick = {
+                                                    Intent(Intent.ACTION_VIEW).apply {
+                                                        data = Uri.parse(post.url)
+                                                        navController.context.startActivity(this)
+                                                    }
+                                                }
+                                            ) {
+                                                Column(
+                                                    modifier = Modifier.padding(
+                                                        vertical = 10.dp,
+                                                        horizontal = 15.dp
+                                                    )
+                                                ) {
+                                                    Text(
+                                                        text = post.domain,
+                                                        style = MaterialTheme.typography.headlineSmall,
+                                                        textDecoration = TextDecoration.Underline
+                                                    )
+                                                    Text(
+                                                        text = stringResource(id = R.string.post_view_link_proceed_text),
+                                                        style = MaterialTheme.typography.titleMedium
+                                                    )
+                                                }
                                             }
                                         }
-                                    ) {
-                                        Column(
-                                            modifier = Modifier.padding(
-                                                vertical = 10.dp,
-                                                horizontal = 15.dp
-                                            )
-                                        ) {
-                                            Text(
-                                                text = post.domain,
-                                                style = MaterialTheme.typography.headlineSmall,
-                                                textDecoration = TextDecoration.Underline
-                                            )
-                                            Text(
-                                                text = stringResource(id = R.string.post_view_link_proceed_text),
-                                                style = MaterialTheme.typography.titleMedium
+                                        post.url.isNotEmpty() -> {
+                                            AsyncImage(
+                                                model = ImageRequest.Builder(LocalContext.current)
+                                                    .data(post.url)
+                                                    .placeholder(R.drawable.placeholder_image)
+                                                    .crossfade(true)
+                                                    .build().data,
+                                                contentDescription = null,
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(horizontal = 20.dp, vertical = 15.dp)
+                                                    .clip(RoundedCornerShape(10.dp)),
+                                                contentScale = ContentScale.FillWidth,
                                             )
                                         }
                                     }
                                 }
-                                post.url.isNotEmpty() -> {
-                                    AsyncImage(
-                                        model = ImageRequest.Builder(LocalContext.current)
-                                            .data(post.url)
-                                            .placeholder(R.drawable.placeholder_image)
-                                            .crossfade(true)
-                                            .build().data,
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 20.dp, vertical = 15.dp)
-                                            .clip(RoundedCornerShape(10.dp)),
-                                        contentScale = ContentScale.FillWidth,
-                                    )
-                                }
                             }
-                            Column {
-                                Text(
-                                    text = String.format(
-                                        stringResource(id = R.string.post_view_comments_overview_format),
-                                        post.numComments.toString()
-                                    ),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    modifier = Modifier.padding(start = 20.dp)
-                                )
-                                commentData?.let { comments ->
-                                    LazyColumn {
-                                        itemsIndexed(comments) { index, item ->
-                                            CommentBubble(commentData = item.data as CommentData)
+                            item {
+                                Column(modifier = Modifier.padding(top = 20.dp)) {
+                                    Row {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_comments_bubble),
+                                            contentDescription = stringResource(id = R.string.ic_comments_bubble_content_desc),
+                                            modifier = Modifier.padding(start = 22.dp)
+                                                .size(16.dp),
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Text(
+                                            text = String.format(
+                                                stringResource(id = R.string.post_view_comments_overview_format),
+                                                post.numComments
+                                                    .toInt()
+                                                    .prettyNumber()
+                                            ),
+                                            style = MaterialTheme.typography.titleSmall,
+                                            modifier = Modifier.padding(start = 12.dp)
+                                        )
+                                    }
+                                    commentData?.let { comments ->
+                                        FlowColumn(modifier = Modifier.padding(top = 10.dp)) {
+                                            comments.forEach { item ->
+                                                CommentBubble(commentData = item.data)
+                                            }
                                         }
                                     }
                                 }
