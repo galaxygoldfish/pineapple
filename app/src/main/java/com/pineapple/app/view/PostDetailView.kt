@@ -5,17 +5,14 @@ import android.graphics.Paint
 import android.net.Uri
 import android.text.Html
 import android.util.Log
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
@@ -52,6 +49,7 @@ import org.intellij.lang.annotations.JdkConstants
 import org.json.JSONArray
 import org.json.JSONObject
 import org.w3c.dom.Comment
+import java.lang.Long.min
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -123,12 +121,12 @@ fun PostDetailView(
                                         style = MaterialTheme.typography.displaySmall,
                                         modifier = Modifier
                                             .padding(
-                                                start = 17.dp,
+                                                start = 20.dp,
                                                 top = 25.dp,
                                                 end = 18.dp
                                             )
                                     )
-                                    Row(modifier = Modifier.padding(top = 15.dp, start = 17.dp)) {
+                                    Row(modifier = Modifier.padding(top = 15.dp, start = 21.dp)) {
                                         Icon(
                                             painter = painterResource(id = R.drawable.ic_avatar_placeholder),
                                             contentDescription = null,
@@ -161,9 +159,10 @@ fun PostDetailView(
                                                 text = post.selftext,
                                                 style = MaterialTheme.typography.bodyMedium,
                                                 modifier = Modifier.padding(
-                                                    start = 18.dp,
-                                                    end = 18.dp,
-                                                    top = 15.dp
+                                                    start = 22.dp,
+                                                    end = 20.dp,
+                                                    top = 20.dp,
+                                                    bottom = 20.dp
                                                 )
                                             )
                                         }
@@ -212,7 +211,7 @@ fun PostDetailView(
                                                 contentDescription = null,
                                                 modifier = Modifier
                                                     .fillMaxWidth()
-                                                    .padding(horizontal = 20.dp, vertical = 15.dp)
+                                                    .padding(horizontal = 20.dp, vertical = 20.dp)
                                                     .clip(RoundedCornerShape(10.dp)),
                                                 contentScale = ContentScale.FillWidth,
                                             )
@@ -221,30 +220,75 @@ fun PostDetailView(
                                 }
                             }
                             item {
-                                Column(modifier = Modifier.padding(top = 20.dp)) {
-                                    Row {
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.ic_comments_bubble),
-                                            contentDescription = stringResource(id = R.string.ic_comments_bubble_content_desc),
-                                            modifier = Modifier.padding(start = 22.dp)
-                                                .size(16.dp),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                        Text(
-                                            text = String.format(
-                                                stringResource(id = R.string.post_view_comments_overview_format),
-                                                post.numComments
+                                Column(
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Row(
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.fillMaxWidth()
+                                            .padding(start = 20.dp, end = 18.dp)
+                                            .border(
+                                                width = 2.dp,
+                                                shape = RoundedCornerShape(10.dp),
+                                                color = MaterialTheme.colorScheme.surfaceVariant
+                                            )
+                                    ) {
+                                        Row {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.ic_comments_bubble),
+                                                contentDescription = stringResource(id = R.string.ic_comments_bubble_content_desc),
+                                                modifier = Modifier
+                                                    .padding(start = 18.dp)
+                                                    .size(16.dp),
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                            Text(
+                                                text = String.format(
+                                                    stringResource(id = R.string.post_view_comments_overview_format),
+                                                    post.numComments
+                                                        .toInt()
+                                                        .prettyNumber()
+                                                ),
+                                                style = MaterialTheme.typography.titleSmall,
+                                                modifier = Modifier.padding(start = 12.dp)
+                                            )
+                                        }
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.padding(end = 10.dp)
+                                        ) {
+                                            IconButton(onClick = { /*TODO*/ }) {
+                                                Icon(
+                                                    painter = painterResource(id = R.drawable.ic_thumbs_up),
+                                                    contentDescription = stringResource(id = R.string.ic_thumbs_up_content_desc),
+                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    modifier = Modifier.size(17.dp)
+                                                )
+                                            }
+                                            Text(
+                                                text = min(post.ups, Integer.MAX_VALUE.toLong())
                                                     .toInt()
-                                                    .prettyNumber()
-                                            ),
-                                            style = MaterialTheme.typography.titleSmall,
-                                            modifier = Modifier.padding(start = 12.dp)
-                                        )
+                                                    .prettyNumber(),
+                                                style = MaterialTheme.typography.titleSmall
+                                            )
+                                            IconButton(onClick = { /*TODO*/ }) {
+                                                Icon(
+                                                    painter = painterResource(id = R.drawable.ic_thumbs_down),
+                                                    contentDescription = stringResource(id = R.string.ic_thumbs_down_content_desc),
+                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    modifier = Modifier.size(17.dp)
+                                                )
+                                            }
+                                        }
                                     }
                                     commentData?.let { comments ->
                                         FlowColumn(modifier = Modifier.padding(top = 10.dp)) {
                                             comments.forEach { item ->
-                                                CommentBubble(commentData = item.data)
+                                                CommentBubble(
+                                                    commentData = item.data,
+                                                    viewModel = viewModel
+                                                )
                                             }
                                         }
                                     }

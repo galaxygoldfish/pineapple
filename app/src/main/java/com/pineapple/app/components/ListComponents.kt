@@ -30,8 +30,10 @@ import com.pineapple.app.R
 import com.pineapple.app.model.reddit.CommentData
 import com.pineapple.app.model.reddit.PostData
 import com.pineapple.app.model.reddit.SubredditItem
+import com.pineapple.app.model.reddit.UserAbout
 import com.pineapple.app.theme.PineappleTheme
 import com.pineapple.app.util.prettyNumber
+import com.pineapple.app.viewmodel.PostDetailViewModel
 import kotlin.math.min
 
 @Composable
@@ -181,45 +183,77 @@ fun SubredditListCard(item: SubredditItem) {
 }
 
 @Composable
-fun CommentBubble(commentData: CommentData) {
-    commentData.body?.let {
-        var currentTextLines by remember { mutableStateOf(Integer.MAX_VALUE) }
-        var shouldShowExpansion by remember { mutableStateOf(false) }
-        AnimatedVisibility(visible = true) {
-            Column(
-                modifier = Modifier
-                    .widthIn(max = LocalConfiguration.current.screenWidthDp.dp)
-                    .padding(start = 20.dp, top = 10.dp, end = 17.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                Text(
-                    text = it,
-                    modifier = Modifier.padding(10.dp),
-                    maxLines = currentTextLines,
-                    onTextLayout = { textLayoutResult ->
-                        if (textLayoutResult.lineCount > 5 && !shouldShowExpansion) {
-                            shouldShowExpansion = true
-                            currentTextLines = 5
+fun CommentBubble(commentData: CommentData, viewModel: PostDetailViewModel) {
+    commentData.body?.let { comment ->
+        if (comment != "[removed]") {
+            var currentTextLines by remember { mutableStateOf(Integer.MAX_VALUE) }
+            var shouldShowExpansion by remember { mutableStateOf(false) }
+            var userInformation by remember { mutableStateOf<UserAbout?>(null) }
+            LaunchedEffect(key1 = true) {
+                if (commentData.author != "[deleted]") {
+                    userInformation = viewModel.networkService.fetchUserInfo(commentData.author).data
+                }
+            }
+            AnimatedVisibility(visible = true) {
+                Row(
+                    modifier = Modifier
+                        .width(LocalConfiguration.current.screenWidthDp.dp)
+                        .padding(top = 17.dp)
+                ) {
+                    userInformation?.let { user ->
+                        val url = user.snoovatar_img.toString().ifBlank {
+                            user.icon_img
                         }
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(url)
+                                .crossfade(true)
+                                .build().data,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .padding(start = 10.dp, end = 10.dp, top = 2.dp)
+                                .size(30.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(0.5F)),
+                            contentScale = ContentScale.FillWidth,
+                        )
                     }
-                )
-                if (shouldShowExpansion) {
-                    Text(
-                        text = if (currentTextLines != Integer.MAX_VALUE) {
-                            stringResource(id = R.string.post_view_comments_expand_bubble)
-                        } else {
-                            stringResource(id = R.string.post_view_comments_collapse_bubble)
-                        },
-                        style = MaterialTheme.typography.titleSmall,
+                    Column(
                         modifier = Modifier
-                            .padding(top = 2.dp, bottom = 10.dp, start = 10.dp)
-                            .clickable {
-                                currentTextLines.let {
-                                    currentTextLines = if (it == Integer.MAX_VALUE) 5 else Integer.MAX_VALUE
+                            .padding(end = 17.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                    ) {
+                        Text(
+                            text = comment,
+                            modifier = Modifier.padding(10.dp),
+                            maxLines = currentTextLines,
+                            onTextLayout = { textLayoutResult ->
+                                if (textLayoutResult.lineCount > 5 && !shouldShowExpansion) {
+                                    shouldShowExpansion = true
+                                    currentTextLines = 5
                                 }
                             }
-                    )
+                        )
+                        if (shouldShowExpansion) {
+                            Text(
+                                text = if (currentTextLines != Integer.MAX_VALUE) {
+                                    stringResource(id = R.string.post_view_comments_expand_bubble)
+                                } else {
+                                    stringResource(id = R.string.post_view_comments_collapse_bubble)
+                                },
+                                style = MaterialTheme.typography.titleSmall,
+                                modifier = Modifier
+                                    .padding(top = 2.dp, bottom = 10.dp, start = 10.dp)
+                                    .clickable {
+                                        currentTextLines.let {
+                                            currentTextLines =
+                                                if (it == Integer.MAX_VALUE) 5 else Integer.MAX_VALUE
+                                        }
+                                    }
+                            )
+                        }
+                    }
                 }
             }
         }

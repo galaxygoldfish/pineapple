@@ -33,6 +33,11 @@ interface NetworkService {
         @Path("subreddit") subreddit: String
     ) : SubredditInfo
 
+    @GET("/user/{user}/about")
+    suspend fun fetchUserInfo(
+        @Path("user") user: String
+    ) : UserAboutListing
+
     @GET("search")
     suspend fun searchPosts(@Query("q") query: String) : Listing<PostItem>
 

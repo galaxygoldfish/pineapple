@@ -16,12 +16,12 @@ import org.json.JSONArray
 class PostDetailViewModel : ViewModel() {
 
     var postData by mutableStateOf<Triple<String, String, String>?>(null)
-
-    private val networkService by lazy { NetworkServiceBuilder.rawApiService() }
+    val networkServiceRaw by lazy { NetworkServiceBuilder.rawApiService() }
+    val networkService by lazy { NetworkServiceBuilder.apiService() }
 
     suspend fun postRequestFlow() = flow {
         emit(RequestResult.Loading(true))
-        val response = postData?.let { networkService.fetchPost(it.first, it.second, it.third) }
+        val response = postData?.let { networkServiceRaw.fetchPost(it.first, it.second, it.third) }
         if (response != null) {
             emit(RequestResult.Success(JSONArray(response)))
         } else {
