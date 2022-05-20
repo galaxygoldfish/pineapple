@@ -56,10 +56,7 @@
     <string name="search_trending_users_header">Trending users</string>
     <string name="search_category_all">All</string>
     <string name="search_category_users">Users</string>
-    <string name="search_category_text">Text</string>
-    <string name="search_category_image">Images</string>
-    <string name="search_category_link">Links</string>
-    <string name="search_category_video">Video</string>
-    <string name="search_category_community">Subreddits</string>
+    <string name="search_category_post">Posts</string>
+    <string name="search_category_community">Communities</string>
 
 </resources>

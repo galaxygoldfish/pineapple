@@ -77,7 +77,6 @@ fun TextPostCard(postData: PostData, onClick: () -> Unit) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(postData.url)
-                        .placeholder(R.drawable.placeholder_image)
                         .crossfade(true)
                         .build().data,
                     contentDescription = null,
@@ -90,20 +89,20 @@ fun TextPostCard(postData: PostData, onClick: () -> Unit) {
                 ) {
                     Row {
                         PostCardIconButton(
-                            icon = painterResource(id = R.drawable.ic_comments_bubble),
-                            contentDescription = stringResource(id = R.string.ic_comments_bubble_content_desc),
+                            icon = painterResource(id = R.drawable.ic_forum),
+                            contentDescription = stringResource(id = R.string.ic_forum_content_desc),
                             text = postData.numComments.toInt().prettyNumber()
                         )
                         PostCardIconButton(
-                            icon = painterResource(id = R.drawable.ic_thumbs_up),
-                            contentDescription = stringResource(id = R.string.ic_thumbs_up_content_desc),
+                            icon = painterResource(id = R.drawable.ic_thumb_up),
+                            contentDescription = stringResource(id = R.string.ic_thumb_up_content_desc),
                             text = postData.ups.toInt().prettyNumber()
                         )
                     }
                     Row(modifier = Modifier.padding(end = 15.dp)) {
                         PostCardIconButton(
-                            icon = painterResource(id = R.drawable.ic_share_glyph),
-                            contentDescription = stringResource(id = R.string.ic_share_glyph_content_desc),
+                            icon = painterResource(id = R.drawable.ic_share),
+                            contentDescription = stringResource(id = R.string.ic_share_content_desc),
                             text = ""
                         )
                     }
@@ -156,7 +155,6 @@ fun SubredditListCard(item: SubredditItem, navController: NavController) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(communityIcon)
-                    .error(R.drawable.placeholder_image)
                     .crossfade(true)
                     .build().data,
                 contentDescription = null,
@@ -168,8 +166,8 @@ fun SubredditListCard(item: SubredditItem, navController: NavController) {
             )
         } else {
             Icon(
-                painter = painterResource(id = R.drawable.ic_reddit_logo),
-                contentDescription = stringResource(id = R.string.ic_reddit_logo_content_desc),
+                painter = painterResource(id = R.drawable.ic_atr_dots),
+                contentDescription = stringResource(id = R.string.ic_atr_dots_content_desc),
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
                     .padding(12.dp) // Actual container padding

@@ -64,16 +64,16 @@ fun HomePageView(navController: NavController) {
                         navigationIcon = {
                             IconButton(onClick = { /*TODO*/ }) {
                                 Icon(
-                                    painter = painterResource(id = R.drawable.ic_menu_icon),
-                                    contentDescription = stringResource(id = R.string.ic_menu_icon_content_desc)
+                                    painter = painterResource(id = R.drawable.ic_menu),
+                                    contentDescription = stringResource(id = R.string.ic_menu_content_desc)
                                 )
                             }
                         },
                         actions = {
                             IconButton(onClick = { /*TODO*/ }) {
                                 Icon(
-                                    painter = painterResource(id = R.drawable.ic_filter_config_icon),
-                                    contentDescription = stringResource(id = R.string.ic_filter_config_icon_content_desc)
+                                    painter = painterResource(id = R.drawable.ic_discover_tune),
+                                    contentDescription = stringResource(id = R.string.ic_discover_tune_content_desc)
                                 )
                             }
                         },
@@ -86,19 +86,19 @@ fun HomePageView(navController: NavController) {
                 val navbarItems = listOf(
                     NavItem(
                         R.string.home_bottom_bar_item_browse,
-                        R.drawable.ic_home_icon, R.string.ic_home_icon_content_desc
+                        R.drawable.ic_dashboard, R.string.ic_dashboard_content_desc
                     ),
                     NavItem(
                         R.string.home_bottom_bar_item_search,
-                        R.drawable.ic_search_glyph, R.string.ic_search_glyph_content_desc
+                        R.drawable.ic_search, R.string.ic_search_content_desc
                     ),
                     NavItem(
                         R.string.home_bottom_bar_item_chats,
-                        R.drawable.ic_chat_bubbles, R.string.ic_chat_bubbles_content_desc
+                        R.drawable.ic_forum, R.string.ic_forum_content_desc
                     ),
                     NavItem(
                         R.string.home_bottom_bar_item_account,
-                        R.drawable.ic_user_circle, R.string.ic_user_circle_content_desc
+                        R.drawable.ic_person, R.string.ic_person_content_desc
                     )
                 )
                 NavigationBar(tonalElevation = 0.dp) {

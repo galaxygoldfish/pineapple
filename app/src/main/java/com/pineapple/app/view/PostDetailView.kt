@@ -98,6 +98,7 @@ fun PostDetailView(
             )
         }
     ) {
+        it.calculateBottomPadding() //just to stop android studio error 🙄
         LazyColumn {
             requestStatus.let { request ->
                 when (request.value?.status) {
@@ -205,7 +206,6 @@ fun PostDetailView(
                                             AsyncImage(
                                                 model = ImageRequest.Builder(LocalContext.current)
                                                     .data(post.url)
-                                                    .placeholder(R.drawable.placeholder_image)
                                                     .crossfade(true)
                                                     .build().data,
                                                 contentDescription = null,
@@ -235,14 +235,6 @@ fun PostDetailView(
                                             )
                                     ) {
                                         Row {
-                                            Icon(
-                                                painter = painterResource(id = R.drawable.ic_comments_bubble),
-                                                contentDescription = stringResource(id = R.string.ic_comments_bubble_content_desc),
-                                                modifier = Modifier
-                                                    .padding(start = 18.dp)
-                                                    .size(16.dp),
-                                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
                                             Text(
                                                 text = String.format(
                                                     stringResource(id = R.string.post_view_comments_overview_format),
@@ -260,8 +252,8 @@ fun PostDetailView(
                                         ) {
                                             IconButton(onClick = { /*TODO*/ }) {
                                                 Icon(
-                                                    painter = painterResource(id = R.drawable.ic_thumbs_up),
-                                                    contentDescription = stringResource(id = R.string.ic_thumbs_up_content_desc),
+                                                    painter = painterResource(id = R.drawable.ic_thumb_up),
+                                                    contentDescription = stringResource(id = R.string.ic_thumb_up_content_desc),
                                                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                                     modifier = Modifier.size(17.dp)
                                                 )
@@ -274,8 +266,8 @@ fun PostDetailView(
                                             )
                                             IconButton(onClick = { /*TODO*/ }) {
                                                 Icon(
-                                                    painter = painterResource(id = R.drawable.ic_thumbs_down),
-                                                    contentDescription = stringResource(id = R.string.ic_thumbs_down_content_desc),
+                                                    painter = painterResource(id = R.drawable.ic_thumb_down),
+                                                    contentDescription = stringResource(id = R.string.ic_thumb_down_content_desc),
                                                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                                     modifier = Modifier.size(17.dp)
                                                 )

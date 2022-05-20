@@ -80,8 +80,8 @@ fun SearchView(navController: NavController) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_search_glyph),
-                    contentDescription = stringResource(id = R.string.ic_search_glyph_content_desc),
+                    painter = painterResource(id = R.drawable.ic_search),
+                    contentDescription = stringResource(id = R.string.ic_search_content_desc),
                     modifier = Modifier.padding(15.dp)
                 )
                 TextOnlyTextField(
@@ -104,15 +104,13 @@ fun SearchView(navController: NavController) {
             AnimatedVisibility(visible = viewModel.currentSearchQuery.text.isNotEmpty()) {
                 val categories = listOf(
                     R.string.search_category_all,
-                    R.string.search_category_community, R.string.search_category_text,
-                    R.string.search_category_image, R.string.search_category_video,
-                    R.string.search_category_users, R.string.search_category_link
+                    R.string.search_category_post,
+                    R.string.search_category_community,
+                    R.string.search_category_users
                 )
                 val icons = listOf(
-                    R.drawable.ic_all_star, R.drawable.ic_user_group,
-                    R.drawable.ic_text_icon, R.drawable.ic_image_gallery,
-                    R.drawable.ic_video_camera, R.drawable.ic_user_icon,
-                    R.drawable.ic_link_indicator
+                    R.drawable.ic_auto_awesome, R.drawable.ic_article,
+                    R.drawable.ic_atr_dots, R.drawable.ic_group
                 )
                 Column {
                     LazyRow(
@@ -153,8 +151,8 @@ fun SearchView(navController: NavController) {
                 Column {
                     Row {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_trending_indicator),
-                            contentDescription = stringResource(id = R.string.ic_trending_indicator_content_desc),
+                            painter = painterResource(id = R.drawable.ic_trending_up),
+                            contentDescription = stringResource(id = R.string.ic_trending_up_content_desc),
                             tint = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier.padding(start = 21.dp, top = 5.dp)
                         )
