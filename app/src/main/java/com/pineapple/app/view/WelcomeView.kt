@@ -22,10 +22,11 @@ fun WelcomeView(navController: NavController) {
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_pineapple_color),
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_pineapple_transparent),
                     contentDescription = stringResource(id = R.string.app_name),
-                    modifier = Modifier.padding(top = 40.dp)
+                    modifier = Modifier.padding(top = 40.dp),
+                    tint = MaterialTheme.colorScheme.secondary
                 )
                 Text(
                     text = stringResource(id = R.string.app_name),
@@ -44,8 +45,8 @@ fun WelcomeView(navController: NavController) {
                         .padding(top = 30.dp)
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_reddit_logo),
-                        contentDescription = stringResource(id = R.string.ic_reddit_logo_content_desc)
+                        painter = painterResource(id = R.drawable.ic_login),
+                        contentDescription = stringResource(id = R.string.ic_login_content_desc)
                     )
                     Text(
                         text = stringResource(id = R.string.welcome_reddit_log_in_button),
@@ -62,8 +63,8 @@ fun WelcomeView(navController: NavController) {
                         .padding(top = 10.dp)
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_user_icon),
-                        contentDescription = stringResource(id = R.string.ic_user_icon_content_desc)
+                        painter = painterResource(id = R.drawable.ic_person),
+                        contentDescription = stringResource(id = R.string.ic_person_content_desc)
                     )
                     Text(
                         text = stringResource(id = R.string.welcome_continue_guest_button),
@@ -72,13 +73,13 @@ fun WelcomeView(navController: NavController) {
                     )
                 }
             }
-            Image(
-                painter = painterResource(id = R.drawable.ic_welcome_leaves),
-                contentDescription = stringResource(id = R.string.ic_welcome_leaves_content_desc),
-                contentScale = ContentScale.FillWidth,
+            Icon(
+                painter = painterResource(id = R.drawable.ic_leaves_transparent),
+                contentDescription = stringResource(id = R.string.ic_leaves_transparent_content_desc),
                 modifier = Modifier
                     .fillMaxWidth(0.75F)
-                    .align(Alignment.BottomEnd)
+                    .align(Alignment.BottomEnd),
+                tint = MaterialTheme.colorScheme.secondary
             )
         }
     }
