@@ -20,7 +20,7 @@ fun PineappleTheme(useDarkTheme: Boolean = isSystemInDarkTheme(), content: @Comp
 		if (!useDarkTheme) PineappleLight else PineappleDark
 	}
 	MaterialTheme(
-		colorScheme = colors,
+		colorScheme = OceanicDark,
 		typography = AppTypography,
 		content = content
 	)

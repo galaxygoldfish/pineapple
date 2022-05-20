@@ -172,7 +172,7 @@ fun PostDetailView(
                                         } -> {
                                             Card(
                                                 shape = RoundedCornerShape(10.dp),
-                                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
                                                 modifier = Modifier
                                                     .fillMaxWidth()
                                                     .padding(horizontal = 20.dp, vertical = 15.dp),

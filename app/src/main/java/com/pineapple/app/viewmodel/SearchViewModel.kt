@@ -20,6 +20,7 @@ class SearchViewModel : ViewModel() {
 
     private val networkService by lazy { NetworkServiceBuilder.apiService() }
     var currentSearchQuery by mutableStateOf(TextFieldValue())
+    var lastUpdateSearch by mutableStateOf(System.currentTimeMillis())
     var currentSearchFilter by mutableStateOf(0)
     var currentPostList = mutableStateListOf<PostItem>()
 
@@ -37,7 +38,7 @@ class SearchViewModel : ViewModel() {
         when (currentSearchFilter) {
             0 -> {
                 val response = networkService.searchPosts(currentSearchQuery.text)
-                response.data.children?.let {
+                response.data.children.let {
                     currentPostList.apply {
                         clear()
                         addAll(it)

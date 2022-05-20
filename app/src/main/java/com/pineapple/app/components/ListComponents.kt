@@ -23,9 +23,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.min
+import androidx.navigation.NavController
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.pineapple.app.NavDestination
 import com.pineapple.app.R
 import com.pineapple.app.model.reddit.CommentData
 import com.pineapple.app.model.reddit.PostData
@@ -46,7 +48,7 @@ fun TextPostCard(postData: PostData, onClick: () -> Unit) {
         ) {
             Card(
                 shape = RoundedCornerShape(10.dp),
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(0.8F),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(0.8F)),
                 modifier = Modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp),
                 onClick = onClick
             ) {
@@ -137,13 +139,16 @@ fun PostCardIconButton(
 }
 
 @Composable
-fun SubredditListCard(item: SubredditItem) {
+fun SubredditListCard(item: SubredditItem, navController: NavController) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 5.dp)
             .clip(RoundedCornerShape(10.dp))
-            .background(MaterialTheme.colorScheme.secondaryContainer.copy(0.4F)),
+            .background(MaterialTheme.colorScheme.secondaryContainer.copy(0.4F))
+            .clickable {
+                navController.navigate("${NavDestination.SubredditView}/${item.data.title}")
+            },
         verticalAlignment = Alignment.CenterVertically
     ) {
         val communityIcon = item.data.iconUrl.replace(";", "").replace("amp", "")

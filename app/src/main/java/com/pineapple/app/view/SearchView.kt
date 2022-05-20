@@ -46,6 +46,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 @Composable
 fun SearchView(navController: NavController) {
@@ -90,7 +91,10 @@ fun SearchView(navController: NavController) {
                         viewModel.apply {
                             currentSearchQuery = it
                             CoroutineScope(Dispatchers.Main).launch {
-                                updateSearchResults()
+                                if (abs(lastUpdateSearch - System.currentTimeMillis()) > 1000L) {
+                                    updateSearchResults()
+                                    lastUpdateSearch = System.currentTimeMillis()
+                                }
                             }
                         }
                     },
@@ -162,7 +166,10 @@ fun SearchView(navController: NavController) {
                     }
                     LazyColumn(modifier = Modifier.padding(top = 10.dp)) {
                         itemsIndexed(topSubredditList) { _, item ->
-                            SubredditListCard(item = item)
+                            SubredditListCard(
+                                item = item,
+                                navController = navController
+                            )
                         }
                     }
                 }
