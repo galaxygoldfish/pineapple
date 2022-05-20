@@ -1,7 +1,7 @@
-@file:SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 package com.pineapple.app.view
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
@@ -133,33 +133,35 @@ fun HomePageView(navController: NavController) {
                     }
                 }
             },
-            content = {  _: PaddingValues ->
-                NavHost(
-                    navController = bottomNavController,
-                    startDestination = BottomNavDestinations.Home,
-                    modifier = Modifier.padding(bottom = 80.dp)
-                ) {
-                    composable(BottomNavDestinations.Home) {
-                        PostListView(
-                            navController = navController,
-                            subreddit = "all",
-                            sort = "hot"
-                        )
-                    }
-                    composable("${BottomNavDestinations.Home}/{sub}/{sort}") {
-                        it.arguments?.let { args ->
+            content = {
+                Column(modifier = Modifier.padding(top = it.calculateTopPadding())) {
+                    NavHost(
+                        navController = bottomNavController,
+                        startDestination = BottomNavDestinations.Home,
+                        modifier = Modifier.padding(bottom = 80.dp)
+                    ) {
+                        composable(BottomNavDestinations.Home) {
                             PostListView(
                                 navController = navController,
-                                subreddit = args.getString("sub")!!,
-                                sort = args.getString("sort")!!
+                                subreddit = "all",
+                                sort = "hot"
                             )
                         }
+                        composable("${BottomNavDestinations.Home}/{sub}/{sort}") {
+                            it.arguments?.let { args ->
+                                PostListView(
+                                    navController = navController,
+                                    subreddit = args.getString("sub")!!,
+                                    sort = args.getString("sort")!!
+                                )
+                            }
+                        }
+                        composable(BottomNavDestinations.Search) {
+                            SearchView(navController)
+                        }
+                        // Chats
+                        // Account
                     }
-                    composable(BottomNavDestinations.Search) {
-                        SearchView(navController)
-                    }
-                    // Chats
-                    // Account
                 }
             }
         )

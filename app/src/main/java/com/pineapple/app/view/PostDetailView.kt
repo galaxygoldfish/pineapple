@@ -98,8 +98,7 @@ fun PostDetailView(
             )
         }
     ) {
-        it.calculateBottomPadding() //just to stop android studio error 🙄
-        LazyColumn {
+        LazyColumn(modifier = Modifier.padding(top = it.calculateTopPadding())) {
             requestStatus.let { request ->
                 when (request.value?.status) {
                     RequestStatus.LOADING -> {
