@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModel
 class HomePageViewModel : ViewModel() {
 
     var selectedTabItem by mutableStateOf(0)
-    val currentSortType = mutableStateOf("hot")
-    val currentSortTime = mutableStateOf("")
+    val currentSortType = mutableStateOf("Hot")
+    val currentSortTime = mutableStateOf("All time")
 
 }

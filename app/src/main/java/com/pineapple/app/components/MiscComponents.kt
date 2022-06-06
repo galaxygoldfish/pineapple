@@ -71,13 +71,15 @@ fun Chip(
                 painter = it,
                 contentDescription = contentDescription,
                 modifier = Modifier.padding(8.dp)
-                    .size(20.dp)
+                    .size(20.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
         Text(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(end = 10.dp)
+            modifier = Modifier.padding(end = 10.dp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }

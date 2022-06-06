@@ -27,7 +27,8 @@ import kotlinx.coroutines.launch
 fun PostListView(
     navController: NavController,
     subreddit: String,
-    sort: String
+    sort: String,
+    time: String? = "hour"
 ) {
     val viewModel = LocalContext.current.getViewModel(PostListViewModel::class.java)
     val currentPosts = viewModel.posts(subreddit, sort).collectAsLazyPagingItems()

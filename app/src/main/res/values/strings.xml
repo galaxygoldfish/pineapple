@@ -57,6 +57,7 @@
     <string name="home_filter_sheet_time_month">Month</string>
     <string name="home_filter_sheet_time_year">Year</string>
     <string name="home_filter_sheet_time_all">All time</string>
+    <string name="home_filter_sheet_apply_button">Apply filters</string>
 
     <string name="post_view_title_placeholder_text">View post</string>
     <string name="post_view_link_proceed_text">Visit site →</string>

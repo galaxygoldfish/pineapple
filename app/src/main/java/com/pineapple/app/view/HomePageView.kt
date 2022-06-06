@@ -14,10 +14,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults.smallTopAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -45,13 +48,14 @@ fun HomePageView(navController: NavController) {
     val viewModel = LocalContext.current.getViewModel(HomePageViewModel::class.java)
     val bottomNavController = rememberNavController()
     val asynchronousScope = rememberCoroutineScope()
-    val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Expanded)
+    val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     rememberSystemUiController().setSystemBarsColor(MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp))
     ModalBottomSheetLayout(
         sheetContent = {
             FilterBottomSheet(
                 timePeriod = viewModel.currentSortTime,
-                sortType = viewModel.currentSortType
+                sortType = viewModel.currentSortType,
+                bottomSheetState = bottomSheetState
             )
         },
         sheetState = bottomSheetState
@@ -155,7 +159,8 @@ fun HomePageView(navController: NavController) {
                             PostListView(
                                 navController = navController,
                                 subreddit = "all",
-                                sort = "hot"
+                                sort = viewModel.currentSortType.value.toLowerCase(Locale.current),
+                                time = viewModel.currentSortTime.value,
                             )
                         }
                         composable("${BottomNavDestinations.Home}/{sub}/{sort}") {
