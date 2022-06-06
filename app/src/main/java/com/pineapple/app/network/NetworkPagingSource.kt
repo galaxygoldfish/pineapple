@@ -16,7 +16,8 @@ data class RedditPageStore(val before: String?, val after: String?)
 class NetworkPagingSource(
     private val service: NetworkService,
     private val subreddit: String,
-    private val sort: String
+    private val sort: String,
+    private val time: String
 ) : PagingSource<String, PostItem>() {
 
     private val keys: MutableMap<Int, RedditPageStore> = mutableMapOf()
@@ -32,7 +33,7 @@ class NetworkPagingSource(
         val completableDeferred = CompletableDeferred<LoadResult<String, PostItem>>()
         try {
             Log.e("0", "starting request")
-            service.fetchSubreddit(name = subreddit, sort = sort, after = params.key)
+            service.fetchSubreddit(name = subreddit, sort = sort, time = time, after = params.key)
                 .enqueue(object : Callback<PostListing> {
                     override fun onResponse(call: Call<PostListing>, response: Response<PostListing>) {
                         Log.e("0", "response received")

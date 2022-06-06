@@ -15,6 +15,7 @@ interface NetworkService {
     fun fetchSubreddit(
         @Path("name") name: String,
         @Path("sort") sort: String,
+        @Query("time") time: String,
         @Query("after") after: String? = null
     ) : Call<PostListing>
 

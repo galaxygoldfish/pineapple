@@ -108,12 +108,18 @@ fun PostDetailView(
                 when (request.value?.status) {
                     RequestStatus.LOADING -> {
                         item {
-                            Column(
-                                modifier = Modifier.fillMaxSize(),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
+                            val localConfig = LocalConfiguration.current
+                            Box(
+                                modifier = Modifier
+                                    .size(
+                                        height = localConfig.screenHeightDp.dp,
+                                        width = localConfig.screenWidthDp.dp)
                             ) {
-                                CircularProgressIndicator()
+                                CircularProgressIndicator(
+                                    modifier = Modifier.align(Alignment.Center),
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    strokeWidth = 3.dp
+                                )
                             }
                         }
                     }

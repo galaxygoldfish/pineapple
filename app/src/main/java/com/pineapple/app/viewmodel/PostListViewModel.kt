@@ -17,9 +17,9 @@ class PostListViewModel : ViewModel() {
     private val networkService by lazy { NetworkServiceBuilder.apiService() }
     var isRefreshingData by mutableStateOf(false)
 
-    fun posts(name: String, sort: String): Flow<PagingData<PostItem>>
+    fun posts(name: String, sort: String, time: String): Flow<PagingData<PostItem>>
         = Pager(PagingConfig(3)) {
-            NetworkPagingSource(networkService, name, sort)
+            NetworkPagingSource(networkService, name, sort, time)
         }.flow
 
 }
