@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
+import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material3.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -12,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults.smallTopAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -25,7 +27,9 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.pineapple.app.R
 import com.pineapple.app.components.FilterBottomSheet
 import com.pineapple.app.util.getViewModel
+import com.pineapple.app.util.surfaceColorAtElevation
 import com.pineapple.app.viewmodel.HomePageViewModel
+import kotlinx.coroutines.launch
 
 object BottomNavDestinations {
     const val Home = "home"
@@ -40,8 +44,9 @@ object BottomNavDestinations {
 fun HomePageView(navController: NavController) {
     val viewModel = LocalContext.current.getViewModel(HomePageViewModel::class.java)
     val bottomNavController = rememberNavController()
+    val asynchronousScope = rememberCoroutineScope()
     val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Expanded)
-    rememberSystemUiController().setSystemBarsColor(MaterialTheme.colorScheme.surface)
+    rememberSystemUiController().setSystemBarsColor(MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp))
     ModalBottomSheetLayout(
         sheetContent = {
             FilterBottomSheet(
@@ -54,31 +59,37 @@ fun HomePageView(navController: NavController) {
         Scaffold(
             topBar = {
                 if (viewModel.selectedTabItem != 1) {
-                    CenterAlignedTopAppBar(
-                        title = {
-                            Text(
-                                text = stringResource(id = R.string.home_top_bar_title_default),
-                                style = MaterialTheme.typography.titleLarge
-                            )
-                        },
-                        navigationIcon = {
-                            IconButton(onClick = { /*TODO*/ }) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_menu),
-                                    contentDescription = stringResource(id = R.string.ic_menu_content_desc)
+                    Surface(tonalElevation = 2.dp) {
+                        CenterAlignedTopAppBar(
+                            title = {
+                                Text(
+                                    text = stringResource(id = R.string.home_top_bar_title_default),
+                                    style = MaterialTheme.typography.titleLarge
                                 )
-                            }
-                        },
-                        actions = {
-                            IconButton(onClick = { /*TODO*/ }) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_discover_tune),
-                                    contentDescription = stringResource(id = R.string.ic_discover_tune_content_desc)
-                                )
-                            }
-                        },
-                        colors = smallTopAppBarColors(MaterialTheme.colorScheme.surface)
-                    )
+                            },
+                            navigationIcon = {
+                                IconButton(onClick = { /*TODO*/ }) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_menu),
+                                        contentDescription = stringResource(id = R.string.ic_menu_content_desc)
+                                    )
+                                }
+                            },
+                            actions = {
+                                IconButton(
+                                    onClick = {
+                                        asynchronousScope.launch { bottomSheetState.show() }
+                                    }
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_discover_tune),
+                                        contentDescription = stringResource(id = R.string.ic_discover_tune_content_desc)
+                                    )
+                                }
+                            },
+                            colors = smallTopAppBarColors(MaterialTheme.colorScheme.surface)
+                        )
+                    }
                 }
             },
             bottomBar = {
@@ -101,7 +112,7 @@ fun HomePageView(navController: NavController) {
                         R.drawable.ic_person, R.string.ic_person_content_desc
                     )
                 )
-                NavigationBar(tonalElevation = 0.dp) {
+                NavigationBar(tonalElevation = 2.dp) {
                     navbarItems.forEachIndexed { index, item ->
                         NavigationBarItem(
                             selected = viewModel.selectedTabItem == index,

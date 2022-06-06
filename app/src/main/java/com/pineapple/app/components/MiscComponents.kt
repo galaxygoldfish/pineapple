@@ -2,9 +2,11 @@ package com.pineapple.app.components
 
 import android.content.Context
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
@@ -15,8 +17,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
@@ -27,37 +31,49 @@ import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
+import com.pineapple.app.R
 import com.pineapple.app.model.reddit.PostData
 import com.pineapple.app.util.parseFlair
+import com.pineapple.app.util.surfaceColorAtElevation
 import java.io.File
 
 @Composable
 fun Chip(
     text: String,
-    icon: Painter,
+    icon: Painter? = null,
+    contentDescription: String? = null,
     selected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    unselectedBackground: Color = MaterialTheme.colorScheme.surface
 ) {
     Row(
         modifier = modifier
             .padding(end = 8.dp)
-            .clip(RoundedCornerShape(9.dp))
+            .clip(RoundedCornerShape(7.dp))
             .background(
                 if (selected) {
                     MaterialTheme.colorScheme.secondaryContainer
                 } else {
-                    MaterialTheme.colorScheme.surfaceVariant
+                    unselectedBackground
                 }
             )
-            .clickable { onClick.invoke() },
+            .clickable { onClick.invoke() }
+            .border(
+                width = if (selected) 0.dp else 1.dp,
+                color = if (selected) Color.Transparent else MaterialTheme.colorScheme.outline,
+                shape = RoundedCornerShape(7.dp)
+            ),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            painter = icon,
-            contentDescription = null,
-            modifier = Modifier.padding(8.dp)
-        )
+        icon?.let {
+            Icon(
+                painter = it,
+                contentDescription = contentDescription,
+                modifier = Modifier.padding(8.dp)
+                    .size(20.dp)
+            )
+        }
         Text(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
@@ -95,32 +111,15 @@ fun FlairBar(postData: PostData, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun ExoVideoPlayer(url: String) {
-    val context = LocalContext.current
-    val exoPlayer = remember { getSimpleExoPlayer(context, url) }
-    AndroidView(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(bottom = 20.dp),
-        factory = { context1 ->
-            PlayerView(context1).apply {
-                player = exoPlayer
-            }
-        },
+fun AvatarPlaceholderIcon(modifier: Modifier = Modifier) {
+    Icon(
+        painter = painterResource(id = R.drawable.ic_avatar_placeholder),
+        contentDescription = null,
+        tint = MaterialTheme.colorScheme.primary,
+        modifier = modifier
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.primaryContainer)
+            .size(35.dp)
+            .padding(top = 8.dp)
     )
-}
-
-private fun getSimpleExoPlayer(context: Context, url: String) : ExoPlayer {
-    return ExoPlayer.Builder(context).build().apply {
-        val dataSourceFactory = DefaultDataSourceFactory(
-            context,
-            Util.getUserAgent(context, context.packageName)
-        )
-        val internetVideoItem = MediaItem.fromUri(url)
-        val internetVideoSource = ProgressiveMediaSource
-            .Factory(dataSourceFactory)
-            .createMediaSource(internetVideoItem)
-        addMediaSource(internetVideoSource)
-        prepare()
-    }
 }

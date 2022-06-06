@@ -35,7 +35,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-
     @Composable
     @OptIn(ExperimentalAnimationApi::class)
     fun NavigationHost() {

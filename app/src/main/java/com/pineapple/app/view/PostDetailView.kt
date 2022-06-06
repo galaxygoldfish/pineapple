@@ -4,6 +4,7 @@ import android.content.Intent
 import android.graphics.Paint
 import android.net.Uri
 import android.text.Html
+import android.text.TextUtils.replace
 import android.util.Log
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.Orientation
@@ -22,6 +23,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -38,12 +41,14 @@ import com.google.gson.GsonBuilder
 import com.google.gson.internal.LinkedTreeMap
 import com.pineapple.app.R
 import com.pineapple.app.components.CommentBubble
+import com.pineapple.app.components.ExoVideoPlayer
 import com.pineapple.app.components.FlairBar
 import com.pineapple.app.model.RequestResult
 import com.pineapple.app.model.RequestStatus
 import com.pineapple.app.model.reddit.*
 import com.pineapple.app.util.getViewModel
 import com.pineapple.app.util.prettyNumber
+import com.pineapple.app.util.toDp
 import com.pineapple.app.viewmodel.PostDetailViewModel
 import org.intellij.lang.annotations.JdkConstants
 import org.json.JSONArray
@@ -149,40 +154,49 @@ fun PostDetailView(
                                             )
                                         }
                                     }
-                                    FlairBar(
-                                        postData = post,
-                                        modifier = Modifier.padding(start = 20.dp)
-                                    )
-                                    when {
-                                        post.selftext.isNotEmpty() -> {
-                                            Text(
-                                                text = post.selftext,
-                                                style = MaterialTheme.typography.bodyMedium,
-                                                modifier = Modifier.padding(
-                                                    start = 22.dp,
-                                                    end = 20.dp,
-                                                    top = 20.dp,
-                                                    bottom = 20.dp
-                                                )
-                                            )
-                                        }
-                                        post.urlOverriddenByDest.let {
-                                            it.isNotEmpty() && !it.contains("png") &&
-                                                    !it.contains("jpg") && !it.contains("v.redd.it")
-                                        } -> {
-                                            Card(
-                                                shape = RoundedCornerShape(10.dp),
-                                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(horizontal = 20.dp, vertical = 15.dp),
-                                                onClick = {
-                                                    Intent(Intent.ACTION_VIEW).apply {
-                                                        data = Uri.parse(post.url)
-                                                        navController.context.startActivity(this)
-                                                    }
+                                }
+                            }
+                            item {
+                                FlairBar(
+                                    postData = post,
+                                    modifier = Modifier.padding(start = 20.dp)
+                                )
+                            }
+                            item {
+                                when (post.postHint) {
+                                    "link" -> {
+                                        Card(
+                                            shape = RoundedCornerShape(10.dp),
+                                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 20.dp, vertical = 15.dp),
+                                            onClick = {
+                                                Intent(Intent.ACTION_VIEW).apply {
+                                                    data = Uri.parse(post.url)
+                                                    navController.context.startActivity(this)
                                                 }
-                                            ) {
+                                            }
+                                        ) {
+                                            Row {
+                                                AsyncImage(
+                                                    model = ImageRequest.Builder(LocalContext.current)
+                                                        .data(
+                                                            post.preview?.images?.get(0)?.source?.url?.replace(
+                                                                "amp;",
+                                                                ""
+                                                            )
+                                                        )
+                                                        .crossfade(true)
+                                                        .fallback(R.drawable.ic_event_available)
+                                                        .build().data,
+                                                    contentDescription = null,
+                                                    modifier = Modifier
+                                                        .width(100.dp)
+                                                        .height(65.dp)
+                                                        .clip(RoundedCornerShape(10.dp)),
+                                                    contentScale = ContentScale.FillHeight,
+                                                )
                                                 Column(
                                                     modifier = Modifier.padding(
                                                         vertical = 10.dp,
@@ -200,24 +214,59 @@ fun PostDetailView(
                                                     )
                                                 }
                                             }
+
                                         }
-                                        post.url.isNotEmpty() -> {
-                                            AsyncImage(
-                                                model = ImageRequest.Builder(LocalContext.current)
-                                                    .data(post.url)
-                                                    .crossfade(true)
-                                                    .build().data,
-                                                contentDescription = null,
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(horizontal = 20.dp, vertical = 20.dp)
-                                                    .clip(RoundedCornerShape(10.dp)),
-                                                contentScale = ContentScale.FillWidth,
+                                    }
+                                    "image" -> {
+                                        AsyncImage(
+                                            model = ImageRequest.Builder(LocalContext.current)
+                                                .data(post.url)
+                                                .crossfade(true)
+                                                .build().data,
+                                            contentDescription = null,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 20.dp, vertical = 20.dp)
+                                                .clip(RoundedCornerShape(10.dp)),
+                                            contentScale = ContentScale.FillWidth,
+                                        )
+                                    }
+                                    "hosted:video" -> {
+                                        post.secureMedia?.reddit_video?.let { redditVideo ->
+                                            val context = LocalContext.current
+                                            val ratio = redditVideo.width.toInt().toDp(context) / redditVideo.height.toInt().toDp(context)
+                                            val actualWidth = LocalConfiguration.current.screenWidthDp - 40
+                                            val calculatedHeight = actualWidth / ratio
+                                            redditVideo.fallback_url
+                                                .replace("amp;", "")
+                                                .ifEmpty { post.url }
+                                                .let { url ->
+                                                    ExoVideoPlayer(
+                                                        url = url,
+                                                        modifier = Modifier
+                                                            .padding(horizontal = 20.dp, vertical = 20.dp)
+                                                            .clip(RoundedCornerShape(10.dp))
+                                                            .fillMaxWidth()
+                                                            .height(calculatedHeight.toInt().dp)
+                                                    )
+                                                }
+                                        }
+                                    }
+                                    else -> {
+                                        Text(
+                                            text = post.selftext,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            modifier = Modifier.padding(
+                                                start = 22.dp,
+                                                end = 20.dp,
+                                                top = 20.dp,
+                                                bottom = 20.dp
                                             )
-                                        }
+                                        )
                                     }
                                 }
                             }
+                        }
                             item {
                                 Column(
                                     modifier = Modifier.fillMaxWidth()
@@ -225,7 +274,8 @@ fun PostDetailView(
                                     Row(
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.fillMaxWidth()
+                                        modifier = Modifier
+                                            .fillMaxWidth()
                                             .padding(start = 20.dp, end = 18.dp)
                                             .border(
                                                 width = 2.dp,
@@ -233,13 +283,21 @@ fun PostDetailView(
                                                 color = MaterialTheme.colorScheme.surfaceVariant
                                             )
                                     ) {
-                                        Row {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.ic_forum),
+                                                contentDescription = stringResource(id = R.string.ic_forum_content_desc),
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier
+                                                    .padding(start = 15.dp)
+                                                    .size(17.dp)
+                                            )
                                             Text(
                                                 text = String.format(
                                                     stringResource(id = R.string.post_view_comments_overview_format),
-                                                    post.numComments
-                                                        .toInt()
-                                                        .prettyNumber()
+                                                    postData?.numComments
+                                                        ?.toInt()
+                                                        ?.prettyNumber()
                                                 ),
                                                 style = MaterialTheme.typography.titleSmall,
                                                 modifier = Modifier.padding(start = 12.dp)
@@ -258,7 +316,7 @@ fun PostDetailView(
                                                 )
                                             }
                                             Text(
-                                                text = min(post.ups, Integer.MAX_VALUE.toLong())
+                                                text = min(postData?.ups ?: 0, Integer.MAX_VALUE.toLong())
                                                     .toInt()
                                                     .prettyNumber(),
                                                 style = MaterialTheme.typography.titleSmall
@@ -291,4 +349,3 @@ fun PostDetailView(
             }
         }
     }
-}
