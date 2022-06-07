@@ -9,35 +9,36 @@ import retrofit2.converter.scalars.ScalarsConverterFactory
 
 object NetworkServiceBuilder {
 
-    private const val BASE_URL = "https://api.reddit.com/"
+    const val REDDIT_BASE_URL = "https://api.reddit.com/"
+    const val GFYCAT_BASE_URL = "https://api.gfycat.com/v1/gfycats/"
 
     private val gsonObject = GsonBuilder().setLenient().create()
     private val okHttpClient = OkHttpClient.Builder().addInterceptor(
         HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
     ).build()
 
-    private fun getRetrofit(): Retrofit {
+    fun getRetrofit(baseUrl: String): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(baseUrl)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(gsonObject))
             .build()
     }
 
-    private fun getRetrofitRaw(): Retrofit {
+    fun getRetrofitRaw(baseUrl: String): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(baseUrl)
             .client(okHttpClient)
             .addConverterFactory(ScalarsConverterFactory.create())
             .build()
     }
 
-    fun apiService(): NetworkService {
-        return getRetrofit().create(NetworkService::class.java)
+    inline fun <reified T> apiService(baseUrl: String): T {
+        return getRetrofit(baseUrl).create(T::class.java)
     }
 
-    fun rawApiService(): NetworkService {
-        return getRetrofitRaw().create(NetworkService::class.java)
+    inline fun <reified T> rawApiService(baseUrl: String): T {
+        return getRetrofitRaw(baseUrl).create(T::class.java)
     }
 
 

@@ -1,4 +1,4 @@
-package com.pineapple.app.model
+package com.pineapple.app.paging
 
 enum class RequestStatus {
     LOADING,

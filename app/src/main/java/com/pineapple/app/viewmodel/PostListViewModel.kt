@@ -8,13 +8,16 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.pineapple.app.model.reddit.PostItem
-import com.pineapple.app.network.NetworkPagingSource
 import com.pineapple.app.network.NetworkServiceBuilder
+import com.pineapple.app.network.NetworkServiceBuilder.REDDIT_BASE_URL
+import com.pineapple.app.network.NetworkServiceBuilder.apiService
+import com.pineapple.app.network.RedditNetworkService
+import com.pineapple.app.paging.NetworkPagingSource
 import kotlinx.coroutines.flow.Flow
 
 class PostListViewModel : ViewModel() {
 
-    private val networkService by lazy { NetworkServiceBuilder.apiService() }
+    private val networkService by lazy { apiService<RedditNetworkService>(REDDIT_BASE_URL) }
     var isRefreshingData by mutableStateOf(false)
 
     fun posts(name: String, sort: String, time: String): Flow<PagingData<PostItem>>

@@ -125,6 +125,7 @@ fun SearchView(navController: NavController) {
                             )
                         }
                     }
+                    // All
                     AnimatedVisibility(visible = viewModel.currentSearchFilter == 0) {
                         LazyColumn(
                             modifier = Modifier.padding(top = 15.dp)
@@ -132,18 +133,29 @@ fun SearchView(navController: NavController) {
 
                         }
                     }
-                    LazyColumn(
-                        modifier = Modifier.padding(top = 15.dp)
-                    ) {
-                        itemsIndexed(viewModel.currentPostList) { _, item ->
-                            TextPostCard(postData = item.data) {
-                                val permalink = item.data.permalink.split("/")
-                                val sub = permalink[2]
-                                val uid = permalink[4]
-                                val link = permalink[5]
-                                navController.navigate("${NavDestination.PostDetailView}/$sub/$uid/$link")
+                    // Posts
+                    AnimatedVisibility(visible = viewModel.currentSearchFilter == 1) {
+                        LazyColumn(
+                            modifier = Modifier.padding(top = 15.dp)
+                        ) {
+                            itemsIndexed(viewModel.currentPostList) { _, item ->
+                                TextPostCard(postData = item.data) {
+                                    val permalink = item.data.permalink.split("/")
+                                    val sub = permalink[2]
+                                    val uid = permalink[4]
+                                    val link = permalink[5]
+                                    navController.navigate("${NavDestination.PostDetailView}/$sub/$uid/$link")
+                                }
                             }
                         }
+                    }
+                    // Communities
+                    AnimatedVisibility(visible = viewModel.currentSearchFilter == 2) {
+
+                    }
+                    // Users
+                    AnimatedVisibility(visible = viewModel.currentSearchFilter == 3) {
+
                     }
                 }
             }

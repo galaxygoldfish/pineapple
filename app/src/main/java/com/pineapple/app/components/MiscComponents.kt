@@ -17,10 +17,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
@@ -36,6 +42,10 @@ import com.pineapple.app.model.reddit.PostData
 import com.pineapple.app.util.parseFlair
 import com.pineapple.app.util.surfaceColorAtElevation
 import java.io.File
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.min
+import kotlin.math.sin
 
 @Composable
 fun Chip(
@@ -124,4 +134,47 @@ fun AvatarPlaceholderIcon(modifier: Modifier = Modifier) {
             .size(35.dp)
             .padding(top = 8.dp)
     )
+}
+
+// https://github.com/pz64/RoundedStarShape-JetPack-Compose/blob/main/compose-polygonshape/src/main/java/com/pz64/shape/RoundedStarShape.kt
+class RoundedStarShape(
+    private val sides: Int,
+    private val curve: Double = 0.09,
+    private val rotation: Float = 0f,
+    iterations: Int = 360,
+) : Shape {
+
+    private companion object {
+        const val TWO_PI = 2 * PI
+    }
+
+    private val steps = (TWO_PI) / min(iterations, 360)
+    private val rotationDegree = (PI / 180) * rotation
+
+    override fun createOutline(
+        size: Size,
+        layoutDirection: LayoutDirection,
+        density: Density
+    ): Outline = Outline.Generic(Path().apply {
+        val r = min(size.height, size.width) * 0.4 * mapRange(1.0, 0.0, 0.5, 1.0, curve)
+        val xCenter = size.width * .5f
+        val yCenter = size.height * .5f
+        moveTo(xCenter, yCenter)
+        var t = 0.0
+        while (t <= TWO_PI) {
+            val x = r * (cos(t - rotationDegree) * (1 + curve * cos(sides * t)))
+            val y = r * (sin(t - rotationDegree) * (1 + curve * cos(sides * t)))
+            lineTo((x + xCenter).toFloat(), (y + yCenter).toFloat())
+
+            t += steps
+        }
+        val x = r * (cos(t - rotationDegree) * (1 + curve * cos(sides * t)))
+        val y = r * (sin(t - rotationDegree) * (1 + curve * cos(sides * t)))
+        lineTo((x + xCenter).toFloat(), (y + yCenter).toFloat())
+
+    })
+
+    private fun mapRange(a: Double, b: Double, c: Double, d: Double, x: Double): Double {
+        return (x - a) / (b - a) * (d - c) + c
+    }
 }

@@ -1,17 +1,10 @@
 package com.pineapple.app.view
 
 import android.content.Intent
-import android.graphics.Paint
 import android.net.Uri
-import android.text.Html
-import android.text.TextUtils.replace
-import android.util.Log
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -21,9 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -34,26 +25,21 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.accompanist.flowlayout.FlowColumn
-import com.google.accompanist.flowlayout.SizeMode
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.google.gson.internal.LinkedTreeMap
 import com.pineapple.app.R
 import com.pineapple.app.components.CommentBubble
 import com.pineapple.app.components.ExoVideoPlayer
 import com.pineapple.app.components.FlairBar
-import com.pineapple.app.model.RequestResult
-import com.pineapple.app.model.RequestStatus
+import com.pineapple.app.components.GifVideoPlayer
+import com.pineapple.app.model.gfycat.GfycatObject
+import com.pineapple.app.paging.RequestResult
+import com.pineapple.app.paging.RequestStatus
 import com.pineapple.app.model.reddit.*
+import com.pineapple.app.util.calculateRatioHeight
 import com.pineapple.app.util.getViewModel
 import com.pineapple.app.util.prettyNumber
-import com.pineapple.app.util.toDp
 import com.pineapple.app.viewmodel.PostDetailViewModel
-import org.intellij.lang.annotations.JdkConstants
-import org.json.JSONArray
-import org.json.JSONObject
-import org.w3c.dom.Comment
 import java.lang.Long.min
 
 @Composable
@@ -104,250 +90,54 @@ fun PostDetailView(
         }
     ) {
         LazyColumn(modifier = Modifier.padding(top = it.calculateTopPadding())) {
-            requestStatus.let { request ->
-                when (request.value?.status) {
-                    RequestStatus.LOADING -> {
-                        item {
-                            val localConfig = LocalConfiguration.current
-                            Box(
-                                modifier = Modifier
-                                    .size(
-                                        height = localConfig.screenHeightDp.dp,
-                                        width = localConfig.screenWidthDp.dp)
-                            ) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.align(Alignment.Center),
-                                    color = MaterialTheme.colorScheme.secondary,
-                                    strokeWidth = 3.dp
+            when (requestStatus.value?.status) {
+                RequestStatus.LOADING -> {
+                    item {
+                        val localConfig = LocalConfiguration.current
+                        Box(
+                            modifier = Modifier
+                                .size(
+                                    height = localConfig.screenHeightDp.dp,
+                                    width = localConfig.screenWidthDp.dp
                                 )
-                            }
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.align(Alignment.Center),
+                                color = MaterialTheme.colorScheme.secondary,
+                                strokeWidth = 3.dp
+                            )
                         }
                     }
-                    RequestStatus.SUCCESS -> {
-                        postData?.let { post ->
-                            item {
-                                Column {
-                                    Text(
-                                        text = post.title,
-                                        style = MaterialTheme.typography.displaySmall,
-                                        modifier = Modifier
-                                            .padding(
-                                                start = 20.dp,
-                                                top = 25.dp,
-                                                end = 18.dp
-                                            )
-                                    )
-                                    Row(modifier = Modifier.padding(top = 15.dp, start = 21.dp)) {
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.ic_avatar_placeholder),
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier
-                                                .clip(CircleShape)
-                                                .background(MaterialTheme.colorScheme.primaryContainer)
-                                                .size(35.dp)
-                                                .padding(top = 5.dp)
-                                        )
-                                        Column(modifier = Modifier.padding(start = 10.dp)) {
-                                            Text(
-                                                text = post.author,
-                                                style = MaterialTheme.typography.labelMedium
-                                            )
-                                            Text(
-                                                text = "r/${post.subreddit}",
-                                                style = MaterialTheme.typography.bodySmall,
-                                                modifier = Modifier.padding(top = 2.dp)
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                            item {
-                                FlairBar(
-                                    postData = post,
-                                    modifier = Modifier.padding(start = 20.dp)
-                                )
-                            }
-                            item {
-                                when (post.postHint) {
-                                    "link" -> {
-                                        Card(
-                                            shape = RoundedCornerShape(10.dp),
-                                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(horizontal = 20.dp, vertical = 15.dp),
-                                            onClick = {
-                                                Intent(Intent.ACTION_VIEW).apply {
-                                                    data = Uri.parse(post.url)
-                                                    navController.context.startActivity(this)
-                                                }
-                                            }
-                                        ) {
-                                            Row {
-                                                AsyncImage(
-                                                    model = ImageRequest.Builder(LocalContext.current)
-                                                        .data(
-                                                            post.preview?.images?.get(0)?.source?.url?.replace(
-                                                                "amp;",
-                                                                ""
-                                                            )
-                                                        )
-                                                        .crossfade(true)
-                                                        .fallback(R.drawable.ic_event_available)
-                                                        .build().data,
-                                                    contentDescription = null,
-                                                    modifier = Modifier
-                                                        .width(100.dp)
-                                                        .height(65.dp)
-                                                        .clip(RoundedCornerShape(10.dp)),
-                                                    contentScale = ContentScale.FillHeight,
-                                                )
-                                                Column(
-                                                    modifier = Modifier.padding(
-                                                        vertical = 10.dp,
-                                                        horizontal = 15.dp
-                                                    )
-                                                ) {
-                                                    Text(
-                                                        text = post.domain,
-                                                        style = MaterialTheme.typography.headlineSmall,
-                                                        textDecoration = TextDecoration.Underline
-                                                    )
-                                                    Text(
-                                                        text = stringResource(id = R.string.post_view_link_proceed_text),
-                                                        style = MaterialTheme.typography.titleMedium
-                                                    )
-                                                }
-                                            }
-
-                                        }
-                                    }
-                                    "image" -> {
-                                        AsyncImage(
-                                            model = ImageRequest.Builder(LocalContext.current)
-                                                .data(post.url)
-                                                .crossfade(true)
-                                                .build().data,
-                                            contentDescription = null,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(horizontal = 20.dp, vertical = 20.dp)
-                                                .clip(RoundedCornerShape(10.dp)),
-                                            contentScale = ContentScale.FillWidth,
-                                        )
-                                    }
-                                    "hosted:video" -> {
-                                        post.secureMedia?.reddit_video?.let { redditVideo ->
-                                            val context = LocalContext.current
-                                            val ratio = redditVideo.width.toInt().toDp(context) / redditVideo.height.toInt().toDp(context)
-                                            val actualWidth = LocalConfiguration.current.screenWidthDp - 40
-                                            val calculatedHeight = actualWidth / ratio
-                                            redditVideo.fallback_url
-                                                .replace("amp;", "")
-                                                .ifEmpty { post.url }
-                                                .let { url ->
-                                                    ExoVideoPlayer(
-                                                        url = url,
-                                                        modifier = Modifier
-                                                            .padding(horizontal = 20.dp, vertical = 20.dp)
-                                                            .clip(RoundedCornerShape(10.dp))
-                                                            .fillMaxWidth()
-                                                            .height(calculatedHeight.toInt().dp)
-                                                    )
-                                                }
-                                        }
-                                    }
-                                    else -> {
-                                        Text(
-                                            text = post.selftext,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            modifier = Modifier.padding(
-                                                start = 22.dp,
-                                                end = 20.dp,
-                                                top = 20.dp,
-                                                bottom = 20.dp
-                                            )
-                                        )
-                                    }
-                                }
-                            }
+                }
+                RequestStatus.SUCCESS -> {
+                    postData?.let { post ->
+                        item {
+                            HeaderBar(post = post)
                         }
-                            item {
-                                Column(
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Row(
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(start = 20.dp, end = 18.dp)
-                                            .border(
-                                                width = 2.dp,
-                                                shape = RoundedCornerShape(10.dp),
-                                                color = MaterialTheme.colorScheme.surfaceVariant
-                                            )
-                                    ) {
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Icon(
-                                                painter = painterResource(id = R.drawable.ic_forum),
-                                                contentDescription = stringResource(id = R.string.ic_forum_content_desc),
-                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                modifier = Modifier
-                                                    .padding(start = 15.dp)
-                                                    .size(17.dp)
-                                            )
-                                            Text(
-                                                text = String.format(
-                                                    stringResource(id = R.string.post_view_comments_overview_format),
-                                                    postData?.numComments
-                                                        ?.toInt()
-                                                        ?.prettyNumber()
-                                                ),
-                                                style = MaterialTheme.typography.titleSmall,
-                                                modifier = Modifier.padding(start = 12.dp)
-                                            )
-                                        }
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            modifier = Modifier.padding(end = 10.dp)
-                                        ) {
-                                            IconButton(onClick = { /*TODO*/ }) {
-                                                Icon(
-                                                    painter = painterResource(id = R.drawable.ic_thumb_up),
-                                                    contentDescription = stringResource(id = R.string.ic_thumb_up_content_desc),
-                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    modifier = Modifier.size(17.dp)
-                                                )
-                                            }
-                                            Text(
-                                                text = min(postData?.ups ?: 0, Integer.MAX_VALUE.toLong())
-                                                    .toInt()
-                                                    .prettyNumber(),
-                                                style = MaterialTheme.typography.titleSmall
-                                            )
-                                            IconButton(onClick = { /*TODO*/ }) {
-                                                Icon(
-                                                    painter = painterResource(id = R.drawable.ic_thumb_down),
-                                                    contentDescription = stringResource(id = R.string.ic_thumb_down_content_desc),
-                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    modifier = Modifier.size(17.dp)
-                                                )
-                                            }
-                                        }
-                                    }
-                                    commentData?.let { comments ->
-                                        FlowColumn(modifier = Modifier.padding(top = 10.dp)) {
-                                            comments.forEach { item ->
-                                                CommentBubble(
-                                                    commentData = item.data,
-                                                    viewModel = viewModel
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
+                        item {
+                            FlairBar(
+                                postData = post,
+                                modifier = Modifier.padding(start = 20.dp)
+                            )
+                        }
+                        item {
+                            PostContentView(
+                                post = post,
+                                navController = navController,
+                                viewModel = viewModel
+                            )
+                        }
+                    }
+                    item {
+                        Column(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            InteractionBar(postData = postData)
+                            commentData?.let { commentDataList ->
+                                CommentListView(
+                                    commentData = commentDataList,
+                                    viewModel = viewModel
+                                )
                             }
                         }
                     }
@@ -355,3 +145,291 @@ fun PostDetailView(
             }
         }
     }
+}
+
+@Composable
+fun HeaderBar(post: PostData) {
+    Column {
+        Text(
+            text = post.title,
+            style = MaterialTheme.typography.displaySmall,
+            modifier = Modifier
+                .padding(
+                    start = 20.dp,
+                    top = 25.dp,
+                    end = 18.dp
+                )
+        )
+        Row(modifier = Modifier.padding(top = 15.dp, start = 21.dp)) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_avatar_placeholder),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .size(35.dp)
+                    .padding(top = 5.dp)
+            )
+            Column(modifier = Modifier.padding(start = 10.dp)) {
+                Text(
+                    text = post.author,
+                    style = MaterialTheme.typography.labelMedium
+                )
+                Text(
+                    text = "r/${post.subreddit}",
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 2.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun InteractionBar(postData: PostData?) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 20.dp, end = 18.dp)
+            .border(
+                width = 2.dp,
+                shape = RoundedCornerShape(10.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant
+            )
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_forum),
+                contentDescription = stringResource(id = R.string.ic_forum_content_desc),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .padding(start = 15.dp)
+                    .size(17.dp)
+            )
+            Text(
+                text = String.format(
+                    stringResource(id = R.string.post_view_comments_overview_format),
+                    postData?.numComments
+                        ?.toInt()
+                        ?.prettyNumber()
+                ),
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(start = 12.dp)
+            )
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(end = 10.dp)
+        ) {
+            IconButton(onClick = { /*TODO*/ }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_thumb_up),
+                    contentDescription = stringResource(id = R.string.ic_thumb_up_content_desc),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(17.dp)
+                )
+            }
+            Text(
+                text = min(postData?.ups ?: 0, Integer.MAX_VALUE.toLong())
+                    .toInt()
+                    .prettyNumber(),
+                style = MaterialTheme.typography.titleSmall
+            )
+            IconButton(onClick = { /*TODO*/ }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_thumb_down),
+                    contentDescription = stringResource(id = R.string.ic_thumb_down_content_desc),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(17.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun CommentListView(commentData: List<CommentPreData>, viewModel: PostDetailViewModel) {
+        FlowColumn(modifier = Modifier.padding(top = 10.dp)) {
+            commentData.forEach { item ->
+                CommentBubble(
+                    commentData = item.data,
+                    viewModel = viewModel
+                )
+            }
+        }
+    }
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+fun PostContentView(
+    post: PostData,
+    navController: NavController,
+    viewModel: PostDetailViewModel
+) {
+    when (post.postHint) {
+        "link" -> {
+            Card(
+                shape = RoundedCornerShape(10.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 15.dp),
+                onClick = {
+                    Intent(Intent.ACTION_VIEW).apply {
+                        data = Uri.parse(post.url)
+                        navController.context.startActivity(this)
+                    }
+                }
+            ) {
+                Row {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(
+                                post.preview?.images?.get(0)?.source?.url?.replace("amp;", "")
+                            )
+                            .crossfade(true)
+                            .fallback(R.drawable.ic_event_available)
+                            .build().data,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .width(100.dp)
+                            .height(65.dp)
+                            .clip(RoundedCornerShape(10.dp)),
+                        contentScale = ContentScale.FillHeight,
+                    )
+                    Column(
+                        modifier = Modifier.padding(
+                            vertical = 10.dp,
+                            horizontal = 15.dp
+                        )
+                    ) {
+                        Text(
+                            text = post.domain,
+                            style = MaterialTheme.typography.headlineSmall,
+                            textDecoration = TextDecoration.Underline
+                        )
+                        Text(
+                            text = stringResource(id = R.string.post_view_link_proceed_text),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
+
+            }
+        }
+        "image" -> {
+            if (post.url.contains(".gif")) {
+                GifVideoPlayer(
+                    url = post.url,
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp, vertical = 20.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .fillMaxWidth()
+                        .height(
+                            LocalContext.current.calculateRatioHeight(
+                                ratioWidth = post.thumbnailWidth.toInt(),
+                                ratioHeight = post.thumbnailHeight.toInt(),
+                                actualWidth = LocalConfiguration.current.screenWidthDp - 40
+                            )
+                        )
+                )
+            } else {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(post.url)
+                        .crossfade(true)
+                        .build().data,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 20.dp)
+                        .clip(RoundedCornerShape(10.dp)),
+                    contentScale = ContentScale.FillWidth,
+                )
+            }
+        }
+        "hosted:video" -> {
+            post.secureMedia?.reddit_video?.let { redditVideo ->
+                redditVideo.fallback_url
+                    .replace("amp;", "")
+                    .ifEmpty { post.url }
+                    .let { url ->
+                        ExoVideoPlayer(
+                            url = url,
+                            modifier = Modifier
+                                .padding(
+                                    horizontal = 20.dp,
+                                    vertical = 20.dp
+                                )
+                                .clip(RoundedCornerShape(10.dp))
+                                .fillMaxWidth()
+                                .height(
+                                    LocalContext.current.calculateRatioHeight(
+                                        ratioHeight = redditVideo.height.toInt(),
+                                        ratioWidth = redditVideo.width.toInt(),
+                                        actualWidth = LocalConfiguration.current.screenWidthDp - 40
+                                    )
+                                )
+                        )
+                    }
+            }
+        }
+        "rich:video" -> {
+            when (post.domain) {
+                "gfycat.com" -> {
+                    var gifInformation by remember { mutableStateOf<GfycatObject?>(null) }
+                    LaunchedEffect(true) {
+                        gifInformation = viewModel.gfycatService.fetchGif(
+                            post.url.split("https://gfycat.com/")[1]
+                        )
+                    }
+                    if (gifInformation != null) {
+                        GifVideoPlayer(
+                            url = gifInformation!!.gfyItem.gifUrl,
+                            modifier = Modifier
+                                .padding(horizontal = 20.dp, vertical = 20.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .fillMaxWidth()
+                                .height(
+                                    LocalContext.current.calculateRatioHeight(
+                                        ratioWidth = post.thumbnailWidth.toInt(),
+                                        ratioHeight = post.thumbnailHeight.toInt(),
+                                        actualWidth = LocalConfiguration.current.screenWidthDp - 40
+                                    )
+                                )
+                        )
+                    } else {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            CircularProgressIndicator(
+                                color = MaterialTheme.colorScheme.secondary,
+                                strokeWidth = 3.dp
+                            )
+                        }
+                    }
+                }
+            }
+
+        }
+        else -> {
+            Text(
+                text = post.selftext,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(
+                    start = 22.dp,
+                    end = 20.dp,
+                    top = 20.dp,
+                    bottom = 20.dp
+                )
+            )
+        }
+    }
+}

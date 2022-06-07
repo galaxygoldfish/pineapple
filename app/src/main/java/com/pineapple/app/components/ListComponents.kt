@@ -203,7 +203,7 @@ fun CommentBubble(commentData: CommentData, viewModel: PostDetailViewModel) {
             var userInformation by remember { mutableStateOf<UserAbout?>(null) }
             LaunchedEffect(key1 = true) {
                 if (commentData.author != "[deleted]") {
-                    userInformation = viewModel.networkService.fetchUserInfo(commentData.author).data
+                    userInformation = viewModel.redditService.fetchUserInfo(commentData.author).data
                 }
             }
             AnimatedVisibility(visible = true) {

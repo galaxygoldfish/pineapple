@@ -4,14 +4,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.pineapple.app.model.RequestResult
+import com.pineapple.app.paging.RequestResult
 import com.pineapple.app.network.NetworkServiceBuilder
+import com.pineapple.app.network.NetworkServiceBuilder.REDDIT_BASE_URL
+import com.pineapple.app.network.NetworkServiceBuilder.apiService
+import com.pineapple.app.network.RedditNetworkService
 import kotlinx.coroutines.flow.flow
 
 class SubredditViewModel : ViewModel() {
 
     var currentSubreddit by mutableStateOf<String?>(null)
-    private val networkService by lazy { NetworkServiceBuilder.apiService() }
+    private val networkService by lazy { apiService<RedditNetworkService>(REDDIT_BASE_URL) }
 
     suspend fun fetchInformation() = flow {
         emit(RequestResult.Loading(true))

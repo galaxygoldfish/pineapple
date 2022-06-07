@@ -1,4 +1,4 @@
-package com.pineapple.app.network
+package com.pineapple.app.paging
 
 import android.util.Log
 import androidx.paging.ExperimentalPagingApi
@@ -6,6 +6,7 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.pineapple.app.model.reddit.PostItem
 import com.pineapple.app.model.reddit.PostListing
+import com.pineapple.app.network.RedditNetworkService
 import kotlinx.coroutines.CompletableDeferred
 import retrofit2.Call
 import retrofit2.Callback
@@ -14,7 +15,7 @@ import retrofit2.Response
 data class RedditPageStore(val before: String?, val after: String?)
 
 class NetworkPagingSource(
-    private val service: NetworkService,
+    private val service: RedditNetworkService,
     private val subreddit: String,
     private val sort: String,
     private val time: String
