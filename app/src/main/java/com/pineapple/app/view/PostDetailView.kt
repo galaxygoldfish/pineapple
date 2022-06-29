@@ -2,6 +2,7 @@ package com.pineapple.app.view
 
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,11 +28,9 @@ import coil.request.ImageRequest
 import com.google.accompanist.flowlayout.FlowColumn
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.gson.Gson
+import com.pineapple.app.NavDestination
 import com.pineapple.app.R
-import com.pineapple.app.components.CommentBubble
-import com.pineapple.app.components.ExoVideoPlayer
-import com.pineapple.app.components.FlairBar
-import com.pineapple.app.components.GifVideoPlayer
+import com.pineapple.app.components.*
 import com.pineapple.app.model.gfycat.GfycatObject
 import com.pineapple.app.paging.RequestResult
 import com.pineapple.app.paging.RequestStatus
@@ -41,6 +40,7 @@ import com.pineapple.app.util.getViewModel
 import com.pineapple.app.util.prettyNumber
 import com.pineapple.app.viewmodel.PostDetailViewModel
 import java.lang.Long.min
+import java.net.URLEncoder
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -111,6 +111,7 @@ fun PostDetailView(
                 }
                 RequestStatus.SUCCESS -> {
                     postData?.let { post ->
+                        Log.e("DD", "PODODO")
                         item {
                             HeaderBar(post = post)
                         }
@@ -269,157 +270,59 @@ fun PostContentView(
     navController: NavController,
     viewModel: PostDetailViewModel
 ) {
-    when (post.postHint) {
-        "link" -> {
-            Card(
-                shape = RoundedCornerShape(10.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 15.dp),
-                onClick = {
-                    Intent(Intent.ACTION_VIEW).apply {
-                        data = Uri.parse(post.url)
-                        navController.context.startActivity(this)
-                    }
-                }
-            ) {
-                Row {
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(
-                                post.preview?.images?.get(0)?.source?.url?.replace("amp;", "")
-                            )
-                            .crossfade(true)
-                            .fallback(R.drawable.ic_event_available)
-                            .build().data,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .width(100.dp)
-                            .height(65.dp)
-                            .clip(RoundedCornerShape(10.dp)),
-                        contentScale = ContentScale.FillHeight,
-                    )
-                    Column(
-                        modifier = Modifier.padding(
-                            vertical = 10.dp,
-                            horizontal = 15.dp
-                        )
-                    ) {
-                        Text(
-                            text = post.domain,
-                            style = MaterialTheme.typography.headlineSmall,
-                            textDecoration = TextDecoration.Underline
-                        )
-                        Text(
-                            text = stringResource(id = R.string.post_view_link_proceed_text),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                    }
-                }
-
-            }
-        }
-        "image" -> {
-            if (post.url.contains(".gif")) {
-                GifVideoPlayer(
-                    url = post.url,
-                    modifier = Modifier
-                        .padding(horizontal = 20.dp, vertical = 20.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .fillMaxWidth()
-                        .height(
-                            LocalContext.current.calculateRatioHeight(
-                                ratioWidth = post.thumbnailWidth.toInt(),
-                                ratioHeight = post.thumbnailHeight.toInt(),
-                                actualWidth = LocalConfiguration.current.screenWidthDp - 40
-                            )
-                        )
-                )
-            } else {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(post.url)
-                        .crossfade(true)
-                        .build().data,
-                    contentDescription = null,
+    when {
+        post.postHint == "link" -> {
+            if (post.domain != "imgur.com") {
+                Card(
+                    shape = RoundedCornerShape(10.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 20.dp)
-                        .clip(RoundedCornerShape(10.dp)),
-                    contentScale = ContentScale.FillWidth,
-                )
-            }
-        }
-        "hosted:video" -> {
-            post.secureMedia?.reddit_video?.let { redditVideo ->
-                redditVideo.fallback_url
-                    .replace("amp;", "")
-                    .ifEmpty { post.url }
-                    .let { url ->
-                        ExoVideoPlayer(
-                            url = url,
-                            modifier = Modifier
-                                .padding(
-                                    horizontal = 20.dp,
-                                    vertical = 20.dp
-                                )
-                                .clip(RoundedCornerShape(10.dp))
-                                .fillMaxWidth()
-                                .height(
-                                    LocalContext.current.calculateRatioHeight(
-                                        ratioHeight = redditVideo.height.toInt(),
-                                        ratioWidth = redditVideo.width.toInt(),
-                                        actualWidth = LocalConfiguration.current.screenWidthDp - 40
-                                    )
-                                )
-                        )
+                        .padding(horizontal = 20.dp, vertical = 15.dp),
+                    onClick = {
+                        Intent(Intent.ACTION_VIEW).apply {
+                            data = Uri.parse(post.url)
+                            navController.context.startActivity(this)
+                        }
                     }
-            }
-        }
-        "rich:video" -> {
-            when (post.domain) {
-                "gfycat.com" -> {
-                    var gifInformation by remember { mutableStateOf<GfycatObject?>(null) }
-                    LaunchedEffect(true) {
-                        gifInformation = viewModel.gfycatService.fetchGif(
-                            post.url.split("https://gfycat.com/")[1]
-                        )
-                    }
-                    if (gifInformation != null) {
-                        GifVideoPlayer(
-                            url = gifInformation!!.gfyItem.gifUrl,
-                            modifier = Modifier
-                                .padding(horizontal = 20.dp, vertical = 20.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                                .fillMaxWidth()
-                                .height(
-                                    LocalContext.current.calculateRatioHeight(
-                                        ratioWidth = post.thumbnailWidth.toInt(),
-                                        ratioHeight = post.thumbnailHeight.toInt(),
-                                        actualWidth = LocalConfiguration.current.screenWidthDp - 40
-                                    )
+                ) {
+                    Row {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(
+                                    post.preview?.images?.get(0)?.source?.url?.replace("amp;", "")
                                 )
+                                .crossfade(true)
+                                .fallback(R.drawable.ic_event_available)
+                                .build().data,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .width(100.dp)
+                                .height(65.dp)
+                                .clip(RoundedCornerShape(10.dp)),
+                            contentScale = ContentScale.FillHeight,
                         )
-                    } else {
                         Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            modifier = Modifier.padding(
+                                vertical = 10.dp,
+                                horizontal = 15.dp
+                            )
                         ) {
-                            CircularProgressIndicator(
-                                color = MaterialTheme.colorScheme.secondary,
-                                strokeWidth = 3.dp
+                            Text(
+                                text = post.domain,
+                                style = MaterialTheme.typography.headlineSmall,
+                                textDecoration = TextDecoration.Underline
+                            )
+                            Text(
+                                text = stringResource(id = R.string.post_view_link_proceed_text),
+                                style = MaterialTheme.typography.titleMedium
                             )
                         }
                     }
                 }
             }
-
         }
-        else -> {
+        post.selftext.isNotEmpty() -> {
             Text(
                 text = post.selftext,
                 style = MaterialTheme.typography.bodyMedium,
@@ -430,6 +333,71 @@ fun PostContentView(
                     bottom = 20.dp
                 )
             )
+        }
+        else -> {
+            val mediaLink = when (post.postHint) {
+                "hosted:video" -> post.secureMedia!!.reddit_video.fallback_url.replace("amp;", "")
+                "rich:video" -> post.url
+                else -> {
+                    post.preview?.images?.get(0)?.source?.url?.replace("amp;", "")
+                        ?.ifEmpty { post.url }
+                }
+            }
+            mediaLink?.let {
+                MultiTypeMediaView(
+                    mediaHint = post.postHint,
+                    url = it,
+                    richDomain = post.domain,
+                    gfycatService = viewModel.gfycatService,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            vertical = 20.dp,
+                            horizontal = 20.dp
+                        )
+                        .height(
+                            when (post.postHint) {
+                                "image", "rich_video" -> {
+                                    LocalContext.current.calculateRatioHeight(
+                                        ratioWidth = post.thumbnailWidth.toInt(),
+                                        ratioHeight = post.thumbnailHeight.toInt(),
+                                        actualWidth = LocalConfiguration.current.screenWidthDp - 40
+                                    )
+                                }
+                                else -> {
+                                    LocalContext.current.calculateRatioHeight(
+                                        ratioHeight = post.secureMedia?.reddit_video?.height?.toInt()
+                                            ?: 0,
+                                        ratioWidth = post.secureMedia?.reddit_video?.width?.toInt()
+                                            ?: 0,
+                                        actualWidth = LocalConfiguration.current.screenWidthDp - 40
+                                    )
+                                }
+                            }
+                        )
+                        .clip(RoundedCornerShape(10.dp)),
+                    playerControls = { player ->
+                        VideoControls(
+                            player = player,
+                            onExpand = {
+                                navController.navigate(
+                                    "${NavDestination.MediaDetailView}/${post.postHint}/${
+                                        URLEncoder.encode(mediaLink)
+                                    }/${post.domain}/${post.title}"
+                                )
+                            },
+                            postTitle = post.title
+                        )
+                    },
+                    expandToFullscreen = {
+                        navController.navigate(
+                            "${NavDestination.MediaDetailView}/${post.postHint}/${
+                                URLEncoder.encode(mediaLink)
+                            }/${post.domain}/${post.title}"
+                        )
+                    }
+                )
+            }
         }
     }
 }

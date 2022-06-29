@@ -1,6 +1,7 @@
 package com.pineapple.app.components
 
 import android.content.Context
+import android.graphics.Bitmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -12,11 +13,12 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
@@ -135,6 +137,7 @@ fun AvatarPlaceholderIcon(modifier: Modifier = Modifier) {
             .padding(top = 8.dp)
     )
 }
+
 
 // https://github.com/pz64/RoundedStarShape-JetPack-Compose/blob/main/compose-polygonshape/src/main/java/com/pz64/shape/RoundedStarShape.kt
 class RoundedStarShape(

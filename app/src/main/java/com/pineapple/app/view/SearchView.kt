@@ -139,13 +139,17 @@ fun SearchView(navController: NavController) {
                             modifier = Modifier.padding(top = 15.dp)
                         ) {
                             itemsIndexed(viewModel.currentPostList) { _, item ->
-                                TextPostCard(postData = item.data) {
-                                    val permalink = item.data.permalink.split("/")
-                                    val sub = permalink[2]
-                                    val uid = permalink[4]
-                                    val link = permalink[5]
-                                    navController.navigate("${NavDestination.PostDetailView}/$sub/$uid/$link")
-                                }
+                                TextPostCard(
+                                    postData = item.data,
+                                    navController = navController,
+                                    onClick = {
+                                        val permalink = item.data.permalink.split("/")
+                                        val sub = permalink[2]
+                                        val uid = permalink[4]
+                                        val link = permalink[5]
+                                        navController.navigate("${NavDestination.PostDetailView}/$sub/$uid/$link")
+                                    }
+                                )
                             }
                         }
                     }

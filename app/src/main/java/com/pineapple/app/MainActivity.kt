@@ -1,25 +1,28 @@
 package com.pineapple.app
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.pineapple.app.theme.PineappleTheme
-import com.pineapple.app.view.HomePageView
-import com.pineapple.app.view.PostDetailView
-import com.pineapple.app.view.SubredditView
-import com.pineapple.app.view.WelcomeView
+import com.pineapple.app.util.getViewModel
+import com.pineapple.app.view.*
+import com.pineapple.app.viewmodel.MediaDetailViewModel
 
 object NavDestination {
     const val WelcomeView = "welcome"
     const val HomePageView = "home"
     const val PostDetailView = "detail"
     const val SubredditView = "subreddit"
+    const val MediaDetailView = "media"
 }
 
 class MainActivity : ComponentActivity() {
@@ -63,7 +66,15 @@ class MainActivity : ComponentActivity() {
                     subreddit = it.arguments!!.getString("subreddit")!!
                 )
             }
+            composable("${NavDestination.MediaDetailView}/{mediaType}/{encodedUrl}/{domain}/{title}") {
+                MediaDetailView(
+                    navController = navigationController,
+                    mediaType = it.arguments!!.getString("mediaType")!!,
+                    encodedUrl = it.arguments!!.getString("encodedUrl")!!,
+                    domain = it.arguments!!.getString("domain")!!,
+                    titleText = it.arguments!!.getString("title")!!
+                )
+            }
         }
     }
-
 }

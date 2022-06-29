@@ -75,7 +75,8 @@ fun PostListView(
                             val uid = permalink[4]
                             val link = permalink[5]
                             navController.navigate("${NavDestination.PostDetailView}/$sub/$uid/$link")
-                        }
+                        },
+                        navController = navController
                     )
                 }
             }

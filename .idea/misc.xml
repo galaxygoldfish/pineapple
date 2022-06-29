@@ -11,11 +11,13 @@
         <entry key="app/src/main/res/drawable/ic_home_icon.xml" value="0.2005" />
         <entry key="app/src/main/res/drawable/ic_launcher_background.xml" value="0.2005" />
         <entry key="app/src/main/res/drawable/ic_leaves_transparent.xml" value="0.2185" />
+        <entry key="app/src/main/res/drawable/ic_pause.xml" value="0.2135" />
         <entry key="app/src/main/res/drawable/ic_thumbs_down.xml" value="0.2005" />
         <entry key="app/src/main/res/drawable/ic_thumbs_up.xml" value="0.2165" />
         <entry key="app/src/main/res/drawable/ic_user_group.xml" value="0.2165" />
         <entry key="app/src/main/res/drawable/ic_user_icon.xml" value="0.2005" />
         <entry key="app/src/main/res/drawable/placeholder_image.xml" value="0.2005" />
+        <entry key="app/src/main/res/layout/video_player_controls.xml" value="0.3476923076923077" />
         <entry key="app/src/main/res/mipmap-hdpi/ic_launcher.xml" value="0.2005" />
         <entry key="app/src/main/res/mipmap/ic_launcher.xml" value="0.1" />
         <entry key="app/src/main/res/mipmap/ic_launcher_round.xml" value="0.2005" />
