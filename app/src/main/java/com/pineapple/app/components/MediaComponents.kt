@@ -56,6 +56,8 @@ import com.pineapple.app.model.reddit.PostData
 import com.pineapple.app.network.GfycatNetworkService
 import com.pineapple.app.theme.PineappleTheme
 import com.pineapple.app.util.toDp
+import java.net.URLDecoder
+import java.net.URLEncoder
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -462,7 +464,7 @@ fun ImageGifControls(
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     Text(
-                        text = postTitle,
+                        text = URLDecoder.decode(postTitle),
                         style = MaterialTheme.typography.titleMedium,
                         color = Color.White,
                         modifier = Modifier

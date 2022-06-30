@@ -2,6 +2,8 @@ package com.pineapple.app.components
 
 import android.icu.number.IntegerWidth
 import android.net.Uri
+import android.text.Html
+import android.text.SpannedString
 import android.text.TextUtils.replace
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
@@ -38,10 +40,7 @@ import coil.request.ImageRequest
 import com.pineapple.app.NavDestination
 import com.pineapple.app.R
 import com.pineapple.app.model.MediaType
-import com.pineapple.app.model.reddit.CommentData
-import com.pineapple.app.model.reddit.PostData
-import com.pineapple.app.model.reddit.SubredditItem
-import com.pineapple.app.model.reddit.UserAbout
+import com.pineapple.app.model.reddit.*
 import com.pineapple.app.network.GfycatNetworkService
 import com.pineapple.app.network.NetworkServiceBuilder.GFYCAT_BASE_URL
 import com.pineapple.app.network.NetworkServiceBuilder.apiService
@@ -150,7 +149,7 @@ fun TextPostCard(
                                     navController.navigate(
                                         "${NavDestination.MediaDetailView}/${postData.postHint}/${
                                             URLEncoder.encode(mediaLink)                                            
-                                        }/${postData.domain}/${postData.title}"
+                                        }/${postData.domain}/${URLEncoder.encode(postData.title)}"
                                     )
                                 },
                                 postTitle = postData.title
@@ -160,7 +159,7 @@ fun TextPostCard(
                             navController.navigate(
                                 "${NavDestination.MediaDetailView}/${postData.postHint}/${
                                     URLEncoder.encode(mediaLink)
-                                }/${postData.domain}/${postData.title}"
+                                }/${postData.domain}/${URLEncoder.encode(postData.title)}"
                             )
                         }
                     )
@@ -214,7 +213,7 @@ fun TextPostCard(
 }
 
 @Composable
-fun SubredditListCard(item: SubredditItem, navController: NavController) {
+fun SubredditListCard(item: SubredditData, navController: NavController) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -222,11 +221,11 @@ fun SubredditListCard(item: SubredditItem, navController: NavController) {
             .clip(RoundedCornerShape(10.dp))
             .background(MaterialTheme.colorScheme.secondaryContainer.copy(0.4F))
             .clickable {
-                navController.navigate("${NavDestination.SubredditView}/${item.data.title}")
+                navController.navigate("${NavDestination.SubredditView}/${item.url.replace("r/", "").replace("/", "")}")
             },
         verticalAlignment = Alignment.CenterVertically
     ) {
-        val communityIcon = item.data.iconUrl.replace(";", "").replace("amp", "")
+        val communityIcon = item.iconUrl.replace(";", "").replace("amp", "")
         if (communityIcon.isNotEmpty()) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
@@ -254,7 +253,7 @@ fun SubredditListCard(item: SubredditItem, navController: NavController) {
             )
         }
         Text(
-            text = item.data.displayNamePrefixed,
+            text = item.displayNamePrefixed,
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(start = 4.dp)
         )

@@ -13,30 +13,50 @@ interface RedditNetworkService {
         @Path("name") name: String,
         @Path("sort") sort: String,
         @Query("time") time: String,
-        @Query("after") after: String? = null
+        @Query("after") after: String? = null,
+        @Query("nsfw") nsfw: Int = 0,
+        @Query("include_over_18") over18: String = "off"
     ) : Call<PostListing>
 
     @GET("r/{name}/comments/{id}/{post}")
     suspend fun fetchPost(
         @Path("name") subreddit: String,
         @Path("id") postID: String,
-        @Path("post") post: String
+        @Path("post") post: String,
+        @Query("nsfw") nsfw: Int = 0,
+        @Query("include_over_18") over18: String = "off"
     ) : String
 
     @GET("subreddits/popular")
     suspend fun fetchTopSubreddits() : Listing<SubredditItem>
 
-    @GET("r/{subreddit}/info.json")
+    @GET("r/{subreddit}/about")
     suspend fun fetchSubredditInfo(
-        @Path("subreddit") subreddit: String
+        @Path("subreddit") subreddit: String,
+        @Query("nsfw") nsfw: Int = 0,
+        @Query("include_over_18") over18: String = "off"
     ) : SubredditInfo
 
     @GET("/user/{user}/about")
     suspend fun fetchUserInfo(
-        @Path("user") user: String
+        @Path("user") user: String,
+        @Query("nsfw") nsfw: Int = 0,
+        @Query("include_over_18") over18: String = "off"
     ) : UserAboutListing
 
     @GET("search")
-    suspend fun searchPosts(@Query("q") query: String) : Listing<PostItem>
+    suspend fun searchPosts(
+        @Query("q") query: String,
+        @Query("nsfw") nsfw: Int = 0,
+        @Query("include_over_18") over18: String = "off"
+    ) : Listing<PostItem>
+
+    @GET("search")
+    suspend fun searchCommunities(
+        @Query("q") query: String,
+        @Query("type") type: String = "sr",
+        @Query("nsfw") nsfw: Int = 0,
+        @Query("include_over_18") over18: String = "off"
+    ) : Listing<SubredditItem>
 
 }

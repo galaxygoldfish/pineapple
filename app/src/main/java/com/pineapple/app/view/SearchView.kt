@@ -155,7 +155,21 @@ fun SearchView(navController: NavController) {
                     }
                     // Communities
                     AnimatedVisibility(visible = viewModel.currentSearchFilter == 2) {
-
+                        rememberCoroutineScope().apply {
+                            LaunchedEffect(true) {
+                                launch { viewModel.updateSearchResults() }
+                            }
+                        }
+                        LazyColumn(
+                            modifier = Modifier.padding(top = 15.dp)
+                        ) {
+                            itemsIndexed(viewModel.currentSubredditList) { _, item ->
+                                SubredditListCard(
+                                    item = item.data,
+                                    navController = navController
+                                )
+                            }
+                        }
                     }
                     // Users
                     AnimatedVisibility(visible = viewModel.currentSearchFilter == 3) {
@@ -181,7 +195,7 @@ fun SearchView(navController: NavController) {
                     LazyColumn(modifier = Modifier.padding(top = 10.dp)) {
                         itemsIndexed(topSubredditList) { _, item ->
                             SubredditListCard(
-                                item = item,
+                                item = item.data,
                                 navController = navController
                             )
                         }

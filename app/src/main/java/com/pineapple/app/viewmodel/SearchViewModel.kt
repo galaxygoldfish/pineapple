@@ -8,6 +8,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import com.pineapple.app.paging.RequestResult
 import com.pineapple.app.model.reddit.PostItem
+import com.pineapple.app.model.reddit.SubredditData
+import com.pineapple.app.model.reddit.SubredditItem
 import com.pineapple.app.network.NetworkServiceBuilder
 import com.pineapple.app.network.NetworkServiceBuilder.REDDIT_BASE_URL
 import com.pineapple.app.network.NetworkServiceBuilder.apiService
@@ -21,6 +23,7 @@ class SearchViewModel : ViewModel() {
     var lastUpdateSearch by mutableStateOf(System.currentTimeMillis())
     var currentSearchFilter by mutableStateOf(0)
     var currentPostList = mutableStateListOf<PostItem>()
+    var currentSubredditList = mutableStateListOf<SubredditItem>()
 
     suspend fun requestSubredditFlow() = flow {
         emit(RequestResult.Loading(true))
@@ -34,7 +37,7 @@ class SearchViewModel : ViewModel() {
 
     suspend fun updateSearchResults() {
         when (currentSearchFilter) {
-            0 -> {
+            0, 1 -> {
                 val response = networkService.searchPosts(currentSearchQuery.text)
                 response.data.children.let {
                     currentPostList.apply {
@@ -43,7 +46,15 @@ class SearchViewModel : ViewModel() {
                     }
                 }
             }
+            2 -> {
+                val response = networkService.searchCommunities(currentSearchQuery.text)
+                response.data.children.let {
+                    currentSubredditList.apply {
+                        clear()
+                        addAll(it)
+                    }
+                }
+            }
         }
     }
-
 }

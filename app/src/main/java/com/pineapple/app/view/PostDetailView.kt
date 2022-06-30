@@ -2,6 +2,8 @@ package com.pineapple.app.view
 
 import android.content.Intent
 import android.net.Uri
+import android.text.Html
+import android.text.SpannableString
 import android.util.Log
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -383,7 +385,7 @@ fun PostContentView(
                                 navController.navigate(
                                     "${NavDestination.MediaDetailView}/${post.postHint}/${
                                         URLEncoder.encode(mediaLink)
-                                    }/${post.domain}/${post.title}"
+                                    }/${post.domain}/${URLEncoder.encode(post.title)}"
                                 )
                             },
                             postTitle = post.title
@@ -393,7 +395,7 @@ fun PostContentView(
                         navController.navigate(
                             "${NavDestination.MediaDetailView}/${post.postHint}/${
                                 URLEncoder.encode(mediaLink)
-                            }/${post.domain}/${post.title}"
+                            }/${post.domain}/${URLEncoder.encode(post.title)}"
                         )
                     }
                 )

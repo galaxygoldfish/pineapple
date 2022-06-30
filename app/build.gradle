@@ -80,4 +80,6 @@ dependencies {
     implementation "io.coil-kt:coil-compose:$coil_version"
     implementation "io.coil-kt:coil-gif:$coil_version"
 
+    implementation 'com.github.ireward:compose-html:1.0.2'
+
 }

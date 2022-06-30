@@ -79,4 +79,6 @@
     <string name="search_category_post">Posts</string>
     <string name="search_category_community">Communities</string>
 
+    <string name="community_user_count_format">%1$s Members</string>
+
 </resources>
