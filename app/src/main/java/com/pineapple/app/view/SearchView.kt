@@ -34,10 +34,7 @@ import androidx.core.view.WindowInsetsCompat.toWindowInsetsCompat
 import androidx.navigation.NavController
 import com.pineapple.app.NavDestination
 import com.pineapple.app.R
-import com.pineapple.app.components.Chip
-import com.pineapple.app.components.SubredditListCard
-import com.pineapple.app.components.TextOnlyTextField
-import com.pineapple.app.components.TextPostCard
+import com.pineapple.app.components.*
 import com.pineapple.app.model.reddit.SubredditItem
 import com.pineapple.app.util.getViewModel
 import com.pineapple.app.util.keyboardIsVisible
@@ -91,10 +88,7 @@ fun SearchView(navController: NavController) {
                         viewModel.apply {
                             currentSearchQuery = it
                             CoroutineScope(Dispatchers.Main).launch {
-                                if (abs(lastUpdateSearch - System.currentTimeMillis()) > 1000L) {
-                                    updateSearchResults()
-                                    lastUpdateSearch = System.currentTimeMillis()
-                                }
+                                if (it.text.length > 2) updateSearchResults()
                             }
                         }
                     },
@@ -160,20 +154,35 @@ fun SearchView(navController: NavController) {
                                 launch { viewModel.updateSearchResults() }
                             }
                         }
-                        LazyColumn(
-                            modifier = Modifier.padding(top = 15.dp)
-                        ) {
+                        LazyColumn(modifier = Modifier.padding(top = 15.dp)) {
                             itemsIndexed(viewModel.currentSubredditList) { _, item ->
-                                SubredditListCard(
-                                    item = item.data,
-                                    navController = navController
+                                SmallListCard(
+                                    text = item.data.displayNamePrefixed,
+                                    iconUrl = item.data.iconUrl.replace(";", "").replace("amp", ""),
+                                    onClick = {
+                                        navController.navigate("${NavDestination.SubredditView}/${
+                                            item.data.url.replace("r/", "").replace("/", "")
+                                        }")
+                                    }
                                 )
                             }
                         }
                     }
-                    // Users
                     AnimatedVisibility(visible = viewModel.currentSearchFilter == 3) {
-
+                        rememberCoroutineScope().apply {
+                            LaunchedEffect(true) {
+                                launch { viewModel.updateSearchResults() }
+                            }
+                        }
+                        LazyColumn(modifier = Modifier.padding(top = 15.dp)) {
+                            itemsIndexed(viewModel.currentUserList) { _, item ->
+                                SmallListCard(
+                                    text = item.data.name ?: "",
+                                    iconUrl = item.data.snoovatar_img ?: item.data.icon_img ?: "",
+                                    onClick = {  }
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -194,9 +203,14 @@ fun SearchView(navController: NavController) {
                     }
                     LazyColumn(modifier = Modifier.padding(top = 10.dp)) {
                         itemsIndexed(topSubredditList) { _, item ->
-                            SubredditListCard(
-                                item = item.data,
-                                navController = navController
+                            SmallListCard(
+                                text = item.data.displayNamePrefixed,
+                                iconUrl = item.data.iconUrl.replace(";", "").replace("amp", ""),
+                                onClick = {
+                                    navController.navigate("${NavDestination.SubredditView}/${
+                                        item.data.url.replace("r/", "").replace("/", "")
+                                    }")
+                                }
                             )
                         }
                     }

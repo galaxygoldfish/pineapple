@@ -16,6 +16,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -28,6 +29,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.accompanist.flowlayout.FlowColumn
+import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.gson.Gson
 import com.pineapple.app.NavDestination
@@ -41,6 +43,7 @@ import com.pineapple.app.util.calculateRatioHeight
 import com.pineapple.app.util.getViewModel
 import com.pineapple.app.util.prettyNumber
 import com.pineapple.app.viewmodel.PostDetailViewModel
+import okhttp3.internal.notify
 import java.lang.Long.min
 import java.net.URLEncoder
 
@@ -236,7 +239,7 @@ fun InteractionBar(postData: PostData?) {
                 )
             }
             Text(
-                text = min(postData?.ups ?: 0, Integer.MAX_VALUE.toLong())
+                text = min(postData?.ups ?: 0L, Integer.MAX_VALUE.toLong())
                     .toInt()
                     .prettyNumber(),
                 style = MaterialTheme.typography.titleSmall
@@ -255,15 +258,15 @@ fun InteractionBar(postData: PostData?) {
 
 @Composable
 fun CommentListView(commentData: List<CommentPreData>, viewModel: PostDetailViewModel) {
-        FlowColumn(modifier = Modifier.padding(top = 10.dp)) {
-            commentData.forEach { item ->
-                CommentBubble(
-                    commentData = item.data,
-                    viewModel = viewModel
-                )
-            }
+    FlowColumn(modifier = Modifier.padding(top = 10.dp)) {
+        commentData.forEach { item ->
+            CommentBubble(
+                commentData = item.data,
+                viewModel = viewModel
+            )
         }
     }
+}
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)

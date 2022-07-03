@@ -23,6 +23,9 @@ import com.pineapple.app.theme.PineappleTheme
 import com.pineapple.app.util.calculateRatioHeight
 import com.pineapple.app.util.getViewModel
 import com.pineapple.app.viewmodel.MediaDetailViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.net.URLDecoder
 import java.net.URLEncoder
 
@@ -35,6 +38,7 @@ fun MediaDetailView(
     titleText: String
 ) {
     val viewModel = LocalContext.current.getViewModel(MediaDetailViewModel::class.java)
+    val context = LocalContext.current
     rememberSystemUiController().setSystemBarsColor(Color.Black)
     PineappleTheme {
         Column {
@@ -62,7 +66,11 @@ fun MediaDetailView(
                 imageControls = {
                     ImageGifControls(
                         postTitle = titleText,
-                        onDownload = { },
+                        onDownload = {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                viewModel.downloadImage(URLDecoder.decode(encodedUrl), context)
+                            }
+                        },
                         onBackPress = { navController.popBackStack() }
                     )
                 }

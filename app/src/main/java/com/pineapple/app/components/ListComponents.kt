@@ -213,23 +213,25 @@ fun TextPostCard(
 }
 
 @Composable
-fun SubredditListCard(item: SubredditData, navController: NavController) {
+fun SmallListCard(
+    text: String,
+    iconUrl: String,
+    onClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 5.dp)
             .clip(RoundedCornerShape(10.dp))
             .background(MaterialTheme.colorScheme.secondaryContainer.copy(0.4F))
-            .clickable {
-                navController.navigate("${NavDestination.SubredditView}/${item.url.replace("r/", "").replace("/", "")}")
-            },
+            .clickable { onClick.invoke() },
         verticalAlignment = Alignment.CenterVertically
     ) {
-        val communityIcon = item.iconUrl.replace(";", "").replace("amp", "")
-        if (communityIcon.isNotEmpty()) {
+
+        if (iconUrl.isNotEmpty()) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(communityIcon)
+                    .data(iconUrl)
                     .crossfade(true)
                     .build().data,
                 contentDescription = null,
@@ -249,11 +251,11 @@ fun SubredditListCard(item: SubredditData, navController: NavController) {
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primaryContainer)
                     .size(25.dp)
-                    .padding(4.dp) // Reddit icon padding
+                    .padding(4.dp) // Icon padding
             )
         }
         Text(
-            text = item.displayNamePrefixed,
+            text = text,
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(start = 4.dp)
         )
@@ -297,7 +299,7 @@ fun CommentBubble(commentData: CommentData, viewModel: PostDetailViewModel) {
                     )
                     Column {
                         Text(
-                            text = user.name,
+                            text = user.name ?: "",
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.padding(start = 2.dp, bottom = 5.dp)
                         )

@@ -44,6 +44,8 @@ interface RedditNetworkService {
         @Query("include_over_18") over18: String = "off"
     ) : UserAboutListing
 
+    // repeated functions below because compiler removes generic types in retrofit calls >._.<
+
     @GET("search")
     suspend fun searchPosts(
         @Query("q") query: String,
@@ -58,5 +60,13 @@ interface RedditNetworkService {
         @Query("nsfw") nsfw: Int = 0,
         @Query("include_over_18") over18: String = "off"
     ) : Listing<SubredditItem>
+
+    @GET("search")
+    suspend fun searchUsers(
+        @Query("q") query: String,
+        @Query("type") type: String = "user",
+        @Query("nsfw") nsfw: Int = 0,
+        @Query("include_over_18") over18: String = "off"
+    ) : ListingBase<UserItem>
 
 }
