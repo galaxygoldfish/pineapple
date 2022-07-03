@@ -10,6 +10,7 @@
     <string name="ic_auto_awesome_content_desc">Shimmer</string>
     <string name="ic_av_timer_content_desc">Timer</string>
     <string name="ic_check_content_desc">Checkmark</string>
+    <string name="ic_close_content_desc">Clear</string>
     <string name="ic_close_fullscreen_content_desc">Collapse</string>
     <string name="ic_dashboard_content_desc">Staggered grid</string>
     <string name="ic_discover_tune_content_desc">Sort and filter</string>

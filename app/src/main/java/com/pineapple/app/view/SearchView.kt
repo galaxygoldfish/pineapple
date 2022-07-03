@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.pineapple.app.NavDestination
@@ -35,13 +36,11 @@ import com.pineapple.app.viewmodel.SearchViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.lang.Math.min
 
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
 fun SearchView(navController: NavController) {
     val viewModel = LocalContext.current.getViewModel(SearchViewModel::class.java)
-
     Surface(modifier = Modifier.fillMaxSize()) {
         Column {
             AnimatedVisibility(visible = viewModel.currentSearchQuery.text.isEmpty()) {
@@ -57,28 +56,41 @@ fun SearchView(navController: NavController) {
                     .padding(20.dp)
                     .clip(RoundedCornerShape(10.dp))
                     .background(MaterialTheme.colorScheme.secondaryContainer.copy(0.7F)),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_search),
-                    contentDescription = stringResource(id = R.string.ic_search_content_desc),
-                    modifier = Modifier.padding(15.dp)
-                )
-                TextOnlyTextField(
-                    textFieldValue = viewModel.currentSearchQuery,
-                    hint = stringResource(id = R.string.search_query_hint_text),
-                    onValueChange = {
-                        viewModel.apply {
-                            currentSearchQuery = it
-                            CoroutineScope(Dispatchers.Main).launch {
-                                if (it.text.length > 2) updateSearchResults()
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_search),
+                        contentDescription = stringResource(id = R.string.ic_search_content_desc),
+                        modifier = Modifier.padding(15.dp)
+                    )
+                    TextOnlyTextField(
+                        textFieldValue = viewModel.currentSearchQuery,
+                        hint = stringResource(id = R.string.search_query_hint_text),
+                        onValueChange = {
+                            viewModel.apply {
+                                currentSearchQuery = it
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    if (it.text.length > 2) updateSearchResults()
+                                }
                             }
-                        }
-                    },
-                    textStyle = MaterialTheme.typography.bodyLarge
-                )
+                        },
+                        textStyle = MaterialTheme.typography.bodyLarge
+                    )
+                }
+                if (viewModel.currentSearchQuery.text.length >= 2) {
+                    IconButton(
+                        onClick = { viewModel.currentSearchQuery = TextFieldValue() }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_close),
+                            contentDescription = stringResource(id = R.string.ic_close_content_desc)
+                        )
+                    }
+                }
             }
-            AnimatedVisibility(visible = viewModel.currentSearchQuery.text.isNotEmpty()) {
+            AnimatedVisibility(visible = viewModel.currentSearchQuery.text.length >= 2) {
                 val categories = listOf(
                     R.string.search_category_all,
                     R.string.search_category_post,
@@ -252,7 +264,8 @@ fun AllResultSearchView(
                         text = item.data.name ?: "",
                         iconUrl = item.data.snoovatar_img ?: item.data.icon_img
                         ?: "",
-                        onClick = { }
+                        onClick = { },
+                        userIcon = true
                     )
                 }
             }

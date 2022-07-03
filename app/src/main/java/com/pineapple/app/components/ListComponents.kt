@@ -216,7 +216,8 @@ fun TextPostCard(
 fun SmallListCard(
     text: String,
     iconUrl: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    userIcon: Boolean = false
 ) {
     Row(
         modifier = Modifier
@@ -243,8 +244,20 @@ fun SmallListCard(
             )
         } else {
             Icon(
-                painter = painterResource(id = R.drawable.ic_atr_dots),
-                contentDescription = stringResource(id = R.string.ic_atr_dots_content_desc),
+                painter = painterResource(
+                    id = if (userIcon) {
+                        R.drawable.ic_person
+                    } else {
+                        R.drawable.ic_atr_dots
+                    }
+                ),
+                contentDescription = stringResource(
+                    id = if (userIcon) {
+                        R.string.ic_person_content_desc
+                    } else {
+                        R.string.ic_atr_dots_content_desc
+                    }
+                ),
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
                     .padding(12.dp) // Actual container padding
