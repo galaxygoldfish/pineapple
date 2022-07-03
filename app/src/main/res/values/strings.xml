@@ -78,6 +78,9 @@
     <string name="search_category_users">Users</string>
     <string name="search_category_post">Posts</string>
     <string name="search_category_community">Communities</string>
+    <string name="search_view_all_users">View all user results</string>
+    <string name="search_view_all_posts">View all post results</string>
+    <string name="search_view_all_communities">View all communities</string>
 
     <string name="community_user_count_format">%1$s Members</string>
 
