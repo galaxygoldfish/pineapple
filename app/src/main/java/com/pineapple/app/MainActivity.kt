@@ -23,6 +23,7 @@ object NavDestination {
     const val PostDetailView = "detail"
     const val SubredditView = "subreddit"
     const val MediaDetailView = "media"
+    const val SettingsView = "settings"
 }
 
 class MainActivity : ComponentActivity() {
@@ -74,6 +75,9 @@ class MainActivity : ComponentActivity() {
                     domain = it.arguments!!.getString("domain")!!,
                     titleText = it.arguments!!.getString("title")!!
                 )
+            }
+            composable(NavDestination.SettingsView) {
+                SettingsView(navController = navigationController)
             }
         }
     }

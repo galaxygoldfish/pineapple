@@ -1,6 +1,7 @@
 package com.pineapple.app.util
 
 import android.content.Context
+import android.content.Context.MODE_PRIVATE
 import android.graphics.drawable.Drawable
 import android.util.DisplayMetrics
 import android.view.View
@@ -51,3 +52,5 @@ fun Context.calculateRatioHeight(ratioHeight: Int, ratioWidth: Int, actualWidth:
     val ratio = ratioWidth.toDp(this) / ratioHeight.toDp(this)
     return (actualWidth / ratio).dp
 }
+
+fun Context.getPreferences() = getSharedPreferences(packageName, MODE_PRIVATE)

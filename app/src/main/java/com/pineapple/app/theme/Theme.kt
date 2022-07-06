@@ -5,7 +5,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
-
+import com.pineapple.app.util.getPreferences
 
 
 @Composable
@@ -17,10 +17,14 @@ fun PineappleTheme(useDarkTheme: Boolean = isSystemInDarkTheme(), content: @Comp
 			dynamicDarkColorScheme(LocalContext.current)
 		}
 	} else {
-		if (!useDarkTheme) PineappleLight else PineappleDark
+		LocalContext.current.getPreferences().getString("APP_THEME", "DEEP_SEA")?.let { key ->
+			themeOptionMap()[key]?.let { theme ->
+				if (!useDarkTheme) theme.first else theme.second
+			}
+		}
 	}
 	MaterialTheme(
-		colorScheme = colors,
+		colorScheme = colors!!,
 		typography = AppTypography,
 		content = content
 	)

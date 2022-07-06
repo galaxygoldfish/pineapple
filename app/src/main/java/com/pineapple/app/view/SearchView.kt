@@ -252,7 +252,7 @@ fun AllResultSearchView(
             SearchChangeButton(
                 text = stringResource(id = R.string.search_view_all_communities),
                 icon = painterResource(id = R.drawable.ic_atr_dots)
-            ) { viewModel.currentSearchFilter = 3 }
+            ) { viewModel.currentSearchFilter = 2 }
         }
         stickyHeader {
             StickyHeaderStyle(text = stringResource(id = R.string.search_category_users))

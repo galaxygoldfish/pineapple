@@ -1,10 +1,19 @@
 package com.pineapple.app.theme
 
+import android.content.Context
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.pineapple.app.R
 
-val PineappleLight = lightColorScheme(
+val DeepSeaLight = lightColorScheme(
     primary = Color(0xFF205fa6),
     onPrimary = Color(0xFFffffff),
     primaryContainer = Color(0xFFd3e3ff),
@@ -32,7 +41,7 @@ val PineappleLight = lightColorScheme(
     inverseSurface = Color(0xFF2f3033),
     inversePrimary = Color(0xFFa4c8ff)
 )
-val PineappleDark = darkColorScheme(
+val DeepSeaDark = darkColorScheme(
     primary = Color(0xFFa4c8ff),
     onPrimary = Color(0xFF003060),
     primaryContainer = Color(0xFF004789),
@@ -61,5 +70,253 @@ val PineappleDark = darkColorScheme(
     inversePrimary = Color(0xFF205fa6)
 )
 
-val seed = Color(0xFF71a4ed)
-val error = Color(0xFFba1b1b)
+val FlairLight = lightColorScheme(
+    primary = Color(0xFF803EB1),
+    onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFFF3DAFF),
+    onPrimaryContainer = Color(0xFF2E004D),
+    secondary = Color(0xFF675A6E),
+    onSecondary = Color(0xFFFFFFFF),
+    secondaryContainer = Color(0xFFEEDCF5),
+    onSecondaryContainer = Color(0xFF221729),
+    tertiary = Color(0xFF815155),
+    onTertiary = Color(0xFFFFFFFF),
+    tertiaryContainer = Color(0xFFFFDADB),
+    onTertiaryContainer = Color(0xFF331014),
+    error = Color(0xFFBA1A1A),
+    errorContainer = Color(0xFFFFDAD6),
+    onError = Color(0xFFFFFFFF),
+    onErrorContainer = Color(0xFF410002),
+    background = Color(0xFFFFFBFF),
+    onBackground = Color(0xFF1D1B1E),
+    surface = Color(0xFFFFFBFF),
+    onSurface = Color(0xFF1D1B1E),
+    surfaceVariant = Color(0xFFEADFEA),
+    onSurfaceVariant = Color(0xFF4B454D),
+    outline = Color(0xFF7C757E),
+    inverseOnSurface = Color(0xFFF6EFF3),
+    inverseSurface = Color(0xFF322F33),
+    inversePrimary = Color(0xFFE2B6FF),
+    surfaceTint = Color(0xFF803EB1)
+)
+
+val FlairDark = darkColorScheme(
+    primary = Color(0xFFE2B6FF),
+    onPrimary = Color(0xFF4D007B),
+    primaryContainer = Color(0xFF662297),
+    onPrimaryContainer = Color(0xFFF3DAFF),
+    secondary = Color(0xFFD2C1D9),
+    onSecondary = Color(0xFF372C3F),
+    secondaryContainer = Color(0xFF4F4256),
+    onSecondaryContainer = Color(0xFFEEDCF5),
+    tertiary = Color(0xFFF4B7BA),
+    onTertiary = Color(0xFF4C2528),
+    tertiaryContainer = Color(0xFF663B3E),
+    onTertiaryContainer = Color(0xFFFFDADB),
+    error = Color(0xFFFFB4AB),
+    errorContainer = Color(0xFF93000A),
+    onError = Color(0xFF690005),
+    onErrorContainer = Color(0xFFFFDAD6),
+    background = Color(0xFF1D1B1E),
+    onBackground = Color(0xFFE7E1E5),
+    surface = Color(0xFF1D1B1E),
+    onSurface = Color(0xFFE7E1E5),
+    surfaceVariant = Color(0xFF4B454D),
+    onSurfaceVariant = Color(0xFFCDC3CE),
+    outline = Color(0xFF968E98),
+    inverseOnSurface = Color(0xFF1D1B1E),
+    inverseSurface = Color(0xFFE7E1E5),
+    inversePrimary = Color(0xFF803EB1),
+    surfaceTint = Color(0xFFE2B6FF)
+)
+
+val OrganicLight = lightColorScheme(
+    primary = Color(0xFF006E25),
+    onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFF99F89D),
+    onPrimaryContainer = Color(0xFF002106),
+    secondary = Color(0xFF526350),
+    onSecondary = Color(0xFFFFFFFF),
+    secondaryContainer = Color(0xFFD5E8D0),
+    onSecondaryContainer = Color(0xFF101F10),
+    tertiary = Color(0xFF39656B),
+    onTertiary = Color(0xFFFFFFFF),
+    tertiaryContainer = Color(0xFFBCEBF2),
+    onTertiaryContainer = Color(0xFF001F23),
+    error = Color(0xFFBA1A1A),
+    errorContainer = Color(0xFFFFDAD6),
+    onError = Color(0xFFFFFFFF),
+    onErrorContainer = Color(0xFF410002),
+    background = Color(0xFFFCFDF7),
+    onBackground = Color(0xFF1A1C19),
+    surface = Color(0xFFFCFDF7),
+    onSurface = Color(0xFF1A1C19),
+    surfaceVariant = Color(0xFFDEE5D9),
+    onSurfaceVariant = Color(0xFF424940),
+    outline = Color(0xFF72796F),
+    inverseOnSurface = Color(0xFFF0F1EB),
+    inverseSurface = Color(0xFF2F312D),
+    inversePrimary = Color(0xFF7EDB83),
+    surfaceTint = Color(0xFF006E25)
+)
+
+val OrganicDark = darkColorScheme(
+    primary = Color(0xFF7EDB83),
+    onPrimary = Color(0xFF00390F),
+    primaryContainer = Color(0xFF00531A),
+    onPrimaryContainer = Color(0xFF99F89D),
+    secondary = Color(0xFFB9CCB4),
+    onSecondary = Color(0xFF243424),
+    secondaryContainer = Color(0xFF3A4B39),
+    onSecondaryContainer = Color(0xFFD5E8D0),
+    tertiary = Color(0xFFA1CED5),
+    onTertiary = Color(0xFF00363C),
+    tertiaryContainer = Color(0xFF1F4D53),
+    onTertiaryContainer = Color(0xFFBCEBF2),
+    error = Color(0xFFFFB4AB),
+    errorContainer = Color(0xFF93000A),
+    onError = Color(0xFF690005),
+    onErrorContainer = Color(0xFFFFDAD6),
+    background = Color(0xFF1A1C19),
+    onBackground = Color(0xFFE2E3DD),
+    surface = Color(0xFF1A1C19),
+    onSurface = Color(0xFFE2E3DD),
+    surfaceVariant = Color(0xFF424940),
+    onSurfaceVariant = Color(0xFFC2C9BD),
+    outline = Color(0xFF8C9388),
+    inverseOnSurface = Color(0xFF1A1C19),
+    inverseSurface = Color(0xFFE2E3DD),
+    inversePrimary = Color(0xFF006E25),
+    surfaceTint = Color(0xFF7EDB83)
+)
+
+val StrawberryLight = lightColorScheme(
+    primary = Color(0xFFB90063),
+    onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFFFFD9E2),
+    onPrimaryContainer = Color(0xFF3E001D),
+    secondary = Color(0xFF74565F),
+    onSecondary = Color(0xFFFFFFFF),
+    secondaryContainer = Color(0xFFFFD9E2),
+    onSecondaryContainer = Color(0xFF2B151C),
+    tertiary = Color(0xFF7C5635),
+    onTertiary = Color(0xFFFFFFFF),
+    tertiaryContainer = Color(0xFFFFDCC1),
+    onTertiaryContainer = Color(0xFF2E1500),
+    error = Color(0xFFBA1A1A),
+    errorContainer = Color(0xFFFFDAD6),
+    onError = Color(0xFFFFFFFF),
+    onErrorContainer = Color(0xFF410002),
+    background = Color(0xFFFFFBFF),
+    onBackground = Color(0xFF201A1B),
+    surface = Color(0xFFFFFBFF),
+    onSurface = Color(0xFF201A1B),
+    surfaceVariant = Color(0xFFF2DDE1),
+    onSurfaceVariant = Color(0xFF514347),
+    outline = Color(0xFF837377),
+    inverseOnSurface = Color(0xFFFAEEEF),
+    inverseSurface = Color(0xFF352F30),
+    inversePrimary = Color(0xFFFFB1C8),
+    surfaceTint = Color(0xFFB90063)
+)
+
+val StrawberryDark = darkColorScheme(
+    primary = Color(0xFFFFB1C8),
+    onPrimary = Color(0xFF650033),
+    primaryContainer = Color(0xFF8E004A),
+    onPrimaryContainer = Color(0xFFFFD9E2),
+    secondary = Color(0xFFE3BDC6),
+    onSecondary = Color(0xFF422931),
+    secondaryContainer = Color(0xFF5B3F47),
+    onSecondaryContainer = Color(0xFFFFD9E2),
+    tertiary = Color(0xFFEFBD94),
+    onTertiary = Color(0xFF48290B),
+    tertiaryContainer = Color(0xFF613F20),
+    onTertiaryContainer = Color(0xFFFFDCC1),
+    error = Color(0xFFFFB4AB),
+    errorContainer = Color(0xFF93000A),
+    onError = Color(0xFF690005),
+    onErrorContainer = Color(0xFFFFDAD6),
+    background = Color(0xFF201A1B),
+    onBackground = Color(0xFFEBE0E1),
+    surface = Color(0xFF201A1B),
+    onSurface = Color(0xFFEBE0E1),
+    surfaceVariant = Color(0xFF514347),
+    onSurfaceVariant = Color(0xFFD5C2C6),
+    outline = Color(0xFF9E8C90),
+    inverseOnSurface = Color(0xFF201A1B),
+    inverseSurface = Color(0xFFEBE0E1),
+    inversePrimary = Color(0xFFB90063),
+    surfaceTint = Color(0xFFFFB1C8)
+)
+
+val ZestLight = lightColorScheme(
+    primary = Color(0xFF815600),
+    onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFFFFDDB1),
+    onPrimaryContainer = Color(0xFF291800),
+    secondary = Color(0xFF6F5B40),
+    onSecondary = Color(0xFFFFFFFF),
+    secondaryContainer = Color(0xFFFADEBC),
+    onSecondaryContainer = Color(0xFF271904),
+    tertiary = Color(0xFF506440),
+    onTertiary = Color(0xFFFFFFFF),
+    tertiaryContainer = Color(0xFFD3EABC),
+    onTertiaryContainer = Color(0xFF0F2004),
+    error = Color(0xFFBA1A1A),
+    errorContainer = Color(0xFFFFDAD6),
+    onError = Color(0xFFFFFFFF),
+    onErrorContainer = Color(0xFF410002),
+    background = Color(0xFFFFFBFF),
+    onBackground = Color(0xFF1F1B16),
+    surface = Color(0xFFFFFBFF),
+    onSurface = Color(0xFF1F1B16),
+    surfaceVariant = Color(0xFFEFE0CF),
+    onSurfaceVariant = Color(0xFF4F4539),
+    outline = Color(0xFF817567),
+    inverseOnSurface = Color(0xFFF9EFE7),
+    inverseSurface = Color(0xFF34302A),
+    inversePrimary = Color(0xFFFFBA4B),
+    surfaceTint = Color(0xFF815600)
+)
+
+val ZestDark = darkColorScheme(
+    primary = Color(0xFFFFBA4B),
+    onPrimary = Color(0xFF442B00),
+    primaryContainer = Color(0xFF624000),
+    onPrimaryContainer = Color(0xFFFFDDB1),
+    secondary = Color(0xFFDDC2A1),
+    onSecondary = Color(0xFF3E2E16),
+    secondaryContainer = Color(0xFF56442A),
+    onSecondaryContainer = Color(0xFFFADEBC),
+    tertiary = Color(0xFFB7CEA2),
+    onTertiary = Color(0xFF233516),
+    tertiaryContainer = Color(0xFF394C2B),
+    onTertiaryContainer = Color(0xFFD3EABC),
+    error = Color(0xFFFFB4AB),
+    errorContainer = Color(0xFF93000A),
+    onError = Color(0xFF690005),
+    onErrorContainer = Color(0xFFFFDAD6),
+    background = Color(0xFF1F1B16),
+    onBackground = Color(0xFFEAE1D9),
+    surface = Color(0xFF1F1B16),
+    onSurface = Color(0xFFEAE1D9),
+    surfaceVariant = Color(0xFF4F4539),
+    onSurfaceVariant = Color(0xFFD3C4B4),
+    outline = Color(0xFF9B8F80),
+    inverseOnSurface = Color(0xFF1F1B16),
+    inverseSurface = Color(0xFFEAE1D9),
+    inversePrimary = Color(0xFF815600),
+    surfaceTint = Color(0xFFFFBA4B)
+)
+
+@Composable
+fun themeOptionMap(): MutableMap<String, Triple<ColorScheme, ColorScheme, String>> {
+    return mutableMapOf(
+        "THEME_DEEP_SEA" to Triple(DeepSeaLight, DeepSeaDark, stringResource(id = R.string.settings_theme_title_deep_sea)),
+        "THEME_FLAIR" to Triple(FlairLight, FlairDark, stringResource(id = R.string.settings_theme_title_flair)),
+        "THEME_ORGANIC" to Triple(OrganicLight, OrganicDark, stringResource(id = R.string.settings_theme_title_organic)),
+        "THEME_STRAWBERRY" to Triple(StrawberryLight, StrawberryDark, stringResource(id = R.string.settings_theme_title_strawberry)),
+        "THEME_ZEST" to Triple(ZestLight, ZestDark, stringResource(id = R.string.settings_theme_title_zest))
+    )
+}

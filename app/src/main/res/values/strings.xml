@@ -15,6 +15,7 @@
     <string name="ic_dashboard_content_desc">Staggered grid</string>
     <string name="ic_discover_tune_content_desc">Sort and filter</string>
     <string name="ic_download_content_desc">Download</string>
+    <string name="ic_emergency_home_content_desc">Warning</string>
     <string name="ic_event_available_content_desc">Calendar available</string>
     <string name="ic_event_note_content_desc">Calendar</string>
     <string name="ic_forum_content_desc">Chat bubbles</string>
@@ -28,10 +29,12 @@
     <string name="ic_menu_content_desc">Menu</string>
     <string name="ic_nights_stay_content_desc">Moon and stars</string>
     <string name="ic_open_in_full_content_desc">Expand</string>
+    <string name="ic_palette_content_desc">Color palette</string>
     <string name="ic_pause_content_desc">Pause</string>
     <string name="ic_person_content_desc">User</string>
     <string name="ic_pineapple_transparent_content_desc">Pineapple icon</string>
     <string name="ic_play_arrow_content_desc">Play</string>
+    <string name="ic_restart_content_desc">Restart</string>
     <string name="ic_search_content_desc">Magnifier</string>
     <string name="ic_send_content_desc">Send</string>
     <string name="ic_sentiment_extremely_dissatisfied_content_desc">Angry face</string>
@@ -64,6 +67,9 @@
     <string name="home_filter_sheet_time_year">Year</string>
     <string name="home_filter_sheet_time_all">All time</string>
     <string name="home_filter_sheet_apply_button">Apply filters</string>
+    <string name="home_nav_drawer_home_title">Home</string>
+    <string name="home_nav_drawer_settings_title">Preferences</string>
+    <string name="home_nav_drawer_account_button">Account</string>
 
     <string name="post_view_title_placeholder_text">View post</string>
     <string name="post_view_link_proceed_text">Visit site →</string>
@@ -84,5 +90,16 @@
     <string name="search_view_all_communities">View all communities</string>
 
     <string name="community_user_count_format">%1$s Members</string>
+
+    <string name="settings_title_bar_text">Preferences</string>
+    <string name="settings_theme_color_item_title">App theme</string>
+    <string name="settings_theme_title_deep_sea">Deep Sea</string>
+    <string name="settings_theme_title_organic">Organic</string>
+    <string name="settings_theme_title_flair">Flair</string>
+    <string name="settings_theme_title_strawberry">Strawberry</string>
+    <string name="settings_theme_title_zest">Zest</string>
+    <string name="settings_theme_restart_app_dialog_title">Restart app</string>
+    <string name="settings_theme_restart_app_dialog_subtitle">You must restart the application to apply your theme changes. Restart app now?</string>
+    <string name="settings_theme_restart_app_dialog_button">Restart now</string>
 
 </resources>
