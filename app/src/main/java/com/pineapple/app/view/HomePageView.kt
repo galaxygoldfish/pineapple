@@ -64,7 +64,7 @@ fun HomePageView(navController: NavController) {
     val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     rememberSystemUiController().setSystemBarsColor(
-        MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
+        MaterialTheme.colorScheme.surfaceColorAtElevation(5.dp)
     )
     LaunchedEffect(true) {
         viewModel.refreshTopCommunities()
@@ -99,7 +99,7 @@ fun HomePageView(navController: NavController) {
             Scaffold(
                 topBar = {
                     if (viewModel.selectedTabItem != 1) {
-                        Surface(tonalElevation = 2.dp) {
+                        Surface(tonalElevation = 1.dp) {
                             CenterAlignedTopAppBar(
                                 title = {
                                     Text(
@@ -129,7 +129,7 @@ fun HomePageView(navController: NavController) {
                                         )
                                     }
                                 },
-                                colors = smallTopAppBarColors(MaterialTheme.colorScheme.surface)
+                                colors = smallTopAppBarColors(MaterialTheme.colorScheme.surfaceColorAtElevation(5.dp))
                             )
                         }
                     }
@@ -155,7 +155,10 @@ fun HomePageView(navController: NavController) {
                             R.drawable.ic_person, R.string.ic_person_content_desc
                         )
                     )
-                    NavigationBar(tonalElevation = 2.dp) {
+                    NavigationBar(
+                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(5.dp),
+                        tonalElevation = 0.dp
+                    ) {
                         navbarItems.forEachIndexed { index, item ->
                             NavigationBarItem(
                                 selected = viewModel.selectedTabItem == index,
@@ -228,17 +231,17 @@ fun HomePageView(navController: NavController) {
 @OptIn(ExperimentalMaterial3Api::class)
 fun HomeNavigationDrawer(navController: NavController, viewModel: HomePageViewModel) {
     Column(modifier = Modifier.fillMaxWidth(0.78F)) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_pineapple_transparent),
-            contentDescription = stringResource(id = R.string.ic_pineapple_transparent_content_desc),
-            tint = MaterialTheme.colorScheme.secondary,
-            modifier = Modifier.padding(top = 30.dp, start = 20.dp)
-        )
         Column(
             modifier = Modifier
-                .padding(top = 23.dp, start = 16.dp)
+                .padding(start = 16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_pineapple_transparent),
+                contentDescription = stringResource(id = R.string.ic_pineapple_transparent_content_desc),
+                tint = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier.padding(top = 30.dp, start = 20.dp, bottom = 23.dp)
+            )
             NavigationDrawerItem(
                 label = { Text(stringResource(id = R.string.home_nav_drawer_home_title)) },
                 selected = true,

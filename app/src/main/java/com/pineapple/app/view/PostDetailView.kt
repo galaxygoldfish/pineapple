@@ -107,9 +107,9 @@ fun PostDetailView(
                                 )
                         ) {
                             CircularProgressIndicator(
-                                modifier = Modifier.align(Alignment.Center),
-                                color = MaterialTheme.colorScheme.secondary,
-                                strokeWidth = 3.dp
+                                modifier = Modifier.align(Alignment.Center).size(50.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.secondary
                             )
                         }
                     }

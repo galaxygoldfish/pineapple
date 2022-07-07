@@ -27,13 +27,16 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.ireward.htmlcompose.HtmlText
 import com.pineapple.app.R
+import com.pineapple.app.components.FilterBottomSheet
 import com.pineapple.app.components.RoundedStarShape
 import com.pineapple.app.model.reddit.SubredditData
+import com.pineapple.app.model.reddit.SubredditInfo
 import com.pineapple.app.theme.PineappleTheme
 import com.pineapple.app.util.getViewModel
 import com.pineapple.app.util.prettyNumber
@@ -44,62 +47,27 @@ import kotlinx.coroutines.launch
 @Composable
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 fun SubredditView(navController: NavController, subreddit: String) {
-    val viewModel = navController.context.getViewModel(SubredditViewModel::class.java)
+    val viewModel: SubredditViewModel = viewModel()
     var subredditInfo by remember { mutableStateOf<SubredditData?>(null) }
+    var currentBottomSheet by remember { mutableStateOf(0) }
     val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val coroutineScope = rememberCoroutineScope()
-    val context = LocalContext.current
     viewModel.currentSubreddit = subreddit
     LaunchedEffect(true) {
         viewModel.fetchInformation().collect {
             subredditInfo = it.data
         }
     }
-    Log.e("0", "subreddit: $subreddit")
     PineappleTheme {
         ModalBottomSheetLayout(
             sheetState = bottomSheetState,
             sheetContent = {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Row(
-                        modifier = Modifier
-                            .padding(top = 15.dp)
-                            .clip(RoundedCornerShape(5.dp))
-                            .size(width = 100.dp, height = 5.dp)
-                            .background(MaterialTheme.colorScheme.secondaryContainer)
-                    ) { }
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(subredditInfo?.iconUrl)
-                            .crossfade(true)
-                            .build().data,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .clip(RoundedStarShape(sides = 9))
-                            .size(100.dp)
-                            .padding(top = 15.dp)
-                    )
-                    Text(
-                        text = subredditInfo?.title.toString(),
-                        style = MaterialTheme.typography.headlineLarge
-                    )
-                    Text(
-                        text = String.format(
-                            stringResource(id = R.string.community_user_count_format),
-                            subredditInfo?.subscribers?.toInt()?.prettyNumber() ?: "0"
-                        ),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    HtmlText(
-                        text = subredditInfo?.descriptionHtml.toString(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        linkClicked = { link ->
-                            context.startActivity(
-                                Intent(Intent.ACTION_VIEW).apply {
-                                    data = Uri.parse(link)
-                                }
-                            )
-                        }
+                when(currentBottomSheet) {
+                    0 -> SubredditInfoBottomSheet(subredditInfo)
+                    1 -> FilterBottomSheet(
+                        timePeriod = viewModel.currentSortTime,
+                        sortType = viewModel.currentSortType,
+                        bottomSheetState = bottomSheetState
                     )
                 }
             }
@@ -131,7 +99,14 @@ fun SubredditView(navController: NavController, subreddit: String) {
                             }
                         },
                         actions = {
-                            IconButton(onClick = { }) {
+                            IconButton(
+                                onClick = {
+                                    coroutineScope.launch {
+                                        currentBottomSheet = 1
+                                        bottomSheetState.show()
+                                    }
+                                }
+                            ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_discover_tune),
                                     contentDescription = stringResource(id = R.string.ic_discover_tune_content_desc)
@@ -139,7 +114,10 @@ fun SubredditView(navController: NavController, subreddit: String) {
                             }
                             IconButton(
                                 onClick = {
-                                    coroutineScope.launch { bottomSheetState.show() }
+                                    coroutineScope.launch {
+                                        currentBottomSheet = 0
+                                        bottomSheetState.show()
+                                    }
                                 }
                             ) {
                                 Icon(
@@ -165,10 +143,58 @@ fun SubredditView(navController: NavController, subreddit: String) {
                     PostListView(
                         navController = navController,
                         subreddit = subreddit,
-                        sort = "hot"
+                        sort = viewModel.currentSortType.value,
+                        time = viewModel.currentSortTime.value
                     )
                 }
             }
         }
+    }
+}
+
+@Composable
+fun SubredditInfoBottomSheet(subredditInfo: SubredditData?) {
+    val context = LocalContext.current
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Row(
+            modifier = Modifier
+                .padding(top = 15.dp)
+                .clip(RoundedCornerShape(5.dp))
+                .size(width = 100.dp, height = 5.dp)
+                .background(MaterialTheme.colorScheme.secondaryContainer)
+        ) { }
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(subredditInfo?.iconUrl)
+                .crossfade(true)
+                .build().data,
+            contentDescription = null,
+            modifier = Modifier
+                .clip(RoundedStarShape(sides = 9))
+                .size(100.dp)
+                .padding(top = 15.dp)
+        )
+        Text(
+            text = subredditInfo?.title.toString(),
+            style = MaterialTheme.typography.headlineLarge
+        )
+        Text(
+            text = String.format(
+                stringResource(id = R.string.community_user_count_format),
+                subredditInfo?.subscribers?.toInt()?.prettyNumber() ?: "0"
+            ),
+            style = MaterialTheme.typography.titleMedium
+        )
+        HtmlText(
+            text = subredditInfo?.descriptionHtml.toString(),
+            style = MaterialTheme.typography.bodyMedium,
+            linkClicked = { link ->
+                context.startActivity(
+                    Intent(Intent.ACTION_VIEW).apply {
+                        data = Uri.parse(link)
+                    }
+                )
+            }
+        )
     }
 }

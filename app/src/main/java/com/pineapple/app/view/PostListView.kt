@@ -1,21 +1,24 @@
 package com.pineapple.app.view
 
 import android.os.Bundle
+import androidx.compose.animation.*
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
+import androidx.paging.compose.itemsIndexed
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.pineapple.app.NavDestination
@@ -28,6 +31,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun PostListView(
     navController: NavController,
@@ -46,7 +50,6 @@ fun PostListView(
                 currentPosts.refresh()
                 if (!currentPosts.loadState.isLoading()) {
                     CoroutineScope(Dispatchers.Main).launch {
-                        delay(500)
                         isRefreshingData = false
                     }
                 }
@@ -59,14 +62,19 @@ fun PostListView(
         if (currentPosts.loadState.isLoading()) {
             Box(modifier = Modifier.fillMaxSize()) {
                 CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = MaterialTheme.colorScheme.secondary,
-                    strokeWidth = 3.dp
+                    modifier = Modifier.align(Alignment.Center).size(50.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.secondary
                 )
             }
-        } else {
+        }
+        AnimatedVisibility(
+            visible = currentPosts.itemSnapshotList.isNotEmpty(),
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
             LazyColumn {
-                items(currentPosts) { item ->
+                itemsIndexed(currentPosts) { index, item ->
                     TextPostCard(
                         postData = item!!.data,
                         onClick = {
@@ -76,7 +84,10 @@ fun PostListView(
                             val link = permalink[5]
                             navController.navigate("${NavDestination.PostDetailView}/$sub/$uid/$link")
                         },
-                        navController = navController
+                        navController = navController,
+                        modifier = Modifier.animateEnterExit(
+                            enter = slideInVertically(animationSpec = spring(0.8F)) { it * (index + 1) }
+                        )
                     )
                 }
             }

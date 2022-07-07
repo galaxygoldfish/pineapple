@@ -15,7 +15,6 @@ import com.pineapple.app.model.reddit.UserItem
 import com.pineapple.app.network.NetworkServiceBuilder.REDDIT_BASE_URL
 import com.pineapple.app.network.NetworkServiceBuilder.apiService
 import com.pineapple.app.network.RedditNetworkService
-import kotlinx.coroutines.flow.flow
 
 class SearchViewModel : ViewModel() {
 
@@ -27,13 +26,13 @@ class SearchViewModel : ViewModel() {
     var currentSubredditList = mutableStateListOf<SubredditItem>()
     var currentUserList = mutableStateListOf<UserItem>()
 
-    suspend fun requestSubredditFlow() = flow {
-        emit(RequestResult.Loading(true))
+    var topSubredditList = mutableStateListOf<SubredditItem>()
+
+    suspend fun requestSubreddits() {
         val response = networkService.fetchTopSubreddits()
-        if (response.data.children.isNotEmpty()) {
-            emit(RequestResult.Success(response.data.children))
-        } else {
-            emit(RequestResult.Error("ERROR"))
+        topSubredditList.apply {
+            clear()
+            addAll(response.data.children)
         }
     }
 

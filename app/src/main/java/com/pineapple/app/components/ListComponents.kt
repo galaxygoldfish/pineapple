@@ -57,7 +57,8 @@ import kotlin.math.min
 fun TextPostCard(
     postData: PostData,
     onClick: () -> Unit,
-    navController: NavController
+    navController: NavController,
+    modifier: Modifier = Modifier
 ) {
     val gfycatNetworkService = remember { apiService<GfycatNetworkService>(GFYCAT_BASE_URL) }
     PineappleTheme {
@@ -70,7 +71,7 @@ fun TextPostCard(
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.5.dp)
                 ),
-                modifier = Modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp),
+                modifier = modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp),
                 onClick = onClick
             ) {
                 Row {
@@ -212,66 +213,70 @@ fun TextPostCard(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SmallListCard(
     text: String,
     iconUrl: String,
     onClick: () -> Unit,
-    userIcon: Boolean = false
+    userIcon: Boolean = false,
+    modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = Modifier
+    Card(
+        modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 5.dp)
-            .clip(RoundedCornerShape(10.dp))
-            .background(MaterialTheme.colorScheme.secondaryContainer.copy(0.4F))
-            .clickable { onClick.invoke() },
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 20.dp, vertical = 5.dp),
+        shape = RoundedCornerShape(10.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(0.4F)
+        ),
+        onClick = { onClick.invoke() }
     ) {
-
-        if (iconUrl.isNotEmpty()) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(iconUrl)
-                    .crossfade(true)
-                    .build().data,
-                contentDescription = null,
-                modifier = Modifier
-                    .padding(12.dp)
-                    .size(25.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.FillWidth,
-            )
-        } else {
-            Icon(
-                painter = painterResource(
-                    id = if (userIcon) {
-                        R.drawable.ic_person
-                    } else {
-                        R.drawable.ic_atr_dots
-                    }
-                ),
-                contentDescription = stringResource(
-                    id = if (userIcon) {
-                        R.string.ic_person_content_desc
-                    } else {
-                        R.string.ic_atr_dots_content_desc
-                    }
-                ),
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .padding(12.dp) // Actual container padding
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer)
-                    .size(25.dp)
-                    .padding(4.dp) // Icon padding
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (iconUrl.isNotEmpty()) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(iconUrl)
+                        .crossfade(true)
+                        .build().data,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(12.dp)
+                        .size(25.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.FillWidth,
+                )
+            } else {
+                Icon(
+                    painter = painterResource(
+                        id = if (userIcon) {
+                            R.drawable.ic_person
+                        } else {
+                            R.drawable.ic_atr_dots
+                        }
+                    ),
+                    contentDescription = stringResource(
+                        id = if (userIcon) {
+                            R.string.ic_person_content_desc
+                        } else {
+                            R.string.ic_atr_dots_content_desc
+                        }
+                    ),
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .padding(12.dp) // Actual container padding
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .size(25.dp)
+                        .padding(4.dp) // Icon padding
+                )
+            }
+            Text(
+                text = text,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(start = 4.dp)
             )
         }
-        Text(
-            text = text,
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(start = 4.dp)
-        )
     }
 }
 

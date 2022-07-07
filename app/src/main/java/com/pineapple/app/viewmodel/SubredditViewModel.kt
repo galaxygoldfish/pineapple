@@ -14,6 +14,8 @@ import kotlinx.coroutines.flow.flow
 class SubredditViewModel : ViewModel() {
 
     var currentSubreddit by mutableStateOf<String?>(null)
+    var currentSortTime = mutableStateOf("hour")
+    var currentSortType = mutableStateOf("hot")
     private val networkService by lazy { apiService<RedditNetworkService>(REDDIT_BASE_URL) }
 
     suspend fun fetchInformation() = flow {

@@ -14,6 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.accompanist.flowlayout.FlowRow
@@ -76,7 +78,8 @@ fun FilterBottomSheet(
                 SortChipItem(item = item, sortVar = tempSortType)
             }
         }
-        if (tempSortType.value == "Top" || tempSortType.value == "Controversial") {
+        if (tempSortType.value.equals("Top", true) ||
+            tempSortType.value.equals("Controversial", true)) {
             Text(
                 text = stringResource(id = R.string.home_filter_sheet_time_header),
                 style = MaterialTheme.typography.titleMedium,
@@ -126,12 +129,12 @@ private fun SortChipItem(
     val chipText = stringResource(id = item.first)
     Chip(
         text = chipText,
-        selected = sortVar.value == chipText,
+        selected = sortVar.value.equals(chipText, true),
         icon = painterResource(id = item.second),
         contentDescription = stringResource(id = item.third),
         unselectedBackground = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
         onClick = {
-            sortVar.value = chipText
+            sortVar.value = chipText.toLowerCase(Locale.current)
         },
         modifier = Modifier.padding(bottom = 10.dp)
     )
