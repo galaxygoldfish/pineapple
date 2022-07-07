@@ -1,7 +1,7 @@
 package com.pineapple.app.components
 
 import android.content.Context
-import android.graphics.Bitmap
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -13,41 +13,74 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.net.toUri
-import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.SimpleExoPlayer
-import com.google.android.exoplayer2.source.ProgressiveMediaSource
-import com.google.android.exoplayer2.ui.PlayerView
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
-import com.google.android.exoplayer2.util.Util
 import com.pineapple.app.R
 import com.pineapple.app.model.reddit.PostData
 import com.pineapple.app.util.parseFlair
-import com.pineapple.app.util.surfaceColorAtElevation
-import java.io.File
+import com.pineapple.app.util.toPx
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
+
+@Composable
+fun SheetHandle() {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .padding(top = 15.dp)
+                .clip(RoundedCornerShape(5.dp))
+                .size(width = 100.dp, height = 5.dp)
+                .background(MaterialTheme.colorScheme.secondaryContainer)
+                .align(Alignment.CenterHorizontally)
+        ) { }
+    }
+}
+
+@Composable
+fun drawerCustomShape(
+    localConfig: Configuration,
+    context: Context,
+    widthRatio: Float = 0.8F
+) = object : Shape {
+    override fun createOutline(
+        size: Size,
+        layoutDirection: LayoutDirection,
+        density: Density
+    ): Outline {
+        val screenWidthPixels = localConfig.screenWidthDp.toPx(context)
+        val screenHeightPixels = localConfig.screenHeightDp.toPx(context) + 5
+        return Outline.Rounded(
+            RoundRect(
+                left = 0f,
+                top = 0f,
+                right = screenWidthPixels * widthRatio,
+                bottom = screenHeightPixels.toFloat(),
+                topRightCornerRadius = CornerRadius(40F, 40F),
+                bottomRightCornerRadius = CornerRadius(40F, 40F)
+            )
+        )
+    }
+}
 
 @Composable
 fun Chip(

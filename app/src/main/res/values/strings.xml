@@ -70,6 +70,7 @@
     <string name="home_nav_drawer_home_title">Home</string>
     <string name="home_nav_drawer_settings_title">Preferences</string>
     <string name="home_nav_drawer_account_button">Account</string>
+    <string name="home_nav_drawer_popular_communities_header">Popular communities</string>
 
     <string name="post_view_title_placeholder_text">View post</string>
     <string name="post_view_link_proceed_text">Visit site →</string>
@@ -93,13 +94,14 @@
 
     <string name="settings_title_bar_text">Preferences</string>
     <string name="settings_theme_color_item_title">App theme</string>
+    <string name="settings_theme_color_item_subtitle">Personalize your browsing experience with custom color themes</string>
     <string name="settings_theme_title_deep_sea">Deep Sea</string>
     <string name="settings_theme_title_organic">Organic</string>
     <string name="settings_theme_title_flair">Flair</string>
     <string name="settings_theme_title_strawberry">Strawberry</string>
     <string name="settings_theme_title_zest">Zest</string>
     <string name="settings_theme_restart_app_dialog_title">Restart app</string>
-    <string name="settings_theme_restart_app_dialog_subtitle">You must restart the application to apply your theme changes. Restart app now?</string>
-    <string name="settings_theme_restart_app_dialog_button">Restart now</string>
+    <string name="settings_theme_restart_app_dialog_subtitle">The new theme will take effect when the app is restarted. Do you wish to restart now?</string>
+    <string name="settings_theme_restart_app_dialog_button">Apply theme</string>
 
 </resources>
