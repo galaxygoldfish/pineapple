@@ -13,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.pineapple.app.theme.PineappleTheme
+import com.pineapple.app.util.getPreferences
 import com.pineapple.app.util.getViewModel
 import com.pineapple.app.view.*
 import com.pineapple.app.viewmodel.MediaDetailViewModel
@@ -43,9 +44,14 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalAnimationApi::class)
     fun NavigationHost() {
         navigationController = rememberAnimatedNavController()
+        val onboardingComplete = getPreferences().getBoolean("ONBOARDING_COMPLETE", false)!!
         NavHost(
             navController = navigationController,
-            startDestination = NavDestination.WelcomeView
+            startDestination = if (onboardingComplete) {
+                NavDestination.HomePageView
+            } else {
+                NavDestination.WelcomeView
+            }
         ) {
             composable(NavDestination.WelcomeView) {
                 WelcomeView(navController = navigationController)

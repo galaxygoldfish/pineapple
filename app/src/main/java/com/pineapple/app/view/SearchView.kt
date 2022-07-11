@@ -174,6 +174,7 @@ fun SearchView(navController: NavController) {
                                 SmallListCard(
                                     text = item.data.name ?: "",
                                     iconUrl = item.data.snoovatar_img ?: item.data.icon_img ?: "",
+                                    userIcon = true,
                                     onClick = {  }
                                 )
                             }

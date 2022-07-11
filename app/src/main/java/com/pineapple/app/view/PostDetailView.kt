@@ -107,7 +107,9 @@ fun PostDetailView(
                                 )
                         ) {
                             CircularProgressIndicator(
-                                modifier = Modifier.align(Alignment.Center).size(50.dp),
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .size(50.dp),
                                 strokeWidth = 2.dp,
                                 color = MaterialTheme.colorScheme.secondary
                             )
@@ -116,7 +118,6 @@ fun PostDetailView(
                 }
                 RequestStatus.SUCCESS -> {
                     postData?.let { post ->
-                        Log.e("DD", "PODODO")
                         item {
                             HeaderBar(post = post)
                         }
@@ -192,6 +193,7 @@ fun HeaderBar(post: PostData) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InteractionBar(postData: PostData?) {
     Row(
@@ -199,57 +201,50 @@ fun InteractionBar(postData: PostData?) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 20.dp, end = 18.dp)
-            .border(
-                width = 2.dp,
-                shape = RoundedCornerShape(10.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant
-            )
+            .padding(start = 15.dp, end = 15.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_forum),
-                contentDescription = stringResource(id = R.string.ic_forum_content_desc),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier
-                    .padding(start = 15.dp)
-                    .size(17.dp)
-            )
-            Text(
-                text = String.format(
-                    stringResource(id = R.string.post_view_comments_overview_format),
-                    postData?.numComments
-                        ?.toInt()
-                        ?.prettyNumber()
-                ),
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(start = 12.dp)
-            )
+            FilledTonalIconButton(
+                onClick = { /*TODO*/ },
+                modifier = Modifier.padding(end = 5.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_share),
+                    contentDescription = stringResource(id = R.string.ic_share_content_desc),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            FilledTonalIconButton(onClick = { /*TODO*/ }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_bookmark),
+                    contentDescription = stringResource(id = R.string.ic_bookmark_content_desc),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(end = 10.dp)
         ) {
-            IconButton(onClick = { /*TODO*/ }) {
+            FilledTonalIconButton(onClick = { /*TODO*/ }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_thumb_up),
                     contentDescription = stringResource(id = R.string.ic_thumb_up_content_desc),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(17.dp)
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Text(
                 text = min(postData?.ups ?: 0L, Integer.MAX_VALUE.toLong())
                     .toInt()
                     .prettyNumber(),
-                style = MaterialTheme.typography.titleSmall
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(5.dp)
             )
-            IconButton(onClick = { /*TODO*/ }) {
+            FilledTonalIconButton(onClick = { /*TODO*/ }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_thumb_down),
                     contentDescription = stringResource(id = R.string.ic_thumb_down_content_desc),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(17.dp)
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -294,9 +289,7 @@ fun PostContentView(
                     Row {
                         AsyncImage(
                             model = ImageRequest.Builder(LocalContext.current)
-                                .data(
-                                    post.preview?.images?.get(0)?.source?.url?.replace("amp;", "")
-                                )
+                                .data(post.preview?.images?.get(0)?.source?.url?.replace("amp;", ""))
                                 .crossfade(true)
                                 .fallback(R.drawable.ic_event_available)
                                 .build().data,
@@ -371,10 +364,8 @@ fun PostContentView(
                                 }
                                 else -> {
                                     LocalContext.current.calculateRatioHeight(
-                                        ratioHeight = post.secureMedia?.reddit_video?.height?.toInt()
-                                            ?: 0,
-                                        ratioWidth = post.secureMedia?.reddit_video?.width?.toInt()
-                                            ?: 0,
+                                        ratioHeight = post.secureMedia?.reddit_video?.height?.toInt() ?: 0,
+                                        ratioWidth = post.secureMedia?.reddit_video?.width?.toInt() ?: 0,
                                         actualWidth = LocalConfiguration.current.screenWidthDp - 40
                                     )
                                 }

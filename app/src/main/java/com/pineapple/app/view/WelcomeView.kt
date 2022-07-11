@@ -14,6 +14,7 @@ import androidx.navigation.NavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.pineapple.app.NavDestination
 import com.pineapple.app.R
+import com.pineapple.app.util.getPreferences
 import com.pineapple.app.util.surfaceColorAtElevation
 
 @Composable
@@ -42,7 +43,13 @@ fun WelcomeView(navController: NavController) {
                     modifier = Modifier.padding(start = 2.dp, top = 5.dp)
                 )
                 FilledTonalButton(
-                    onClick = { /*TODO*/ },
+                    onClick = {
+                        /**
+                        navController.context.getPreferences().edit()
+                            .putBoolean("ONBOARDING_COMPLETE", true)
+                            .apply()
+                        **/
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 30.dp)
@@ -59,7 +66,13 @@ fun WelcomeView(navController: NavController) {
                 }
                 OutlinedButton(
                     onClick = {
-                        navController.navigate(NavDestination.HomePageView)
+                        navController.apply {
+                            context.getPreferences().edit()
+                                .putBoolean("USER_GUEST", true)
+                                .putBoolean("ONBOARDING_COMPLETE", true)
+                                .apply()
+                            navigate(NavDestination.HomePageView)
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
