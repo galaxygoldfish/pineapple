@@ -5,6 +5,8 @@ import android.net.Uri
 import android.text.Html
 import android.text.SpannableString
 import android.util.Log
+import androidx.compose.animation.*
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -39,16 +41,14 @@ import com.pineapple.app.model.gfycat.GfycatObject
 import com.pineapple.app.paging.RequestResult
 import com.pineapple.app.paging.RequestStatus
 import com.pineapple.app.model.reddit.*
-import com.pineapple.app.util.calculateRatioHeight
-import com.pineapple.app.util.getViewModel
-import com.pineapple.app.util.prettyNumber
+import com.pineapple.app.util.*
 import com.pineapple.app.viewmodel.PostDetailViewModel
 import okhttp3.internal.notify
 import java.lang.Long.min
 import java.net.URLEncoder
 
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 fun PostDetailView(
     navController: NavController,
     subreddit: String,
@@ -94,58 +94,77 @@ fun PostDetailView(
             )
         }
     ) {
-        LazyColumn(modifier = Modifier.padding(top = it.calculateTopPadding())) {
-            when (requestStatus.value?.status) {
-                RequestStatus.LOADING -> {
+        AnimatedVisibility(
+            visible = requestStatus.value?.status == RequestStatus.LOADING,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            val localConfig = LocalConfiguration.current
+            Box(
+                modifier = Modifier
+                    .size(
+                        height = localConfig.screenHeightDp.dp,
+                        width = localConfig.screenWidthDp.dp
+                    )
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .size(50.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            }
+        }
+        AnimatedVisibility(
+            visible = requestStatus.value?.status == RequestStatus.SUCCESS,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            LazyColumn(
+                modifier = Modifier.padding(top = it.calculateTopPadding())
+            ) {
+                postData?.let { post ->
                     item {
-                        val localConfig = LocalConfiguration.current
-                        Box(
-                            modifier = Modifier
-                                .size(
-                                    height = localConfig.screenHeightDp.dp,
-                                    width = localConfig.screenWidthDp.dp
-                                )
-                        ) {
-                            CircularProgressIndicator(
-                                modifier = Modifier
-                                    .align(Alignment.Center)
-                                    .size(50.dp),
-                                strokeWidth = 2.dp,
-                                color = MaterialTheme.colorScheme.secondary
+                        HeaderBar(
+                            post = post,
+                            modifier = Modifier.animateEnterExit(enter = slideInVertically(
+                                animationSpec = spring(0.8F)
+                            ) { it * 2 }
                             )
-                        }
+                        )
+                    }
+                    item {
+                        FlairBar(
+                            postData = post,
+                            modifier = Modifier
+                                .padding(start = 20.dp)
+                                .animateEnterExit(enter = slideInVertically(
+                                    animationSpec = spring(0.8F)
+                                ) { it * 3 }
+                                )
+                        )
+                    }
+                    item {
+                        PostContentView(
+                            post = post,
+                            navController = navController,
+                            viewModel = viewModel,
+                            modifier = Modifier.animateEnterExit(enter = slideInVertically(
+                                animationSpec = spring(0.8F)
+                            ) { it * 4 }
+                            )
+                        )
                     }
                 }
-                RequestStatus.SUCCESS -> {
-                    postData?.let { post ->
-                        item {
-                            HeaderBar(post = post)
-                        }
-                        item {
-                            FlairBar(
-                                postData = post,
-                                modifier = Modifier.padding(start = 20.dp)
-                            )
-                        }
-                        item {
-                            PostContentView(
-                                post = post,
-                                navController = navController,
+                item {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        InteractionBar(postData = postData)
+                        commentData?.let { commentDataList ->
+                            CommentListView(
+                                commentData = commentDataList,
                                 viewModel = viewModel
                             )
-                        }
-                    }
-                    item {
-                        Column(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            InteractionBar(postData = postData)
-                            commentData?.let { commentDataList ->
-                                CommentListView(
-                                    commentData = commentDataList,
-                                    viewModel = viewModel
-                                )
-                            }
                         }
                     }
                 }
@@ -155,8 +174,8 @@ fun PostDetailView(
 }
 
 @Composable
-fun HeaderBar(post: PostData) {
-    Column {
+fun HeaderBar(post: PostData, modifier: Modifier) {
+    Column(modifier = modifier) {
         Text(
             text = post.title,
             style = MaterialTheme.typography.displaySmall,
@@ -251,14 +270,22 @@ fun InteractionBar(postData: PostData?) {
     }
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun CommentListView(commentData: List<CommentPreData>, viewModel: PostDetailViewModel) {
-    FlowColumn(modifier = Modifier.padding(top = 10.dp)) {
-        commentData.forEach { item ->
-            CommentBubble(
-                commentData = item.data,
-                viewModel = viewModel
-            )
+    AnimatedVisibility(visible = commentData.isNotEmpty()) {
+        FlowColumn(modifier = Modifier.padding(top = 10.dp)) {
+            commentData.forEachIndexed { index, item ->
+                CommentBubble(
+                    commentData = item.data,
+                    viewModel = viewModel,
+                    modifier = Modifier.animateEnterExit(
+                        enter = slideInVertically(
+                            animationSpec = spring(dampingRatio = 0.8F)
+                        ) { it * (index + 6) }
+                    )
+                )
+            }
         }
     }
 }
@@ -268,131 +295,144 @@ fun CommentListView(commentData: List<CommentPreData>, viewModel: PostDetailView
 fun PostContentView(
     post: PostData,
     navController: NavController,
-    viewModel: PostDetailViewModel
+    viewModel: PostDetailViewModel,
+    modifier: Modifier
 ) {
-    when {
-        post.postHint == "link" -> {
-            if (post.domain != "imgur.com") {
-                Card(
-                    shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 15.dp),
-                    onClick = {
-                        Intent(Intent.ACTION_VIEW).apply {
-                            data = Uri.parse(post.url)
-                            navController.context.startActivity(this)
-                        }
-                    }
-                ) {
-                    Row {
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(post.preview?.images?.get(0)?.source?.url?.replace("amp;", ""))
-                                .crossfade(true)
-                                .fallback(R.drawable.ic_event_available)
-                                .build().data,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .width(100.dp)
-                                .height(65.dp)
-                                .clip(RoundedCornerShape(10.dp)),
-                            contentScale = ContentScale.FillHeight,
-                        )
-                        Column(
-                            modifier = Modifier.padding(
-                                vertical = 10.dp,
-                                horizontal = 15.dp
-                            )
-                        ) {
-                            Text(
-                                text = post.domain,
-                                style = MaterialTheme.typography.headlineSmall,
-                                textDecoration = TextDecoration.Underline
-                            )
-                            Text(
-                                text = stringResource(id = R.string.post_view_link_proceed_text),
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                        }
-                    }
-                }
-            }
-        }
-        post.selftext.isNotEmpty() -> {
-            Text(
-                text = post.selftext,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(
-                    start = 22.dp,
-                    end = 20.dp,
-                    top = 20.dp,
-                    bottom = 20.dp
-                )
-            )
-        }
-        else -> {
-            val mediaLink = when (post.postHint) {
-                "hosted:video" -> post.secureMedia!!.reddit_video.fallback_url.replace("amp;", "")
-                "rich:video" -> post.url
-                else -> {
-                    post.preview?.images?.get(0)?.source?.url?.replace("amp;", "")
-                        ?.ifEmpty { post.url }
-                }
-            }
-            mediaLink?.let {
-                MultiTypeMediaView(
-                    mediaHint = post.postHint,
-                    url = it,
-                    richDomain = post.domain,
-                    gfycatService = viewModel.gfycatService,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            vertical = 20.dp,
-                            horizontal = 20.dp
-                        )
-                        .height(
-                            when (post.postHint) {
-                                "image", "rich_video" -> {
-                                    LocalContext.current.calculateRatioHeight(
-                                        ratioWidth = post.thumbnailWidth.toInt(),
-                                        ratioHeight = post.thumbnailHeight.toInt(),
-                                        actualWidth = LocalConfiguration.current.screenWidthDp - 40
-                                    )
-                                }
-                                else -> {
-                                    LocalContext.current.calculateRatioHeight(
-                                        ratioHeight = post.secureMedia?.reddit_video?.height?.toInt() ?: 0,
-                                        ratioWidth = post.secureMedia?.reddit_video?.width?.toInt() ?: 0,
-                                        actualWidth = LocalConfiguration.current.screenWidthDp - 40
-                                    )
-                                }
+    Column(modifier = modifier) {
+        when {
+            post.postHint == "link" -> {
+                if (post.domain != "imgur.com") {
+                    Card(
+                        shape = RoundedCornerShape(10.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 15.dp),
+                        onClick = {
+                            Intent(Intent.ACTION_VIEW).apply {
+                                data = Uri.parse(post.url)
+                                navController.context.startActivity(this)
                             }
-                        )
-                        .clip(RoundedCornerShape(10.dp)),
-                    playerControls = { player ->
-                        VideoControls(
-                            player = player,
-                            onExpand = {
-                                navController.navigate(
-                                    "${NavDestination.MediaDetailView}/${post.postHint}/${
-                                        URLEncoder.encode(mediaLink)
-                                    }/${post.domain}/${URLEncoder.encode(post.title)}"
+                        }
+                    ) {
+                        Row {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(
+                                        post.preview?.images?.get(0)?.source?.url?.replace(
+                                            "amp;",
+                                            ""
+                                        )
+                                    )
+                                    .crossfade(true)
+                                    .fallback(R.drawable.ic_event_available)
+                                    .build().data,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .width(100.dp)
+                                    .height(65.dp)
+                                    .clip(RoundedCornerShape(10.dp)),
+                                contentScale = ContentScale.FillHeight,
+                            )
+                            Column(
+                                modifier = Modifier.padding(
+                                    vertical = 10.dp,
+                                    horizontal = 15.dp
                                 )
-                            },
-                            postTitle = post.title
-                        )
-                    },
-                    expandToFullscreen = {
-                        navController.navigate(
-                            "${NavDestination.MediaDetailView}/${post.postHint}/${
-                                URLEncoder.encode(mediaLink)
-                            }/${post.domain}/${URLEncoder.encode(post.title)}"
-                        )
+                            ) {
+                                Text(
+                                    text = post.domain,
+                                    style = MaterialTheme.typography.headlineSmall,
+                                    textDecoration = TextDecoration.Underline
+                                )
+                                Text(
+                                    text = stringResource(id = R.string.post_view_link_proceed_text),
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                            }
+                        }
                     }
+                }
+            }
+            post.selftext.isNotEmpty() -> {
+                Text(
+                    text = post.selftext,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(
+                        start = 22.dp,
+                        end = 20.dp,
+                        top = 20.dp,
+                        bottom = 20.dp
+                    )
                 )
+            }
+            else -> {
+                val mediaLink = when (post.postHint) {
+                    "hosted:video" -> post.secureMedia!!.reddit_video.fallback_url.replace(
+                        "amp;",
+                        ""
+                    )
+                    "rich:video" -> post.url
+                    else -> {
+                        post.preview?.images?.get(0)?.source?.url?.replace("amp;", "")
+                            ?.ifEmpty { post.url }
+                    }
+                }
+                mediaLink?.let {
+                    MultiTypeMediaView(
+                        mediaHint = post.postHint,
+                        url = it,
+                        richDomain = post.domain,
+                        gfycatService = viewModel.gfycatService,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                vertical = 20.dp,
+                                horizontal = 20.dp
+                            )
+                            .height(
+                                when (post.postHint) {
+                                    "image", "rich_video" -> {
+                                        LocalContext.current.calculateRatioHeight(
+                                            ratioWidth = post.thumbnailWidth.toInt(),
+                                            ratioHeight = post.thumbnailHeight.toInt(),
+                                            actualWidth = LocalConfiguration.current.screenWidthDp - 40
+                                        )
+                                    }
+                                    else -> {
+                                        LocalContext.current.calculateRatioHeight(
+                                            ratioHeight = post.secureMedia?.reddit_video?.height?.toInt()
+                                                ?: 0,
+                                            ratioWidth = post.secureMedia?.reddit_video?.width?.toInt()
+                                                ?: 0,
+                                            actualWidth = LocalConfiguration.current.screenWidthDp - 40
+                                        )
+                                    }
+                                }
+                            )
+                            .clip(RoundedCornerShape(10.dp)),
+                        playerControls = { player ->
+                            VideoControls(
+                                player = player,
+                                onExpand = {
+                                    navController.navigate(
+                                        "${NavDestination.MediaDetailView}/${post.postHint}/${
+                                            URLEncoder.encode(mediaLink)
+                                        }/${post.domain}/${URLEncoder.encode(post.title)}"
+                                    )
+                                },
+                                postTitle = post.title
+                            )
+                        },
+                        expandToFullscreen = {
+                            navController.navigate(
+                                "${NavDestination.MediaDetailView}/${post.postHint}/${
+                                    URLEncoder.encode(mediaLink)
+                                }/${post.domain}/${URLEncoder.encode(post.title)}"
+                            )
+                        }
+                    )
+                }
             }
         }
     }

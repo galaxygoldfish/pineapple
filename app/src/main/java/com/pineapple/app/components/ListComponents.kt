@@ -262,90 +262,96 @@ fun SmallListCard(
 }
 
 @Composable
-fun CommentBubble(commentData: CommentData, viewModel: PostDetailViewModel) {
-    commentData.body?.let { comment ->
-        if (comment != "[removed]") {
-            var currentTextLines by remember { mutableStateOf(Integer.MAX_VALUE) }
-            var shouldShowExpansion by remember { mutableStateOf(false) }
-            var userInformation by remember { mutableStateOf<UserAbout?>(null) }
-            LaunchedEffect(key1 = true) {
-                if (commentData.author != "[deleted]") {
-                    userInformation = viewModel.redditService.fetchUserInfo(commentData.author).data
-                }
-            }
-            AnimatedVisibility(visible = true) {
-                userInformation?.let { user ->
-                Row(
-                    modifier = Modifier
-                        .width(LocalConfiguration.current.screenWidthDp.dp)
-                        .padding(top = 17.dp)
-                ) {
-                    val url = user.snoovatar_img.toString().ifBlank {
-                        user.icon_img
+fun CommentBubble(
+    commentData: CommentData,
+    viewModel: PostDetailViewModel,
+    modifier: Modifier
+) {
+    Column(modifier) {
+        commentData.body?.let { comment ->
+            if (comment != "[removed]") {
+                var currentTextLines by remember { mutableStateOf(Integer.MAX_VALUE) }
+                var shouldShowExpansion by remember { mutableStateOf(false) }
+                var userInformation by remember { mutableStateOf<UserAbout?>(null) }
+                LaunchedEffect(key1 = true) {
+                    if (commentData.author != "[deleted]") {
+                        userInformation = viewModel.redditService.fetchUserInfo(commentData.author).data
                     }
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(url)
-                            .crossfade(true)
-                            .build().data,
-                        contentDescription = null,
+                }
+                AnimatedVisibility(visible = true) {
+                    userInformation?.let { user ->
+                    Row(
                         modifier = Modifier
-                            .padding(start = 10.dp, end = 10.dp, top = 2.dp)
-                            .size(30.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(0.5F)),
-                        contentScale = ContentScale.FillWidth,
-                    )
-                    Column {
-                        Text(
-                            text = user.name ?: "",
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(start = 2.dp, bottom = 5.dp)
-                        )
-                        Column(
+                            .width(LocalConfiguration.current.screenWidthDp.dp)
+                            .padding(top = 17.dp)
+                    ) {
+                        val url = user.snoovatar_img.toString().ifBlank {
+                            user.icon_img
+                        }
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(url)
+                                .crossfade(true)
+                                .build().data,
+                            contentDescription = null,
                             modifier = Modifier
-                                .padding(end = 17.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                        ) {
+                                .padding(start = 10.dp, end = 10.dp, top = 2.dp)
+                                .size(30.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(0.5F)),
+                            contentScale = ContentScale.FillWidth,
+                        )
+                        Column {
                             Text(
-                                text = comment,
-                                modifier = Modifier.padding(10.dp),
-                                maxLines = currentTextLines,
-                                onTextLayout = { textLayoutResult ->
-                                    if (textLayoutResult.lineCount > 5 && !shouldShowExpansion) {
-                                        shouldShowExpansion = true
-                                        currentTextLines = 5
-                                    }
-                                }
+                                text = user.name ?: "",
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(start = 2.dp, bottom = 5.dp)
                             )
-                            if (shouldShowExpansion) {
+                            Column(
+                                modifier = Modifier
+                                    .padding(end = 17.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                            ) {
                                 Text(
-                                    text = if (currentTextLines != Integer.MAX_VALUE) {
-                                        stringResource(id = R.string.post_view_comments_expand_bubble)
-                                    } else {
-                                        stringResource(id = R.string.post_view_comments_collapse_bubble)
-                                    },
-                                    style = MaterialTheme.typography.titleSmall,
-                                    modifier = Modifier
-                                        .padding(top = 2.dp, bottom = 10.dp, start = 10.dp)
-                                        .clickable {
-                                            currentTextLines.let {
-                                                currentTextLines =
-                                                    if (it == Integer.MAX_VALUE) {
-                                                        5
-                                                    } else {
-                                                        Integer.MAX_VALUE
-                                                    }
-                                            }
+                                    text = comment,
+                                    modifier = Modifier.padding(10.dp),
+                                    maxLines = currentTextLines,
+                                    onTextLayout = { textLayoutResult ->
+                                        if (textLayoutResult.lineCount > 5 && !shouldShowExpansion) {
+                                            shouldShowExpansion = true
+                                            currentTextLines = 5
                                         }
+                                    }
                                 )
+                                if (shouldShowExpansion) {
+                                    Text(
+                                        text = if (currentTextLines != Integer.MAX_VALUE) {
+                                            stringResource(id = R.string.post_view_comments_expand_bubble)
+                                        } else {
+                                            stringResource(id = R.string.post_view_comments_collapse_bubble)
+                                        },
+                                        style = MaterialTheme.typography.titleSmall,
+                                        modifier = Modifier
+                                            .padding(top = 2.dp, bottom = 10.dp, start = 10.dp)
+                                            .clickable {
+                                                currentTextLines.let {
+                                                    currentTextLines =
+                                                        if (it == Integer.MAX_VALUE) {
+                                                            5
+                                                        } else {
+                                                            Integer.MAX_VALUE
+                                                        }
+                                                }
+                                            }
+                                    )
+                                }
+                                }
                             }
                         }
                     }
                 }
             }
         }
-    }
     }
 }

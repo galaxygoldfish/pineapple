@@ -7,7 +7,13 @@ import android.util.DisplayMetrics
 import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.slideInVertically
 import androidx.compose.material3.ColorScheme
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.platform.LocalConfiguration
