@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.text.Html
 import android.util.Log
+import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.DefaultTranslationY
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -52,6 +54,9 @@ fun SubredditView(navController: NavController, subreddit: String) {
     var currentBottomSheet by remember { mutableStateOf(0) }
     val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val coroutineScope = rememberCoroutineScope()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+       rememberSplineBasedDecay()
+    )
     viewModel.currentSubreddit = subreddit
     LaunchedEffect(true) {
         viewModel.fetchInformation().collect {
@@ -73,20 +78,19 @@ fun SubredditView(navController: NavController, subreddit: String) {
             }
         ) {
             Scaffold(
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                 topBar = {
                     LargeTopAppBar(
                         title = {
                             Column {
                                 Text(
-                                    text = subredditInfo?.title.toString(),
-                                    style = MaterialTheme.typography.headlineMedium
+                                    text = subredditInfo?.title.toString()
                                 )
                                 Text(
                                     text = String.format(
                                         stringResource(id = R.string.community_user_count_format),
                                         subredditInfo?.subscribers?.toInt()?.prettyNumber() ?: "0"
-                                    ),
-                                    style = MaterialTheme.typography.titleSmall
+                                    )
                                 )
                             }
                         },
@@ -126,9 +130,7 @@ fun SubredditView(navController: NavController, subreddit: String) {
                                 )
                             }
                         },
-                        colors = TopAppBarDefaults.largeTopAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
-                        )
+                        scrollBehavior = scrollBehavior
                     )
                 }
             ) {

@@ -30,6 +30,9 @@ interface RedditNetworkService {
     @GET("subreddits/popular")
     suspend fun fetchTopSubreddits() : Listing<SubredditItem>
 
+    @GET("users/popular")
+    suspend fun fetchTopUsers() : Listing<UserItem>
+
     @GET("r/{subreddit}/about")
     suspend fun fetchSubredditInfo(
         @Path("subreddit") subreddit: String,

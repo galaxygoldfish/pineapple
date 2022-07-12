@@ -45,6 +45,7 @@ import coil.size.Size
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.Player.*
 import com.google.android.exoplayer2.Timeline
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.ui.PlayerControlView
@@ -63,14 +64,17 @@ import java.net.URLEncoder
 @OptIn(ExperimentalMaterial3Api::class)
 fun ExoVideoPlayer(
     url: String,
+    previewUrl: String,
     modifier: Modifier,
     modifierVideo: BoxScope.() -> Modifier,
-    playerControls: @Composable (Player) -> Unit,
-    detailedView: Boolean = false
+    playerControls: @Composable (MutableState<Player?>) -> Unit,
+    expandedView: Boolean = false
 ) {
-    var playerController by remember { mutableStateOf<Player?>(null) }
+    val playerController = remember { mutableStateOf<Player?>(null) }
     var playbackState by remember { mutableStateOf(ExoPlayer.STATE_IDLE) }
     var showPlayerControls by remember { mutableStateOf(true) }
+    var showExoPlayer by remember { mutableStateOf(false) }
+    var playAutomatically by remember { mutableStateOf(false) }
     Box(
         modifier = modifier
             .background(Color.Black)
@@ -78,38 +82,86 @@ fun ExoVideoPlayer(
                 showPlayerControls = !showPlayerControls
             }
     ) {
-        AndroidView(
-            modifier = modifierVideo(this),
-            factory = { context ->
-                StyledPlayerView(context).apply {
-                    player = ExoPlayer.Builder(context).build().apply {
-                        val dataSourceFactory = DefaultDataSource.Factory(context)
-                        val internetVideoItem = MediaItem.fromUri(url)
-                        val internetVideoSource = ProgressiveMediaSource
-                            .Factory(dataSourceFactory)
-                            .createMediaSource(internetVideoItem)
-                        addMediaSource(internetVideoSource)
-                        prepare()
-                        useController = false
-                        addListener(object : Player.Listener {
-                            override fun onPlayerStateChanged(playWhenReady: Boolean, playbackControlState: Int) {
-                                super.onPlayerStateChanged(playWhenReady, playbackState)
-                                playbackState = playbackControlState
-                            }
-                        })
+        if (!expandedView) {
+            AnimatedVisibility(
+                visible = playerController.value == null,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(previewUrl)
+                            .crossfade(true)
+                            .build().data,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.FillWidth
+                    )
+                    FilledTonalIconButton(
+                        onClick = {
+                            showExoPlayer = true
+                            playAutomatically = true
+                            showPlayerControls = false
+                        },
+                        modifier = Modifier
+                            .size(80.dp)
+                            .shadow(elevation = 5.dp, shape = RoundedStarShape(sides = 9))
+                            .align(Alignment.Center),
+                        shape = RoundedStarShape(sides = 9)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_play_arrow),
+                            contentDescription = stringResource(id = R.string.ic_play_arrow_content_desc),
+                            modifier = Modifier
+                                .padding(end = 2.dp)
+                                .size(40.dp)
+                        )
                     }
-                    playerController = player
                 }
             }
-        )
+        } else {
+            showExoPlayer = true
+        }
         AnimatedVisibility(
-            visible = showPlayerControls,
+            visible = showExoPlayer,
+            modifier = modifierVideo(this),
             enter = fadeIn(),
             exit = fadeOut()
         ) {
-            playerController?.let {
-                playerControls(it)
-            }
+            AndroidView(
+                factory = { context ->
+                    StyledPlayerView(context).apply {
+                        player = ExoPlayer.Builder(context).build().apply {
+                            val dataSourceFactory = DefaultDataSource.Factory(context)
+                            val internetVideoItem = MediaItem.fromUri(url)
+                            val internetVideoSource = ProgressiveMediaSource
+                                .Factory(dataSourceFactory)
+                                .createMediaSource(internetVideoItem)
+                            addMediaSource(internetVideoSource)
+                            prepare()
+                            useController = false
+                            addListener(object : Listener {
+                                override fun onPlaybackStateChanged(state: Int) {
+                                    super.onPlaybackStateChanged(state)
+                                    playbackState = state
+                                    if (playAutomatically && state == STATE_READY) {
+                                        play()
+                                    }
+                                }
+                            })
+                        }
+                        playerController.value = player
+                    }
+                }
+            )
+        }
+        AnimatedVisibility(
+            visible = showPlayerControls && showExoPlayer,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            playerControls(playerController)
         }
     }
 }
@@ -150,10 +202,11 @@ fun MultiTypeMediaView(
     modifierVideo: (BoxScope.() -> Modifier) = { Modifier },
     richDomain: String? = null,
     gfycatService: GfycatNetworkService? = null,
-    playerControls: @Composable (Player) -> Unit,
+    playerControls: @Composable (MutableState<Player?>) -> Unit,
     expandToFullscreen: (() -> Unit)? = null,
-    detailedView: Boolean = false,
-    imageControls: (@Composable () -> Unit)? = null
+    imageControls: (@Composable () -> Unit)? = null,
+    previewUrl: String = "",
+    expandedView: Boolean = false
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         when (mediaHint) {
@@ -185,8 +238,9 @@ fun MultiTypeMediaView(
                     url = url.replace("amp;", ""),
                     modifier = modifier,
                     playerControls = playerControls,
-                    detailedView = detailedView,
-                    modifierVideo = modifierVideo
+                    modifierVideo = modifierVideo,
+                    previewUrl = previewUrl,
+                    expandedView = expandedView
                 )
             }
             "rich:video" -> {
@@ -230,7 +284,7 @@ fun MultiTypeMediaView(
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun VideoControls(
-    player: Player,
+    player: MutableState<Player?>,
     postTitle: String,
     onExpand: () -> Unit,
     onDownload: (() -> Unit)? = null,
@@ -239,14 +293,20 @@ fun VideoControls(
 ) {
     val mainHandler = Handler(Looper.getMainLooper())
     val context = LocalContext.current
-    var videoProgress by remember { mutableStateOf(player.currentPosition) }
+    var videoProgress by remember { mutableStateOf(player.value?.currentPosition) }
     var playPauseIcon by remember {
-        mutableStateOf(if (player.isPlaying) R.drawable.ic_pause else R.drawable.ic_play_arrow)
+        mutableStateOf(
+            if (player.value?.isPlaying == true) {
+                R.drawable.ic_pause
+            } else {
+                R.drawable.ic_play_arrow
+            }
+        )
     }
     var bottomControlHeight by remember { mutableStateOf(0.dp) }
     val updateProgress = object : Runnable {
         override fun run() {
-            videoProgress = player.currentPosition
+            videoProgress = player.value?.currentPosition
             mainHandler.postDelayed(this, 100)
         }
     }
@@ -267,11 +327,12 @@ fun VideoControls(
         ) {
             FilledTonalIconButton(
                 onClick = {
-                    playPauseIcon = if (player.isPlaying) {
-                        player.pause()
+                    player.value?.prepare()
+                    playPauseIcon = if (player.value?.isPlaying == true) {
+                        player.value?.pause()
                         R.drawable.ic_play_arrow
                     } else {
-                        player.play()
+                        player.value?.play()
                         R.drawable.ic_pause
                     }
                 },
@@ -289,7 +350,7 @@ fun VideoControls(
                         .size(40.dp)
                 )
             }
-            if (player.contentDuration > 0) {
+            if ((player.value?.contentDuration ?: 0) > 0) {
                 FilledTonalIconButton(
                     onClick = { onExpand.invoke() },
                     modifier = Modifier
@@ -368,22 +429,24 @@ fun VideoControls(
                     Text(
                         text =  String.format(
                             format = "%02d:%02d",
-                            videoProgress / 1000 / 60,
-                            videoProgress / 1000 % 60
+                            (videoProgress?.div(1000) ?: 1) / 60,
+                            (videoProgress?.div(1000) ?: 1) % 60
                         ),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.surface,
                         modifier = Modifier.padding(end = 10.dp)
                     )
                     Slider(
-                        value = videoProgress.toFloat(),
+                        value = videoProgress?.toFloat() ?: 0F,
                         onValueChange = {
                             videoProgress = it.toLong()
                         },
                         onValueChangeFinished = {
-                            player.seekTo(videoProgress)
+                            videoProgress?.let {
+                                player.value?.seekTo(it)
+                            }
                         },
-                        valueRange = 0F..(player.contentDuration.toFloat()),
+                        valueRange = 0F..(player.value?.contentDuration?.toFloat() ?: 0F),
                         colors = SliderDefaults.colors(
                             thumbColor = MaterialTheme.colorScheme.secondaryContainer,
                             activeTrackColor = MaterialTheme.colorScheme.secondaryContainer,

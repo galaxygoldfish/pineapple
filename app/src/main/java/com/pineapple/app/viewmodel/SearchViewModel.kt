@@ -27,12 +27,18 @@ class SearchViewModel : ViewModel() {
     var currentUserList = mutableStateListOf<UserItem>()
 
     var topSubredditList = mutableStateListOf<SubredditItem>()
+    var topUserList = mutableStateListOf<UserItem>()
 
     suspend fun requestSubreddits() {
-        val response = networkService.fetchTopSubreddits()
+        val communities = networkService.fetchTopSubreddits()
+        val users = networkService.fetchTopUsers()
         topSubredditList.apply {
             clear()
-            addAll(response.data.children)
+            repeat(5) { add(communities.data.children[it]) }
+        }
+        topUserList.apply {
+            clear()
+            repeat(5) { add(users.data.children[it]) }
         }
     }
 

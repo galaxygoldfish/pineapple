@@ -1,6 +1,5 @@
 package com.pineapple.app.view
 
-import android.text.method.TextKeyListener.clear
 import androidx.compose.animation.*
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -14,7 +13,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.UiComposable
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
@@ -25,16 +23,13 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
-import com.google.common.collect.Multimaps.index
 import com.pineapple.app.NavDestination
 import com.pineapple.app.R
 import com.pineapple.app.components.Chip
 import com.pineapple.app.components.SmallListCard
 import com.pineapple.app.components.TextOnlyTextField
-import com.pineapple.app.components.TextPostCard
-import com.pineapple.app.model.reddit.SubredditItem
+import com.pineapple.app.components.PostCard
 import com.pineapple.app.util.getViewModel
-import com.pineapple.app.util.isLoading
 import com.pineapple.app.viewmodel.SearchViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -131,7 +126,7 @@ fun SearchView(navController: NavController) {
                         }
                         LazyColumn(modifier = Modifier.padding(top = 15.dp)) {
                             itemsIndexed(viewModel.currentPostList) { _, item ->
-                                TextPostCard(
+                                PostCard(
                                     postData = item.data,
                                     navController = navController,
                                     onClick = {
@@ -333,7 +328,7 @@ fun AllResultSearchView(
             repeat((viewModel.currentPostList.size - 1).coerceAtMost(3)) { index ->
                 viewModel.currentPostList[index].let { item ->
                     item {
-                        TextPostCard(
+                        PostCard(
                             postData = item.data,
                             navController = navController,
                             onClick = {
@@ -364,8 +359,8 @@ fun AllResultSearchView(
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
+@OptIn(ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
 fun PopularContentView(
     viewModel: SearchViewModel,
     navController: NavController
@@ -375,19 +370,6 @@ fun PopularContentView(
         viewModel.requestSubreddits()
     }
     Column {
-        Row {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_trending_up),
-                contentDescription = stringResource(id = R.string.ic_trending_up_content_desc),
-                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.padding(start = 21.dp, top = 5.dp)
-            )
-            Text(
-                text = stringResource(id = R.string.search_trending_subreddit_header),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(start = 10.dp, top = 5.dp)
-            )
-        }
         if (viewModel.topSubredditList.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize()) {
                 CircularProgressIndicator(
@@ -411,7 +393,29 @@ fun PopularContentView(
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
-                LazyColumn(modifier = Modifier.padding(top = 10.dp)) {
+                LazyColumn {
+                    stickyHeader {
+                        Row(
+                            modifier = Modifier.fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surface)
+                                .padding(vertical = 10.dp)
+                                .animateEnterExit(
+                                    enter = slideInVertically(animationSpec = spring(0.5F)) { 0 }
+                                )
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_trending_up),
+                                contentDescription = stringResource(id = R.string.ic_trending_up_content_desc),
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.padding(start = 21.dp, top = 5.dp)
+                            )
+                            Text(
+                                text = stringResource(id = R.string.search_trending_subreddit_header),
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(start = 10.dp, top = 5.dp)
+                            )
+                        }
+                    }
                     itemsIndexed(viewModel.topSubredditList) { index, item ->
                         SmallListCard(
                             text = item.data.displayNamePrefixed,
@@ -424,8 +428,43 @@ fun PopularContentView(
                                 )
                             },
                             modifier = Modifier.animateEnterExit(
-                                enter = slideInVertically(animationSpec = spring(0.5F)) { it * (index + 1) }
+                                enter = slideInVertically(animationSpec = spring(0.5F)) { it * (index + 2) }
                             )
+                        )
+                    }
+                    stickyHeader {
+                        Row(
+                            modifier = Modifier.fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surface)
+                                .padding(vertical = 10.dp)
+                                .animateEnterExit(
+                                    enter = slideInVertically(animationSpec = spring(0.5F)) { it * 6 }
+                                )
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_person),
+                                contentDescription = stringResource(id = R.string.ic_person_content_desc),
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.padding(start = 21.dp, top = 5.dp)
+                            )
+                            Text(
+                                text = stringResource(id = R.string.search_trending_users_header),
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(start = 10.dp, top = 5.dp)
+                            )
+                        }
+                    }
+                    itemsIndexed(viewModel.topUserList) { index, item ->
+                        SmallListCard(
+                            text = item.data.let { it.display_name_prefixed ?: "" },
+                            iconUrl = item.data.let { it.snoovatar_img?.ifBlank { it.icon_img ?: "" } ?: "" },
+                            onClick = {
+
+                            },
+                            modifier = Modifier.animateEnterExit(
+                                enter = slideInVertically(animationSpec = spring(0.5F)) { it * (index + 7) }
+                            ),
+                            userIcon = true
                         )
                     }
                 }

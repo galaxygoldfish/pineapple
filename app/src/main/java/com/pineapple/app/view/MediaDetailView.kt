@@ -59,7 +59,6 @@ fun MediaDetailView(
                         postTitle = titleText
                     )
                 },
-                detailedView = true,
                 modifierVideo = {
                     Modifier.align(Alignment.Center)
                 },
@@ -73,7 +72,8 @@ fun MediaDetailView(
                         },
                         onBackPress = { navController.popBackStack() }
                     )
-                }
+                },
+                expandedView = true
             )
         }
     }

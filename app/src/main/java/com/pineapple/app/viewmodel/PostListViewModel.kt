@@ -2,6 +2,7 @@ package com.pineapple.app.viewmodel
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.paging.Pager
@@ -20,9 +21,8 @@ class PostListViewModel : ViewModel() {
     private val networkService by lazy { apiService<RedditNetworkService>(REDDIT_BASE_URL) }
     var isRefreshingData by mutableStateOf(false)
 
-    fun posts(name: String, sort: String, time: String): Flow<PagingData<PostItem>>
-        = Pager(PagingConfig(3)) {
-            NetworkPagingSource(networkService, name, sort, time)
-        }.flow
+    fun posts(name: String, sort: String, time: String) = Pager(PagingConfig(3)) {
+        NetworkPagingSource(networkService, name, sort, time)
+    }.flow
 
 }

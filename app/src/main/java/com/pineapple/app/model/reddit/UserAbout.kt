@@ -9,5 +9,6 @@ data class UserAbout(
     var id: String,
     var snoovatar_img: String?,
     var icon_img: String?,
-    var name: String?
+    var name: String?,
+    var display_name_prefixed: String?
 )
