@@ -39,21 +39,16 @@ fun PostListView(
     sort: String,
     time: String = "hour"
 ) {
-    val viewModel: PostListViewModel = viewModel()
-    var currentPosts by remember { mutableStateOf<Flow<PagingData<PostItem>>?>(null) }
+    val viewModel = LocalContext.current.getViewModel(PostListViewModel::class.java)
+    val currentPosts = viewModel.posts(subreddit, sort, time).collectAsLazyPagingItems()
     val refreshState = rememberSwipeRefreshState(isRefreshing = viewModel.isRefreshingData)
-    val lazyListState = rememberLazyListState()
-    LaunchedEffect(key1 = true) {
-        currentPosts = viewModel.posts(subreddit, sort, time)
-    }
-    val currentPagingItems = currentPosts?.collectAsLazyPagingItems()
     SwipeRefresh(
         state = refreshState,
         onRefresh = {
             viewModel.apply {
                 isRefreshingData = true
-                currentPagingItems?.refresh()
-                if (currentPagingItems?.loadState?.isLoading() == false) {
+                currentPosts.refresh()
+                if (!currentPosts.loadState.isLoading()) {
                     CoroutineScope(Dispatchers.Main).launch {
                         isRefreshingData = false
                     }
@@ -64,45 +59,36 @@ fun PostListView(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
     ) {
-        if (currentPagingItems?.loadState?.isLoading() == true) {
+        if (currentPosts.loadState.isLoading()) {
             Box(modifier = Modifier.fillMaxSize()) {
                 CircularProgressIndicator(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .size(50.dp),
+                    modifier = Modifier.align(Alignment.Center).size(50.dp),
                     strokeWidth = 2.dp,
                     color = MaterialTheme.colorScheme.secondary
                 )
             }
         }
         AnimatedVisibility(
-            visible = currentPagingItems?.itemSnapshotList?.isNotEmpty() == true,
+            visible = currentPosts.itemSnapshotList.isNotEmpty(),
             enter = fadeIn(),
             exit = fadeOut()
         ) {
-            LazyColumn(state = lazyListState) {
-                currentPagingItems?.let {
-                    itemsIndexed(
-                        items = it,
-                        key = { index, item ->
-                           Pair(item.data.postHint, index)
-                        }
-                    ) { index, item ->
-                        PostCard(
-                            postData = item!!.data,
-                            onClick = {
-                                val permalink = item.data.permalink.split("/")
-                                val sub = permalink[2]
-                                val uid = permalink[4]
-                                val link = permalink[5]
-                                navController.navigate("${NavDestination.PostDetailView}/$sub/$uid/$link")
-                            },
-                            navController = navController,
-                            modifier = Modifier.animateEnterExit(
-                                enter = slideInVertically(animationSpec = spring(0.8F)) { it * (index + 1) }
-                            )
+            LazyColumn {
+                itemsIndexed(currentPosts) { index, item ->
+                    PostCard(
+                        postData = item!!.data,
+                        onClick = {
+                            val permalink = item.data.permalink.split("/")
+                            val sub = permalink[2]
+                            val uid = permalink[4]
+                            val link = permalink[5]
+                            navController.navigate("${NavDestination.PostDetailView}/$sub/$uid/$link")
+                        },
+                        navController = navController,
+                        modifier = Modifier.animateEnterExit(
+                            enter = slideInVertically(animationSpec = spring(0.8F)) { it * (index + 1) }
                         )
-                    }
+                    )
                 }
             }
         }

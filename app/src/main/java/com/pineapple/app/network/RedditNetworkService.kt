@@ -12,7 +12,7 @@ interface RedditNetworkService {
     fun fetchSubreddit(
         @Path("name") name: String,
         @Path("sort") sort: String,
-        @Query("time") time: String,
+        @Query("t") time: String,
         @Query("after") after: String? = null,
         @Query("nsfw") nsfw: Int = 0,
         @Query("include_over_18") over18: String = "off"

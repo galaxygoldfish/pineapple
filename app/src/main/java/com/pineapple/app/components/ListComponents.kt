@@ -1,7 +1,9 @@
 package com.pineapple.app.components
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -18,6 +20,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.AsyncImage
@@ -29,9 +32,12 @@ import com.pineapple.app.network.GfycatNetworkService
 import com.pineapple.app.network.NetworkServiceBuilder.GFYCAT_BASE_URL
 import com.pineapple.app.network.NetworkServiceBuilder.apiService
 import com.pineapple.app.theme.PineappleTheme
-import com.pineapple.app.util.calculateRatioHeight
-import com.pineapple.app.util.surfaceColorAtElevation
+import com.pineapple.app.util.*
 import com.pineapple.app.viewmodel.PostDetailViewModel
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
+import java.lang.Long
 import java.net.URLEncoder
 
 @Composable
@@ -56,23 +62,25 @@ fun PostCard(
                 modifier = modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp),
                 onClick = onClick
             ) {
-                Row {
-                    AvatarPlaceholderIcon(
-                        modifier = Modifier.padding(top = 15.dp, start = 15.dp, end = 10.dp)
-                    )
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 18.dp)
-                    ) {
-                        Text(
-                            text = postData.author,
-                            style = MaterialTheme.typography.labelMedium
+                Row(horizontalArrangement = Arrangement.SpaceBetween) {
+                    Row {
+                        AvatarPlaceholderIcon(
+                            modifier = Modifier.padding(top = 15.dp, start = 15.dp, end = 10.dp)
                         )
-                        Text(
-                            text = "r/${postData.subreddit}",
-                            style = MaterialTheme.typography.bodySmall
-                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 18.dp)
+                        ) {
+                            Text(
+                                text = postData.author,
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                            Text(
+                                text = "r/${postData.subreddit}",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
                     }
                 }
                 Text(
@@ -101,7 +109,7 @@ fun PostCard(
                         richDomain = postData.domain,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(start = 10.dp, end = 10.dp, top = 20.dp, bottom = 5.dp)
+                            .padding(start = 10.dp, end = 10.dp, top = 20.dp)
                             .height(
                                 when (postData.postHint) {
                                     "image", "rich_video" -> {
@@ -149,7 +157,7 @@ fun PostCard(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 10.dp, vertical = 10.dp),
+                        .padding(start = 10.dp, end = 10.dp, top = 15.dp, bottom = 10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     FilledTonalIconButton(
@@ -164,7 +172,7 @@ fun PostCard(
                                 .size(20.dp)
                         )
                     }
-                    Row {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         FilledTonalIconButton(
                             onClick = { /*TODO*/ },
                             modifier = Modifier.size(35.dp)
@@ -175,11 +183,16 @@ fun PostCard(
                                 modifier = Modifier.size(20.dp)
                             )
                         }
+                        Text(
+                            text = postData.ups
+                                .toInt()
+                                .prettyNumber(),
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier.padding(10.dp)
+                        )
                         FilledTonalIconButton(
                             onClick = { /*TODO*/ },
-                            modifier = Modifier
-                                .padding(start = 15.dp)
-                                .size(35.dp)
+                            modifier = Modifier.size(35.dp)
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_thumb_down),
@@ -263,89 +276,135 @@ fun SmallListCard(
 
 @Composable
 fun CommentBubble(
-    commentData: CommentData,
+    commentData: JSONObject,
     viewModel: PostDetailViewModel,
-    modifier: Modifier
+    onExpandReplies: ((JSONArray) -> Unit) = { },
+    modifier: Modifier,
+    allowExpandReplies: Boolean = true,
+    specialComment: Boolean = false
 ) {
+    var body = ""
+    var author = ""
+    var replies = JSONArray()
+
+    try {
+        commentData.apply {
+            body = getString("body")
+            author = getString("author")
+            replies = getJSONObject("replies")
+                .getJSONObject("data")
+                .getJSONArray("children")
+        }
+    } catch (_: JSONException) {
+
+    }
+
     Column(modifier) {
-        commentData.body?.let { comment ->
+        body.let { comment ->
             if (comment != "[removed]") {
                 var currentTextLines by remember { mutableStateOf(Integer.MAX_VALUE) }
                 var shouldShowExpansion by remember { mutableStateOf(false) }
                 var userInformation by remember { mutableStateOf<UserAbout?>(null) }
-                LaunchedEffect(key1 = true) {
-                    if (commentData.author != "[deleted]") {
-                        userInformation = viewModel.redditService.fetchUserInfo(commentData.author).data
+                LaunchedEffect(key1 = author) {
+                    if (author != "[deleted]" && author.isNotBlank()) {
+                        userInformation = viewModel.redditService.fetchUserInfo(author).data
                     }
                 }
                 AnimatedVisibility(visible = true) {
                     userInformation?.let { user ->
-                    Row(
-                        modifier = Modifier
-                            .width(LocalConfiguration.current.screenWidthDp.dp)
-                            .padding(top = 17.dp)
-                    ) {
-                        val url = user.snoovatar_img.toString().ifBlank {
-                            user.icon_img
-                        }
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(url)
-                                .crossfade(true)
-                                .build().data,
-                            contentDescription = null,
+                        Row(
                             modifier = Modifier
-                                .padding(start = 10.dp, end = 10.dp, top = 2.dp)
-                                .size(30.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(0.5F)),
-                            contentScale = ContentScale.FillWidth,
-                        )
-                        Column {
-                            Text(
-                                text = user.name ?: "",
-                                style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier.padding(start = 2.dp, bottom = 5.dp)
-                            )
-                            Column(
+                                .width(LocalConfiguration.current.screenWidthDp.dp)
+                                .padding(top = 10.dp)
+                        ) {
+                            val url = user.snoovatar_img.toString().ifBlank {
+                                user.icon_img
+                            }
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(url)
+                                    .crossfade(true)
+                                    .build().data,
+                                contentDescription = null,
                                 modifier = Modifier
-                                    .padding(end = 17.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                            ) {
+                                    .padding(start = 10.dp, end = 10.dp, top = 2.dp)
+                                    .size(30.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(0.5F)),
+                                contentScale = ContentScale.FillWidth,
+                            )
+                            Column {
                                 Text(
-                                    text = comment,
-                                    modifier = Modifier.padding(10.dp),
-                                    maxLines = currentTextLines,
-                                    onTextLayout = { textLayoutResult ->
-                                        if (textLayoutResult.lineCount > 5 && !shouldShowExpansion) {
-                                            shouldShowExpansion = true
-                                            currentTextLines = 5
-                                        }
-                                    }
+                                    text = user.name ?: "",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier.padding(start = 2.dp, bottom = 5.dp),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                                if (shouldShowExpansion) {
+                                Column(
+                                    modifier = Modifier
+                                        .padding(end = 17.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(
+                                            if (!specialComment) {
+                                                MaterialTheme.colorScheme.surfaceVariant
+                                            } else Color.Transparent
+                                        )
+                                        .border(
+                                            width = if (specialComment) 2.dp else 0.dp,
+                                            color = if (specialComment) {
+                                                MaterialTheme.colorScheme.outline
+                                            } else Color.Transparent,
+                                            shape = RoundedCornerShape(10.dp)
+                                        )
+                                ) {
                                     Text(
-                                        text = if (currentTextLines != Integer.MAX_VALUE) {
-                                            stringResource(id = R.string.post_view_comments_expand_bubble)
-                                        } else {
-                                            stringResource(id = R.string.post_view_comments_collapse_bubble)
-                                        },
-                                        style = MaterialTheme.typography.titleSmall,
-                                        modifier = Modifier
-                                            .padding(top = 2.dp, bottom = 10.dp, start = 10.dp)
-                                            .clickable {
-                                                currentTextLines.let {
-                                                    currentTextLines =
-                                                        if (it == Integer.MAX_VALUE) {
-                                                            5
-                                                        } else {
-                                                            Integer.MAX_VALUE
-                                                        }
-                                                }
+                                        text = comment,
+                                        modifier = Modifier.padding(10.dp),
+                                        maxLines = currentTextLines,
+                                        onTextLayout = { textLayoutResult ->
+                                            if (textLayoutResult.lineCount > 5 && !shouldShowExpansion) {
+                                                shouldShowExpansion = true
+                                                currentTextLines = 5
                                             }
+                                        },
+                                        color = MaterialTheme.colorScheme.onBackground
                                     )
+                                    if (shouldShowExpansion) {
+                                        Text(
+                                            text = if (currentTextLines != Integer.MAX_VALUE) {
+                                                stringResource(id = R.string.post_view_comments_expand_bubble)
+                                            } else {
+                                                stringResource(id = R.string.post_view_comments_collapse_bubble)
+                                            },
+                                            style = MaterialTheme.typography.titleSmall,
+                                            modifier = Modifier
+                                                .padding(top = 2.dp, bottom = 10.dp, start = 10.dp)
+                                                .clickable {
+                                                    currentTextLines.let {
+                                                        currentTextLines =
+                                                            if (it == Integer.MAX_VALUE) {
+                                                                5
+                                                            } else {
+                                                                Integer.MAX_VALUE
+                                                            }
+                                                    }
+                                                },
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
                                 }
+                                if (replies.length() > 0 && allowExpandReplies) {
+                                TextButton(onClick = { onExpandReplies(replies) }) {
+                                        Text(
+                                            text =  stringResource(id = R.string.post_view_comments_expand_replies),
+                                            style = MaterialTheme.typography.labelLarge
+                                        )
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_arrow_forward_slim),
+                                            contentDescription = stringResource(id = R.string.ic_arrow_forward_slim_content_desc),
+                                            modifier = Modifier.padding(start = 10.dp).size(15.dp)
+                                        )
+                                    }
                                 }
                             }
                         }

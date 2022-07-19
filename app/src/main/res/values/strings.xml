@@ -4,6 +4,8 @@
 
     <string name="ic_account_circle_content_desc">Account</string>
     <string name="ic_arrow_back_content_desc">Back arrow</string>
+    <string name="ic_arrow_back_slim_content_desc">Back arrow</string>
+    <string name="ic_arrow_forward_slim_content_desc">Forward arrow</string>
     <string name="ic_arrow_upward_content_desc">Up arrow</string>
     <string name="ic_article_content_desc">Document</string>
     <string name="ic_atr_dots_content_desc">Three dots</string>
@@ -78,7 +80,9 @@
     <string name="post_view_comments_overview_format">%1$s comments</string>
     <string name="post_view_comments_expand_bubble">See more…</string>
     <string name="post_view_comments_collapse_bubble">See less…</string>
+    <string name="post_view_comments_expand_replies">View replies</string>
     <string name="post_view_hint_type_gif">GIF</string>
+    <string name="post_view_comment_reply_sheet_title">Replies</string>
 
     <string name="search_query_hint_text">Search all of reddit…</string>
     <string name="search_trending_subreddit_header">Trending communities</string>

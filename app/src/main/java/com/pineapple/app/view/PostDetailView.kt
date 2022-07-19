@@ -12,20 +12,28 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -43,12 +51,20 @@ import com.pineapple.app.paging.RequestStatus
 import com.pineapple.app.model.reddit.*
 import com.pineapple.app.util.*
 import com.pineapple.app.viewmodel.PostDetailViewModel
+import kotlinx.coroutines.launch
 import okhttp3.internal.notify
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
 import java.lang.Long.min
 import java.net.URLEncoder
 
 @Composable
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
+@OptIn(
+    ExperimentalMaterial3Api::class,
+    ExperimentalAnimationApi::class,
+    ExperimentalMaterialApi::class
+)
 fun PostDetailView(
     navController: NavController,
     subreddit: String,
@@ -57,8 +73,9 @@ fun PostDetailView(
 ) {
     val viewModel = LocalContext.current.getViewModel(PostDetailViewModel::class.java)
     var postData by remember { mutableStateOf<PostData?>(null) }
-    var commentData by remember { mutableStateOf<List<CommentPreData>?>(null) }
+    var commentData by remember { mutableStateOf<JSONArray?>(null) }
     val requestStatus = remember { mutableStateOf<RequestResult<Any>?>(null) }
+    val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
 
     viewModel.postData = Triple(subreddit, uid, link)
     rememberSystemUiController().setStatusBarColor(color = MaterialTheme.colorScheme.surfaceVariant)
@@ -70,101 +87,120 @@ fun PostDetailView(
                 postData = Gson()
                     .fromJson(this[0].toString(), PostListing::class.java)
                     .data.children[0].data
-                commentData = Gson()
-                    .fromJson(this[1].toString(), CommentListing::class.java)
-                    .data.children
+                // Have to manually parse comment data because reddit decides to be "efficient" and
+                // page comment results so there is no way of preventing Gson from throwing an exception
+                // when reddit puts a paging object instead of a comment object 🙄🖐
+                commentData = (this[1] as JSONObject)
+                    .getJSONObject("data")
+                    .getJSONArray("children")
             }
         }
     }
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {},
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = stringResource(id = R.string.ic_arrow_back_content_desc)
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.smallTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            )
-        }
+    ModalBottomSheetLayout(
+        sheetContent = {
+            CommentReplyBottomSheet(viewModel, bottomSheetState)
+        },
+        sheetShape = RoundedCornerShape(topStart = 15.dp, topEnd = 15.dp),
+        sheetBackgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp),
+        sheetState = bottomSheetState,
+        scrimColor = Color.Black.copy(0.3F)
     ) {
-        AnimatedVisibility(
-            visible = requestStatus.value?.status == RequestStatus.LOADING,
-            enter = fadeIn(),
-            exit = fadeOut()
-        ) {
-            val localConfig = LocalConfiguration.current
-            Box(
-                modifier = Modifier
-                    .size(
-                        height = localConfig.screenHeightDp.dp,
-                        width = localConfig.screenWidthDp.dp
+        Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = {},
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBack,
+                                contentDescription = stringResource(id = R.string.ic_arrow_back_content_desc)
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.smallTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
                     )
-            ) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .size(50.dp),
-                    strokeWidth = 2.dp,
-                    color = MaterialTheme.colorScheme.secondary
                 )
             }
-        }
-        AnimatedVisibility(
-            visible = requestStatus.value?.status == RequestStatus.SUCCESS,
-            enter = fadeIn(),
-            exit = fadeOut()
         ) {
-            LazyColumn(
-                modifier = Modifier.padding(top = it.calculateTopPadding())
+            AnimatedVisibility(
+                visible = requestStatus.value?.status == RequestStatus.LOADING,
+                enter = fadeIn(),
+                exit = fadeOut()
             ) {
-                postData?.let { post ->
-                    item {
-                        HeaderBar(
-                            post = post,
-                            modifier = Modifier.animateEnterExit(enter = slideInVertically(
-                                animationSpec = spring(0.8F)
-                            ) { it * 2 }
-                            )
+                val localConfig = LocalConfiguration.current
+                Box(
+                    modifier = Modifier
+                        .size(
+                            height = localConfig.screenHeightDp.dp,
+                            width = localConfig.screenWidthDp.dp
                         )
-                    }
-                    item {
-                        FlairBar(
-                            postData = post,
-                            modifier = Modifier
-                                .padding(start = 20.dp)
-                                .animateEnterExit(enter = slideInVertically(
-                                    animationSpec = spring(0.8F)
-                                ) { it * 3 }
-                                )
-                        )
-                    }
-                    item {
-                        PostContentView(
-                            post = post,
-                            navController = navController,
-                            viewModel = viewModel,
-                            modifier = Modifier.animateEnterExit(enter = slideInVertically(
-                                animationSpec = spring(0.8F)
-                            ) { it * 4 }
-                            )
-                        )
-                    }
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(50.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
                 }
-                item {
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        InteractionBar(postData = postData)
-                        commentData?.let { commentDataList ->
-                            CommentListView(
-                                commentData = commentDataList,
-                                viewModel = viewModel
+            }
+            AnimatedVisibility(
+                visible = requestStatus.value?.status == RequestStatus.SUCCESS,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                LazyColumn(
+                    modifier = Modifier.padding(
+                        top = it.calculateTopPadding(),
+                        start = it.calculateStartPadding(LayoutDirection.Ltr),
+                        end = it.calculateEndPadding(LayoutDirection.Ltr),
+                        bottom = it.calculateBottomPadding()
+                    )
+                ) {
+                    postData?.let { post ->
+                        item {
+                            HeaderBar(
+                                post = post,
+                                modifier = Modifier.animateEnterExit(enter = slideInVertically(
+                                    animationSpec = spring(0.8F)
+                                ) { it * 2 }
+                                )
                             )
+                        }
+                        item {
+                            FlairBar(
+                                postData = post,
+                                modifier = Modifier
+                                    .padding(start = 20.dp)
+                                    .animateEnterExit(enter = slideInVertically(
+                                        animationSpec = spring(0.8F)
+                                    ) { it * 3 }
+                                    )
+                            )
+                        }
+                        item {
+                            PostContentView(
+                                post = post,
+                                navController = navController,
+                                viewModel = viewModel,
+                                modifier = Modifier.animateEnterExit(enter = slideInVertically(
+                                    animationSpec = spring(0.8F)
+                                ) { it * 4 }
+                                )
+                            )
+                        }
+                    }
+                    item {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            InteractionBar(postData = postData)
+                            commentData?.let { commentDataList ->
+                                CommentListView(
+                                    commentData = commentDataList,
+                                    viewModel = viewModel,
+                                    bottomSheetState = bottomSheetState
+                                )
+                            }
                         }
                     }
                 }
@@ -270,20 +306,38 @@ fun InteractionBar(postData: PostData?) {
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun CommentListView(commentData: List<CommentPreData>, viewModel: PostDetailViewModel) {
-    AnimatedVisibility(visible = commentData.isNotEmpty()) {
+@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
+fun CommentListView(
+    commentData: JSONArray,
+    viewModel: PostDetailViewModel,
+    bottomSheetState: ModalBottomSheetState
+) {
+    val coroutineScope = rememberCoroutineScope()
+    AnimatedVisibility(visible = commentData.length() > 0) {
         FlowColumn(modifier = Modifier.padding(top = 10.dp)) {
-            commentData.forEachIndexed { index, item ->
+            repeat(commentData.length()) { index ->
+                val item = commentData.getJSONObject(index)
                 CommentBubble(
-                    commentData = item.data,
+                    commentData = item.getJSONObject("data"),
                     viewModel = viewModel,
                     modifier = Modifier.animateEnterExit(
                         enter = slideInVertically(
                             animationSpec = spring(dampingRatio = 0.8F)
                         ) { it * (index + 6) }
-                    )
+                    ),
+                    onExpandReplies = {
+                        coroutineScope.launch {
+                            viewModel.apply {
+                                replyViewOriginalComment = item
+                                replyViewCommentList = item.getJSONObject("data")
+                                    .getJSONObject("replies")
+                                    .getJSONObject("data")
+                                    .getJSONArray("children")
+                            }
+                            bottomSheetState.show()
+                        }
+                    }
                 )
             }
         }
@@ -432,6 +486,96 @@ fun PostContentView(
                             )
                         }
                     )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
+fun CommentReplyBottomSheet(
+    viewModel: PostDetailViewModel,
+    bottomSheetState: ModalBottomSheetState
+) {
+    val coroutineScope = rememberCoroutineScope()
+    val scrollState = rememberScrollState()
+    val headerBackground = animateColorAsState(
+        if (scrollState.value == 0) {
+            MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
+        } else {
+            MaterialTheme.colorScheme.surfaceColorAtElevation(10.dp)
+        }
+    )
+    Column {
+        Column(
+            modifier = Modifier.background(headerBackground.value)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 15.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = stringResource(id = R.string.post_view_comment_reply_sheet_title),
+                    modifier = Modifier.padding(start = 20.dp, top = 10.dp),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                IconButton(
+                    onClick = {
+                        coroutineScope.launch { bottomSheetState.hide() }
+                    },
+                    modifier = Modifier.padding(end = 15.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_close),
+                        contentDescription = stringResource(id = R.string.ic_close_content_desc),
+                        tint = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+            }
+            viewModel.replyViewOriginalComment?.let {
+                CommentBubble(
+                    commentData = it.getJSONObject("data"),
+                    viewModel = viewModel,
+                    modifier = Modifier.padding(vertical = 15.dp),
+                    allowExpandReplies = false,
+                    specialComment = true
+                )
+            }
+        }
+        AnimatedVisibility(visible = viewModel.replyViewCommentList != null) {
+            FlowColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(scrollState)
+            ) {
+                viewModel.replyViewCommentList?.let { array ->
+                    repeat(array.length()) { index ->
+                        val item = array.getJSONObject(index)
+                        CommentBubble(
+                            commentData = item.getJSONObject("data"),
+                            viewModel = viewModel,
+                            modifier = Modifier
+                                .animateEnterExit(
+                                    enter = slideInVertically(
+                                        animationSpec = spring(dampingRatio = 0.8F)
+                                    ) { it * (index + 6) }
+                                )
+                                .padding(bottom = if (index == array.length() - 1) 15.dp else 0.dp),
+                            onExpandReplies = {
+                                viewModel.apply {
+                                    replyViewOriginalComment = item
+                                    replyViewCommentList = item.getJSONObject("data")
+                                        .getJSONObject("replies")
+                                        .getJSONObject("data")
+                                        .getJSONArray("children")
+                                }
+                            }
+                        )
+                    }
                 }
             }
         }

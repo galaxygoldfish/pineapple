@@ -1,11 +1,15 @@
 package com.pineapple.app.util
 
+import android.text.format.DateUtils
+import android.util.Log
+import android.util.Log.e
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key.Companion.D
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.*
@@ -13,9 +17,14 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.pineapple.app.model.reddit.FlairRichItem
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
 import java.util.Locale
-import kotlin.math.ln
-import kotlin.math.pow
+import java.util.TimeZone.getDefault
+import java.util.TimeZone.getTimeZone
+import kotlin.math.*
+
 
 fun Int.prettyNumber() : String {
     if (this < 1000) return "" + this
@@ -26,7 +35,7 @@ fun Int.prettyNumber() : String {
     )
 }
 
-fun List<FlairRichItem>.parseFlair(darkTheme: Boolean) : Pair<AnnotatedString, Map<String, InlineTextContent>> {
+fun List<FlairRichItem>.parseFlair(darkTheme: Boolean): Pair<AnnotatedString, Map<String, InlineTextContent>> {
     val iconUrlData = mutableListOf<String>()
     val iconImageData = mutableMapOf<String, InlineTextContent>()
     val annotatedString = buildAnnotatedString {

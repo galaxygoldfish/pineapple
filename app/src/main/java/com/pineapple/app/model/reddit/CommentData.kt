@@ -5,6 +5,11 @@ data class CommentPreData(
     var data: CommentData
 )
 
+data class CommentPreDataNull(
+    var kind: String,
+    var data: CommentDataNull
+)
+
 data class CommentData(
     var author: String,
     var subreddit: String,
@@ -13,5 +18,15 @@ data class CommentData(
     var body: String?,
     var body_html: String,
     var permalink: String,
-    //var replies: CommentListing
+    var replies: CommentListingNull? = null
+)
+
+data class CommentDataNull(
+    var author: String,
+    var subreddit: String,
+    var id: String,
+    var ups: Long,
+    var body: String?,
+    var body_html: String,
+    var permalink: String
 )

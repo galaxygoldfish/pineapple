@@ -14,13 +14,17 @@ import com.pineapple.app.network.NetworkServiceBuilder.rawApiService
 import com.pineapple.app.network.RedditNetworkService
 import kotlinx.coroutines.flow.flow
 import org.json.JSONArray
+import org.json.JSONObject
 
 class PostDetailViewModel : ViewModel() {
 
     var postData by mutableStateOf<Triple<String, String, String>?>(null)
-    val redditServiceRaw by lazy { rawApiService<RedditNetworkService>(REDDIT_BASE_URL) }
+    var replyViewOriginalComment by mutableStateOf<JSONObject?>(null)
+    var replyViewCommentList by mutableStateOf<JSONArray?>(null)
+
     val redditService by lazy { apiService<RedditNetworkService>(REDDIT_BASE_URL) }
     val gfycatService by lazy { apiService<GfycatNetworkService>(GFYCAT_BASE_URL) }
+    private val redditServiceRaw by lazy { rawApiService<RedditNetworkService>(REDDIT_BASE_URL) }
 
     suspend fun postRequestFlow() = flow {
         emit(RequestResult.Loading(true))
@@ -31,4 +35,7 @@ class PostDetailViewModel : ViewModel() {
             emit(RequestResult.Error("ERROR"))
         }
     }
+
+
+
 }
