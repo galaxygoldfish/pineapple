@@ -6,10 +6,12 @@ import android.text.Html
 import android.text.SpannableString
 import android.util.Log
 import androidx.compose.animation.*
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -27,12 +29,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -76,6 +80,7 @@ fun PostDetailView(
     var commentData by remember { mutableStateOf<JSONArray?>(null) }
     val requestStatus = remember { mutableStateOf<RequestResult<Any>?>(null) }
     val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    val postDetailContainerState = rememberLazyListState()
 
     viewModel.postData = Triple(subreddit, uid, link)
     rememberSystemUiController().setStatusBarColor(color = MaterialTheme.colorScheme.surfaceVariant)
@@ -156,7 +161,8 @@ fun PostDetailView(
                         start = it.calculateStartPadding(LayoutDirection.Ltr),
                         end = it.calculateEndPadding(LayoutDirection.Ltr),
                         bottom = it.calculateBottomPadding()
-                    )
+                    ),
+                    state = postDetailContainerState
                 ) {
                     postData?.let { post ->
                         item {
@@ -256,7 +262,7 @@ fun InteractionBar(postData: PostData?) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 15.dp, end = 15.dp)
+            .padding(start = 15.dp, end = 15.dp, top = 20.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             FilledTonalIconButton(
@@ -358,10 +364,11 @@ fun PostContentView(
                 if (post.domain != "imgur.com") {
                     Card(
                         shape = RoundedCornerShape(10.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+                        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 15.dp),
+                            .padding(start = 20.dp, end = 20.dp, top = 15.dp)
+                            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(10.dp)),
                         onClick = {
                             Intent(Intent.ACTION_VIEW).apply {
                                 data = Uri.parse(post.url)
@@ -385,7 +392,8 @@ fun PostContentView(
                                 modifier = Modifier
                                     .width(100.dp)
                                     .height(65.dp)
-                                    .clip(RoundedCornerShape(10.dp)),
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(10.dp)),
                                 contentScale = ContentScale.FillHeight,
                             )
                             Column(
@@ -415,8 +423,7 @@ fun PostContentView(
                     modifier = Modifier.padding(
                         start = 22.dp,
                         end = 20.dp,
-                        top = 20.dp,
-                        bottom = 20.dp
+                        top = 20.dp
                     )
                 )
             }
@@ -441,8 +448,7 @@ fun PostContentView(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(
-                                vertical = 20.dp,
-                                horizontal = 20.dp
+                                start = 20.dp, end = 20.dp, top = 20.dp
                             )
                             .height(
                                 when (post.postHint) {
@@ -499,14 +505,19 @@ fun CommentReplyBottomSheet(
     bottomSheetState: ModalBottomSheetState
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val scrollState = rememberScrollState()
+    val commentReplyScrollState = rememberScrollState()
     val headerBackground = animateColorAsState(
-        if (scrollState.value == 0) {
-            MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
+        if (bottomSheetState.isVisible) {
+            if (commentReplyScrollState.value == 0) {
+                MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
+            } else {
+                MaterialTheme.colorScheme.surfaceColorAtElevation(10.dp)
+            }
         } else {
-            MaterialTheme.colorScheme.surfaceColorAtElevation(10.dp)
+            MaterialTheme.colorScheme.surfaceVariant
         }
     )
+    rememberSystemUiController().setStatusBarColor(headerBackground.value)
     Column {
         Column(
             modifier = Modifier.background(headerBackground.value)
@@ -550,7 +561,7 @@ fun CommentReplyBottomSheet(
             FlowColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .verticalScroll(scrollState)
+                    .verticalScroll(commentReplyScrollState)
             ) {
                 viewModel.replyViewCommentList?.let { array ->
                     repeat(array.length()) { index ->

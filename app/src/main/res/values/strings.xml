@@ -3,6 +3,7 @@
     <string name="app_name">Pineapple</string>
 
     <string name="ic_account_circle_content_desc">Account</string>
+    <string name="ic_add_content_desc">Add</string>
     <string name="ic_arrow_back_content_desc">Back arrow</string>
     <string name="ic_arrow_back_slim_content_desc">Back arrow</string>
     <string name="ic_arrow_forward_slim_content_desc">Forward arrow</string>
@@ -96,6 +97,7 @@
     <string name="search_view_all_communities">View all communities</string>
 
     <string name="community_user_count_format">%1$s Members</string>
+    <string name="community_join_button_text">Join</string>
 
     <string name="settings_title_bar_text">Preferences</string>
     <string name="settings_theme_color_item_title">App theme</string>

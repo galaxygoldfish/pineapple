@@ -1,14 +1,16 @@
 package com.pineapple.app.view
 
-import android.content.Intent
-import android.net.Uri
-import android.text.Html
-import android.util.Log
-import androidx.compose.animation.rememberSplineBasedDecay
+import android.widget.TextView
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
@@ -18,33 +20,32 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.DefaultTranslationY
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.ireward.htmlcompose.HtmlText
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.pineapple.app.R
 import com.pineapple.app.components.FilterBottomSheet
-import com.pineapple.app.components.RoundedStarShape
+import com.pineapple.app.components.MDDocument
+import com.pineapple.app.components.MarkdownText
 import com.pineapple.app.model.reddit.SubredditData
-import com.pineapple.app.model.reddit.SubredditInfo
 import com.pineapple.app.theme.PineappleTheme
-import com.pineapple.app.util.getViewModel
 import com.pineapple.app.util.prettyNumber
 import com.pineapple.app.util.surfaceColorAtElevation
 import com.pineapple.app.viewmodel.SubredditViewModel
 import kotlinx.coroutines.launch
+import org.commonmark.node.Document
+import org.commonmark.parser.Parser
+
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
@@ -54,18 +55,26 @@ fun SubredditView(navController: NavController, subreddit: String) {
     var currentBottomSheet by remember { mutableStateOf(0) }
     val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val coroutineScope = rememberCoroutineScope()
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
-       rememberSplineBasedDecay()
+    val scrollState = rememberLazyListState()
+
+    rememberSystemUiController().setSystemBarsColor(
+        if (scrollState.firstVisibleItemIndex != 0) {
+            MaterialTheme.colorScheme.surfaceVariant
+        } else MaterialTheme.colorScheme.surface
     )
+
     viewModel.currentSubreddit = subreddit
     LaunchedEffect(true) {
         viewModel.fetchInformation().collect {
             subredditInfo = it.data
         }
     }
+
     PineappleTheme {
         ModalBottomSheetLayout(
             sheetState = bottomSheetState,
+            sheetShape = RoundedCornerShape(topEnd = 15.dp, topStart = 15.dp),
+            sheetBackgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp),
             sheetContent = {
                 when(currentBottomSheet) {
                     0 -> SubredditInfoBottomSheet(subredditInfo)
@@ -78,20 +87,15 @@ fun SubredditView(navController: NavController, subreddit: String) {
             }
         ) {
             Scaffold(
-                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                 topBar = {
-                    LargeTopAppBar(
+                    SmallTopAppBar(
                         title = {
-                            Column {
-                                Text(
-                                    text = subredditInfo?.title.toString()
-                                )
-                                Text(
-                                    text = String.format(
-                                        stringResource(id = R.string.community_user_count_format),
-                                        subredditInfo?.subscribers?.toInt()?.prettyNumber() ?: "0"
-                                    )
-                                )
+                            AnimatedVisibility(
+                                visible = scrollState.firstVisibleItemIndex != 0,
+                                enter = fadeIn(),
+                                exit = fadeOut()
+                            ) {
+                                Text(text = subredditInfo?.displayNamePrefixed.toString())
                             }
                         },
                         navigationIcon = {
@@ -130,23 +134,94 @@ fun SubredditView(navController: NavController, subreddit: String) {
                                 )
                             }
                         },
-                        scrollBehavior = scrollBehavior
+                        colors = TopAppBarDefaults.smallTopAppBarColors(
+                            containerColor = if (scrollState.firstVisibleItemIndex != 0) {
+                                MaterialTheme.colorScheme.surfaceVariant
+                            } else MaterialTheme.colorScheme.surface
+                        )
                     )
                 }
             ) {
                 Column(
-                    modifier = Modifier.padding(
-                        top = it.calculateTopPadding(),
-                        bottom = it.calculateBottomPadding(),
-                        start = it.calculateStartPadding(LayoutDirection.Ltr),
-                        end = it.calculateEndPadding(LayoutDirection.Ltr)
-                    )
+                    modifier = Modifier
+                        .padding(
+                            top = it.calculateTopPadding(),
+                            bottom = it.calculateBottomPadding(),
+                            start = it.calculateStartPadding(LayoutDirection.Ltr),
+                            end = it.calculateEndPadding(LayoutDirection.Ltr)
+                        )
                 ) {
                     PostListView(
                         navController = navController,
                         subreddit = subreddit,
                         sort = viewModel.currentSortType.value,
-                        time = viewModel.currentSortTime.value
+                        time = viewModel.currentSortTime.value,
+                        scrollState = scrollState,
+                        topHeaderItem = {
+                            Row(
+                                modifier = Modifier
+                                    .padding(vertical = 30.dp)
+                                    .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                                    Text(
+                                        text = subredditInfo?.displayNamePrefixed.toString(),
+                                        style = MaterialTheme.typography.headlineMedium
+                                    )
+                                    Text(
+                                        text = String.format(
+                                            stringResource(id = R.string.community_user_count_format),
+                                            subredditInfo?.subscribers?.toInt()?.prettyNumber().toString()
+                                        ),
+                                        style = MaterialTheme.typography.labelLarge,
+                                        modifier = Modifier.padding(top = 10.dp)
+                                    )
+                                    FilledTonalButton(
+                                        onClick = { /*TODO*/ },
+                                        modifier = Modifier.padding(top = 10.dp),
+                                        contentPadding = PaddingValues(start = 10.dp, end = 15.dp)
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_add),
+                                            contentDescription = stringResource(id = R.string.ic_add_content_desc)
+                                        )
+                                        Text(
+                                            text = stringResource(id = R.string.community_join_button_text),
+                                            style = MaterialTheme.typography.labelLarge,
+                                            modifier = Modifier.padding(start = 10.dp)
+                                        )
+                                    }
+                                }
+                                if (subredditInfo?.iconUrl?.isNotEmpty() == true) {
+                                    AsyncImage(
+                                        model = ImageRequest.Builder(LocalContext.current)
+                                            .data(subredditInfo?.iconUrl?.replace("amp;", ""))
+                                            .crossfade(true)
+                                            .build().data,
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .padding(end = 20.dp)
+                                            .size(100.dp)
+                                            .clip(CircleShape),
+                                        contentScale = ContentScale.FillWidth,
+                                    )
+                                } else {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_atr_dots),
+                                        contentDescription = stringResource(R.string.ic_atr_dots_content_desc),
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier
+                                            .padding(end = 20.dp) // Actual container padding
+                                            .clip(CircleShape)
+                                            .background(MaterialTheme.colorScheme.primaryContainer)
+                                            .size(100.dp)
+                                            .padding(top = 10.dp, bottom = 18.dp, start = 10.dp, end = 10.dp)
+                                    )
+                                }
+                            }
+                        }
                     )
                 }
             }
@@ -156,26 +231,45 @@ fun SubredditView(navController: NavController, subreddit: String) {
 
 @Composable
 fun SubredditInfoBottomSheet(subredditInfo: SubredditData?) {
-    val context = LocalContext.current
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+    ) {
         Row(
             modifier = Modifier
                 .padding(top = 15.dp)
                 .clip(RoundedCornerShape(5.dp))
                 .size(width = 100.dp, height = 5.dp)
                 .background(MaterialTheme.colorScheme.secondaryContainer)
-        ) { }
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(subredditInfo?.iconUrl)
-                .crossfade(true)
-                .build().data,
-            contentDescription = null,
-            modifier = Modifier
-                .clip(RoundedStarShape(sides = 9))
-                .size(100.dp)
-                .padding(top = 15.dp)
-        )
+        ) {  }
+        if (subredditInfo?.iconUrl?.isNotEmpty() == true) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(subredditInfo.iconUrl.replace("amp;", ""))
+                    .crossfade(true)
+                    .build().data,
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(20.dp)
+                    .size(100.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.FillWidth,
+            )
+        } else {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_atr_dots),
+                contentDescription = stringResource(R.string.ic_atr_dots_content_desc),
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .padding(20.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .size(100.dp)
+                    .padding(top = 10.dp, bottom = 18.dp, start = 10.dp, end = 10.dp)
+            )
+        }
         Text(
             text = subredditInfo?.title.toString(),
             style = MaterialTheme.typography.headlineLarge
@@ -187,16 +281,10 @@ fun SubredditInfoBottomSheet(subredditInfo: SubredditData?) {
             ),
             style = MaterialTheme.typography.titleMedium
         )
-        HtmlText(
-            text = subredditInfo?.descriptionHtml.toString(),
-            style = MaterialTheme.typography.bodyMedium,
-            linkClicked = { link ->
-                context.startActivity(
-                    Intent(Intent.ACTION_VIEW).apply {
-                        data = Uri.parse(link)
-                    }
-                )
+        subredditInfo?.description?.let {
+            Column(modifier = Modifier.padding(20.dp)) {
+                MDDocument(document = Parser.builder().build().parse(it) as Document)
             }
-        )
+        }
     }
 }
