@@ -62,15 +62,17 @@ fun PostCard(
                 modifier = modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp),
                 onClick = onClick
             ) {
-                Row(horizontalArrangement = Arrangement.SpaceBetween) {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Row {
                         AvatarPlaceholderIcon(
                             modifier = Modifier.padding(top = 15.dp, start = 15.dp, end = 10.dp)
                         )
                         Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 18.dp)
+                            modifier = Modifier.padding(top = 18.dp)
                         ) {
                             Text(
                                 text = postData.author,
@@ -82,6 +84,11 @@ fun PostCard(
                             )
                         }
                     }
+                    Text(
+                        text = postData.createdUTC.convertUnixToRelativeTime(),
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(end = 15.dp)
+                    )
                 }
                 Text(
                     text = postData.title,
@@ -121,10 +128,8 @@ fun PostCard(
                                     }
                                     else -> {
                                         LocalContext.current.calculateRatioHeight(
-                                            ratioHeight = postData.secureMedia?.reddit_video?.height?.toInt()
-                                                ?: 0,
-                                            ratioWidth = postData.secureMedia?.reddit_video?.width?.toInt()
-                                                ?: 0,
+                                            ratioHeight = postData.secureMedia?.reddit_video?.height?.toInt() ?: 0,
+                                            ratioWidth = postData.secureMedia?.reddit_video?.width?.toInt() ?: 0,
                                             actualWidth = LocalConfiguration.current.screenWidthDp - 44
                                         )
                                     }
@@ -411,6 +416,61 @@ fun CommentBubble(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun SubredditRichHeader(
+    titleText: String,
+    iconUrl: String,
+    subtitle: String,
+    bottomButton: @Composable () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .padding(vertical = 30.dp)
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+            Text(
+                text = titleText,
+                style = MaterialTheme.typography.headlineMedium
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.padding(top = 10.dp)
+            )
+            bottomButton.invoke()
+        }
+        if (iconUrl.isNotEmpty()) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(iconUrl.replace("amp;", ""))
+                    .crossfade(true)
+                    .build().data,
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(end = 20.dp)
+                    .size(100.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.FillWidth,
+            )
+        } else {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_atr_dots),
+                contentDescription = stringResource(R.string.ic_atr_dots_content_desc),
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .padding(end = 20.dp) // Actual container padding
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .size(100.dp)
+                    .padding(top = 10.dp, bottom = 18.dp, start = 10.dp, end = 10.dp)
+            )
         }
     }
 }

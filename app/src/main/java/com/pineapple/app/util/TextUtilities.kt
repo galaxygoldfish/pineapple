@@ -73,3 +73,20 @@ fun List<FlairRichItem>.parseFlair(darkTheme: Boolean): Pair<AnnotatedString, Ma
     }
     return Pair(first = annotatedString, second = iconImageData)
 }
+
+// https://www.avinsharma.com/android-hackernews-client-jetpack-compose/
+fun Long.convertUnixToRelativeTime() : String{
+    val longTime = this * 1000
+    val currentTime = System.currentTimeMillis()
+    val SECOND_MILLIS = 1000;
+    val MINUTE_MILLIS = 60 * SECOND_MILLIS;
+    val HOUR_MILLIS = 60 * MINUTE_MILLIS;
+    val DAY_MILLIS = 24 * HOUR_MILLIS;
+    val timeDifference = currentTime - longTime
+     return when {
+        timeDifference < MINUTE_MILLIS -> "now"
+        timeDifference < 50 * MINUTE_MILLIS -> "${timeDifference / MINUTE_MILLIS}m"
+        timeDifference < 24 * HOUR_MILLIS -> "${timeDifference / HOUR_MILLIS}h"
+        else -> "${timeDifference / DAY_MILLIS}d"
+    }
+}

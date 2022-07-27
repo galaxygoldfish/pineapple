@@ -7,11 +7,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
+import com.pineapple.app.model.reddit.*
 import com.pineapple.app.paging.RequestResult
-import com.pineapple.app.model.reddit.PostItem
-import com.pineapple.app.model.reddit.SubredditItem
-import com.pineapple.app.model.reddit.UserAbout
-import com.pineapple.app.model.reddit.UserItem
 import com.pineapple.app.network.NetworkServiceBuilder.REDDIT_BASE_URL
 import com.pineapple.app.network.NetworkServiceBuilder.apiService
 import com.pineapple.app.network.RedditNetworkService
@@ -24,10 +21,10 @@ class SearchViewModel : ViewModel() {
     var currentSearchFilter by mutableStateOf(0)
     var currentPostList = mutableStateListOf<PostItem>()
     var currentSubredditList = mutableStateListOf<SubredditItem>()
-    var currentUserList = mutableStateListOf<UserItem>()
+    var currentUserList = mutableStateListOf<UserAboutListing>()
 
     var topSubredditList = mutableStateListOf<SubredditItem>()
-    var topUserList = mutableStateListOf<UserItem>()
+    var topUserList = mutableStateListOf<CondensedUserAboutListing>()
 
     suspend fun requestSubreddits() {
         val communities = networkService.fetchTopSubreddits()

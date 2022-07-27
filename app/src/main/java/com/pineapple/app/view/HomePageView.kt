@@ -233,7 +233,7 @@ fun HomeNavigationDrawer(navController: NavController, viewModel: HomePageViewMo
     Column(modifier = Modifier.fillMaxWidth(0.78F)) {
         Column(
             modifier = Modifier
-                .padding(start = 16.dp)
+                .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
             Icon(

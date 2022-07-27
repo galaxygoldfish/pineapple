@@ -37,6 +37,7 @@ import com.pineapple.app.R
 import com.pineapple.app.components.FilterBottomSheet
 import com.pineapple.app.components.MDDocument
 import com.pineapple.app.components.MarkdownText
+import com.pineapple.app.components.SubredditRichHeader
 import com.pineapple.app.model.reddit.SubredditData
 import com.pineapple.app.theme.PineappleTheme
 import com.pineapple.app.util.prettyNumber
@@ -158,66 +159,27 @@ fun SubredditView(navController: NavController, subreddit: String) {
                         time = viewModel.currentSortTime.value,
                         scrollState = scrollState,
                         topHeaderItem = {
-                            Row(
-                                modifier = Modifier
-                                    .padding(vertical = 30.dp)
-                                    .fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                            SubredditRichHeader(
+                                titleText = subredditInfo?.displayNamePrefixed.toString(),
+                                iconUrl = subredditInfo?.iconUrl.toString(),
+                                subtitle = String.format(
+                                    stringResource(id = R.string.community_user_count_format),
+                                    subredditInfo?.subscribers?.toInt()?.prettyNumber().toString()
+                                )
                             ) {
-                                Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                                    Text(
-                                        text = subredditInfo?.displayNamePrefixed.toString(),
-                                        style = MaterialTheme.typography.headlineMedium
-                                    )
-                                    Text(
-                                        text = String.format(
-                                            stringResource(id = R.string.community_user_count_format),
-                                            subredditInfo?.subscribers?.toInt()?.prettyNumber().toString()
-                                        ),
-                                        style = MaterialTheme.typography.labelLarge,
-                                        modifier = Modifier.padding(top = 10.dp)
-                                    )
-                                    FilledTonalButton(
-                                        onClick = { /*TODO*/ },
-                                        modifier = Modifier.padding(top = 10.dp),
-                                        contentPadding = PaddingValues(start = 10.dp, end = 15.dp)
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.ic_add),
-                                            contentDescription = stringResource(id = R.string.ic_add_content_desc)
-                                        )
-                                        Text(
-                                            text = stringResource(id = R.string.community_join_button_text),
-                                            style = MaterialTheme.typography.labelLarge,
-                                            modifier = Modifier.padding(start = 10.dp)
-                                        )
-                                    }
-                                }
-                                if (subredditInfo?.iconUrl?.isNotEmpty() == true) {
-                                    AsyncImage(
-                                        model = ImageRequest.Builder(LocalContext.current)
-                                            .data(subredditInfo?.iconUrl?.replace("amp;", ""))
-                                            .crossfade(true)
-                                            .build().data,
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .padding(end = 20.dp)
-                                            .size(100.dp)
-                                            .clip(CircleShape),
-                                        contentScale = ContentScale.FillWidth,
-                                    )
-                                } else {
+                                FilledTonalButton(
+                                    onClick = { /*TODO*/ },
+                                    modifier = Modifier.padding(top = 10.dp),
+                                    contentPadding = PaddingValues(start = 10.dp, end = 15.dp)
+                                ) {
                                     Icon(
-                                        painter = painterResource(id = R.drawable.ic_atr_dots),
-                                        contentDescription = stringResource(R.string.ic_atr_dots_content_desc),
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier
-                                            .padding(end = 20.dp) // Actual container padding
-                                            .clip(CircleShape)
-                                            .background(MaterialTheme.colorScheme.primaryContainer)
-                                            .size(100.dp)
-                                            .padding(top = 10.dp, bottom = 18.dp, start = 10.dp, end = 10.dp)
+                                        painter = painterResource(id = R.drawable.ic_add),
+                                        contentDescription = stringResource(id = R.string.ic_add_content_desc)
+                                    )
+                                    Text(
+                                        text = stringResource(id = R.string.community_join_button_text),
+                                        style = MaterialTheme.typography.labelLarge,
+                                        modifier = Modifier.padding(start = 10.dp)
                                     )
                                 }
                             }

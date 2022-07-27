@@ -1,16 +1,16 @@
 package com.pineapple.app.model.reddit
 
-data class UserAboutListing(
+data class CondensedUserAboutListing(
     var kind: String,
-    var data: UserAbout
+    var data: CondensedUserAbout
 )
 
-data class UserAbout(
+data class CondensedUserAbout(
     var id: String,
     var snoovatar_img: String?,
     var icon_img: String?,
     var name: String?,
-    var subreddit: UserSubredditData,
+    var display_name_prefixed: String,
     var is_gold: Boolean,
     var total_karma: Long,
     var awardee_karma: Long,
@@ -23,4 +23,5 @@ data class UserAbout(
     var accept_followers: Boolean,
     var accept_pms: Boolean,
     var verified: Boolean
+
 )

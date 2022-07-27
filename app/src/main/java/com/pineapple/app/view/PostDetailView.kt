@@ -105,7 +105,6 @@ fun PostDetailView(
         sheetContent = {
             CommentReplyBottomSheet(viewModel, bottomSheetState)
         },
-        sheetShape = RoundedCornerShape(topStart = 15.dp, topEnd = 15.dp),
         sheetBackgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp),
         sheetState = bottomSheetState,
         scrimColor = Color.Black.copy(0.3F)

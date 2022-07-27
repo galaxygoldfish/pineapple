@@ -15,7 +15,8 @@ interface RedditNetworkService {
         @Query("t") time: String,
         @Query("after") after: String? = null,
         @Query("nsfw") nsfw: Int = 0,
-        @Query("include_over_18") over18: String = "off"
+        @Query("include_over_18") over18: String = "off",
+        @Query("raw_json") rawJson: Int = 1
     ) : Call<PostListing>
 
     @GET("r/{name}/comments/{id}/{post}")
@@ -24,36 +25,43 @@ interface RedditNetworkService {
         @Path("id") postID: String,
         @Path("post") post: String,
         @Query("nsfw") nsfw: Int = 0,
-        @Query("include_over_18") over18: String = "off"
+        @Query("include_over_18") over18: String = "off",
+        @Query("raw_json") rawJson: Int = 1
     ) : String
 
     @GET("subreddits/popular")
-    suspend fun fetchTopSubreddits() : Listing<SubredditItem>
+    suspend fun fetchTopSubreddits(
+        @Query("raw_json") rawJson: Int = 1
+    ) : Listing<SubredditItem>
 
     @GET("users/popular")
-    suspend fun fetchTopUsers() : Listing<UserItem>
+    suspend fun fetchTopUsers(
+        @Query("raw_json") rawJson: Int = 1
+    ) : Listing<CondensedUserAboutListing>
 
     @GET("r/{subreddit}/about")
     suspend fun fetchSubredditInfo(
         @Path("subreddit") subreddit: String,
         @Query("nsfw") nsfw: Int = 0,
-        @Query("include_over_18") over18: String = "off"
+        @Query("include_over_18") over18: String = "off",
+        @Query("raw_json") rawJson: Int = 1
     ) : SubredditInfo
 
     @GET("/user/{user}/about")
     suspend fun fetchUserInfo(
         @Path("user") user: String,
         @Query("nsfw") nsfw: Int = 0,
-        @Query("include_over_18") over18: String = "off"
+        @Query("include_over_18") over18: String = "off",
+        @Query("raw_json") rawJson: Int = 1
     ) : UserAboutListing
 
-    // repeated functions below because compiler removes generic types in retrofit calls >._.<
 
     @GET("search")
     suspend fun searchPosts(
         @Query("q") query: String,
         @Query("nsfw") nsfw: Int = 0,
-        @Query("include_over_18") over18: String = "off"
+        @Query("include_over_18") over18: String = "off",
+        @Query("raw_json") rawJson: Int = 1
     ) : Listing<PostItem>
 
     @GET("search")
@@ -61,7 +69,8 @@ interface RedditNetworkService {
         @Query("q") query: String,
         @Query("type") type: String = "sr",
         @Query("nsfw") nsfw: Int = 0,
-        @Query("include_over_18") over18: String = "off"
+        @Query("include_over_18") over18: String = "off",
+        @Query("raw_json") rawJson: Int = 1
     ) : Listing<SubredditItem>
 
     @GET("search")
@@ -69,7 +78,8 @@ interface RedditNetworkService {
         @Query("q") query: String,
         @Query("type") type: String = "user",
         @Query("nsfw") nsfw: Int = 0,
-        @Query("include_over_18") over18: String = "off"
-    ) : ListingBase<UserItem>
+        @Query("include_over_18") over18: String = "off",
+        @Query("raw_json") rawJson: Int = 1
+    ) : ListingBase<UserAboutListing>
 
 }
