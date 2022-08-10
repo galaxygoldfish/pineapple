@@ -82,4 +82,20 @@ interface RedditNetworkService {
         @Query("raw_json") rawJson: Int = 1
     ) : ListingBase<UserAboutListing>
 
+    @GET("u/{user}/submitted")
+    suspend fun getUserPosts(
+        @Path("user") user: String,
+        @Query("nsfw") nsfw: Int = 0,
+        @Query("include_over_18") over18: String = "off",
+        @Query("raw_json") rawJson: Int = 1
+    ) : ListingBase<PostItem>
+
+    @GET("u/{user}/comments")
+    suspend fun getUserComments(
+        @Path("user") user: String,
+        @Query("nsfw") nsfw: Int = 0,
+        @Query("include_over_18") over18: String = "off",
+        @Query("raw_json") rawJson: Int = 1
+    ) : ListingBase<CommentPreDataNull>
+
 }

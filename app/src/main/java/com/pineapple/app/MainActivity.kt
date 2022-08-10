@@ -25,6 +25,7 @@ object NavDestination {
     const val SubredditView = "subreddit"
     const val MediaDetailView = "media"
     const val SettingsView = "settings"
+    const val UserView = "user"
 }
 
 class MainActivity : ComponentActivity() {
@@ -84,6 +85,12 @@ class MainActivity : ComponentActivity() {
             }
             composable(NavDestination.SettingsView) {
                 SettingsView(navController = navigationController)
+            }
+            composable("${NavDestination.UserView}/{user}") {
+                UserView(
+                    navController = navigationController,
+                    user = it.arguments!!.getString("user")!!
+                )
             }
         }
     }

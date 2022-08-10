@@ -16,5 +16,6 @@ data class SubredditData(
     val url: String,
     @SerializedName("community_icon")
     val iconUrl: String,
-    val subscribers: Long
+    val subscribers: Long,
+    val public_description: String
 )

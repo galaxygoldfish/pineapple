@@ -296,9 +296,10 @@ fun AllResultSearchView(
                     item {
                         SmallListCard(
                             text = item.data.name ?: "",
-                            iconUrl = item.data.snoovatar_img ?: item.data.icon_img
-                            ?: "",
-                            onClick = { },
+                            iconUrl = item.data.snoovatar_img ?: item.data.icon_img ?: "",
+                            onClick = {
+                                navController.navigate("${NavDestination.UserView}/${item.data.name}")
+                            },
                             userIcon = true,
                             modifier = Modifier.animateEnterExit(
                                 enter = slideInVertically(animationSpec = spring(0.8F)) { it * (index + 7) }
@@ -456,10 +457,10 @@ fun PopularContentView(
                     }
                     itemsIndexed(viewModel.topUserList) { index, item ->
                         SmallListCard(
-                            text = item.data.let { it.display_name_prefixed ?: "" },
+                            text = item.data.display_name_prefixed,
                             iconUrl = item.data.let { it.snoovatar_img?.ifBlank { it.icon_img ?: "" } ?: "" },
                             onClick = {
-
+                                navController.navigate("${NavDestination.UserView}/${item.data.display_name_prefixed.replace("u/", "")}")
                             },
                             modifier = Modifier.animateEnterExit(
                                 enter = slideInVertically(animationSpec = spring(0.5F)) { it * (index + 7) }

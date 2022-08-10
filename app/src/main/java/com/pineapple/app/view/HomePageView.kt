@@ -29,6 +29,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -286,7 +287,13 @@ fun HomeNavigationDrawer(navController: NavController, viewModel: HomePageViewMo
             )
             viewModel.popularSubreddits.forEach { item ->
                 NavigationDrawerItem(
-                    label = { Text(item.data.displayNamePrefixed) },
+                    label = {
+                        Text(
+                            text = item.data.displayNamePrefixed,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    },
                     selected = false,
                     icon = {
                         Icon(

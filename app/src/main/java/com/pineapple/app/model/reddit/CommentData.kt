@@ -28,5 +28,6 @@ data class CommentDataNull(
     var ups: Long,
     var body: String?,
     var body_html: String,
-    var permalink: String
+    var permalink: String,
+    var link_title: String? = null
 )

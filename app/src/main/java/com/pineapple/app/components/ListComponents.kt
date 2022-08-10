@@ -1,6 +1,5 @@
 package com.pineapple.app.components
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -20,28 +19,31 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import coil.annotation.ExperimentalCoilApi
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.pineapple.app.NavDestination
 import com.pineapple.app.R
-import com.pineapple.app.model.reddit.*
+import com.pineapple.app.model.reddit.CommentDataNull
+import com.pineapple.app.model.reddit.PostData
+import com.pineapple.app.model.reddit.UserAbout
 import com.pineapple.app.network.GfycatNetworkService
 import com.pineapple.app.network.NetworkServiceBuilder.GFYCAT_BASE_URL
 import com.pineapple.app.network.NetworkServiceBuilder.apiService
 import com.pineapple.app.theme.PineappleTheme
-import com.pineapple.app.util.*
+import com.pineapple.app.util.calculateRatioHeight
+import com.pineapple.app.util.convertUnixToRelativeTime
+import com.pineapple.app.util.prettyNumber
+import com.pineapple.app.util.surfaceColorAtElevation
 import com.pineapple.app.viewmodel.PostDetailViewModel
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import java.lang.Long
 import java.net.URLEncoder
 
 @Composable
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalCoilApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 fun PostCard(
     postData: PostData,
     onClick: () -> Unit,
@@ -69,7 +71,11 @@ fun PostCard(
                 ) {
                     Row {
                         AvatarPlaceholderIcon(
-                            modifier = Modifier.padding(top = 15.dp, start = 15.dp, end = 10.dp)
+                            modifier = Modifier
+                                .padding(top = 15.dp, start = 15.dp, end = 10.dp)
+                                .clickable {
+                                    navController.navigate("${NavDestination.UserView}/${postData.author}")
+                                }
                         )
                         Column(
                             modifier = Modifier.padding(top = 18.dp)
@@ -101,7 +107,10 @@ fun PostCard(
                     modifier = Modifier.padding(start = 15.dp)
                 )
                 val mediaLink = when (postData.postHint) {
-                    "hosted:video" -> postData.secureMedia!!.reddit_video.fallback_url.replace("amp;", "")
+                    "hosted:video" -> postData.secureMedia!!.reddit_video.fallback_url.replace(
+                        "amp;",
+                        ""
+                    )
                     "rich:video" -> postData.url
                     else -> {
                         postData.preview?.images?.get(0)?.source?.url?.replace("amp;", "")
@@ -128,8 +137,10 @@ fun PostCard(
                                     }
                                     else -> {
                                         LocalContext.current.calculateRatioHeight(
-                                            ratioHeight = postData.secureMedia?.reddit_video?.height?.toInt() ?: 0,
-                                            ratioWidth = postData.secureMedia?.reddit_video?.width?.toInt() ?: 0,
+                                            ratioHeight = postData.secureMedia?.reddit_video?.height?.toInt()
+                                                ?: 0,
+                                            ratioWidth = postData.secureMedia?.reddit_video?.width?.toInt()
+                                                ?: 0,
                                             actualWidth = LocalConfiguration.current.screenWidthDp - 44
                                         )
                                     }
@@ -142,7 +153,7 @@ fun PostCard(
                                 onExpand = {
                                     navController.navigate(
                                         "${NavDestination.MediaDetailView}/${postData.postHint}/${
-                                            URLEncoder.encode(mediaLink)                                            
+                                            URLEncoder.encode(mediaLink)
                                         }/${postData.domain}/${URLEncoder.encode(postData.title)}"
                                     )
                                 },
@@ -156,7 +167,10 @@ fun PostCard(
                                 }/${postData.domain}/${URLEncoder.encode(postData.title)}"
                             )
                         },
-                        previewUrl = postData.preview?.images?.get(0)?.source?.url?.replace("amp;", "") ?: ""
+                        previewUrl = postData.preview?.images
+                            ?.get(0)
+                            ?.source?.url
+                            ?.replace("amp;", "") ?: ""
                     )
                 }
                 Row(
@@ -281,7 +295,8 @@ fun SmallListCard(
 
 @Composable
 fun CommentBubble(
-    commentData: JSONObject,
+    commentDataJson: JSONObject? = null,
+    commentData: CommentDataNull? = null,
     viewModel: PostDetailViewModel,
     onExpandReplies: ((JSONArray) -> Unit) = { },
     modifier: Modifier,
@@ -293,12 +308,16 @@ fun CommentBubble(
     var replies = JSONArray()
 
     try {
-        commentData.apply {
+        commentDataJson?.apply {
             body = getString("body")
             author = getString("author")
             replies = getJSONObject("replies")
                 .getJSONObject("data")
                 .getJSONArray("children")
+        }
+        commentData?.apply {
+            body = this.body.toString()
+            author = this.author
         }
     } catch (_: JSONException) {
 
@@ -407,7 +426,9 @@ fun CommentBubble(
                                         Icon(
                                             painter = painterResource(id = R.drawable.ic_arrow_forward_slim),
                                             contentDescription = stringResource(id = R.string.ic_arrow_forward_slim_content_desc),
-                                            modifier = Modifier.padding(start = 10.dp).size(15.dp)
+                                            modifier = Modifier
+                                                .padding(start = 10.dp)
+                                                .size(15.dp)
                                         )
                                     }
                                 }
@@ -421,56 +442,36 @@ fun CommentBubble(
 }
 
 @Composable
-fun SubredditRichHeader(
-    titleText: String,
-    iconUrl: String,
-    subtitle: String,
-    bottomButton: @Composable () -> Unit
+@OptIn(ExperimentalMaterial3Api::class)
+fun CommentInContext(
+    commentData: CommentDataNull,
+    navController: NavController
 ) {
-    Row(
-        modifier = Modifier
-            .padding(vertical = 30.dp)
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+    Card(
+        shape = RoundedCornerShape(10.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.5.dp)
+        ),
+        modifier = Modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp),
+        onClick = {
+            val permalink = commentData.permalink.split("/")
+            val sub = permalink[2]
+            val uid = permalink[4]
+            val link = permalink[5]
+            navController.navigate("${NavDestination.PostDetailView}/$sub/$uid/$link")
+        }
     ) {
-        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-            Text(
-                text = titleText,
-                style = MaterialTheme.typography.headlineMedium
-            )
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(top = 10.dp)
-            )
-            bottomButton.invoke()
-        }
-        if (iconUrl.isNotEmpty()) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(iconUrl.replace("amp;", ""))
-                    .crossfade(true)
-                    .build().data,
-                contentDescription = null,
-                modifier = Modifier
-                    .padding(end = 20.dp)
-                    .size(100.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.FillWidth,
-            )
-        } else {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_atr_dots),
-                contentDescription = stringResource(R.string.ic_atr_dots_content_desc),
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .padding(end = 20.dp) // Actual container padding
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer)
-                    .size(100.dp)
-                    .padding(top = 10.dp, bottom = 18.dp, start = 10.dp, end = 10.dp)
-            )
-        }
+        Text(
+            text = "\"${commentData.link_title.toString()}\"",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(15.dp)
+        )
+        CommentBubble(
+            viewModel = viewModel(),
+            modifier = Modifier.padding(bottom = 15.dp),
+            commentData = commentData,
+            allowExpandReplies = false,
+            specialComment = true
+        )
     }
 }

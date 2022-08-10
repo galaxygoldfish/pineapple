@@ -24,10 +24,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -36,8 +35,6 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.pineapple.app.R
 import com.pineapple.app.components.FilterBottomSheet
 import com.pineapple.app.components.MDDocument
-import com.pineapple.app.components.MarkdownText
-import com.pineapple.app.components.SubredditRichHeader
 import com.pineapple.app.model.reddit.SubredditData
 import com.pineapple.app.theme.PineappleTheme
 import com.pineapple.app.util.prettyNumber
@@ -96,7 +93,11 @@ fun SubredditView(navController: NavController, subreddit: String) {
                                 enter = fadeIn(),
                                 exit = fadeOut()
                             ) {
-                                Text(text = subredditInfo?.displayNamePrefixed.toString())
+                                Text(
+                                    text = subredditInfo?.displayNamePrefixed.toString(),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
                             }
                         },
                         navigationIcon = {
@@ -159,28 +160,72 @@ fun SubredditView(navController: NavController, subreddit: String) {
                         time = viewModel.currentSortTime.value,
                         scrollState = scrollState,
                         topHeaderItem = {
-                            SubredditRichHeader(
-                                titleText = subredditInfo?.displayNamePrefixed.toString(),
-                                iconUrl = subredditInfo?.iconUrl.toString(),
-                                subtitle = String.format(
-                                    stringResource(id = R.string.community_user_count_format),
-                                    subredditInfo?.subscribers?.toInt()?.prettyNumber().toString()
-                                )
+                            Row(
+                                modifier = Modifier
+                                    .padding(vertical = 20.dp)
+                                    .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                FilledTonalButton(
-                                    onClick = { /*TODO*/ },
-                                    modifier = Modifier.padding(top = 10.dp),
-                                    contentPadding = PaddingValues(start = 10.dp, end = 15.dp)
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.ic_add),
-                                        contentDescription = stringResource(id = R.string.ic_add_content_desc)
+                                Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                                    if (subredditInfo?.iconUrl.toString().isNotEmpty()) {
+                                        AsyncImage(
+                                            model = ImageRequest.Builder(LocalContext.current)
+                                                .data(subredditInfo?.iconUrl.toString().replace("amp;", ""))
+                                                .crossfade(true)
+                                                .build().data,
+                                            contentDescription = null,
+                                            modifier = Modifier
+                                                .padding(bottom = 20.dp)
+                                                .size(100.dp)
+                                                .clip(CircleShape),
+                                            contentScale = ContentScale.FillWidth,
+                                        )
+                                    } else {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_atr_dots),
+                                            contentDescription = stringResource(R.string.ic_atr_dots_content_desc),
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier
+                                                .padding(bottom = 20.dp) // Actual container padding
+                                                .clip(CircleShape)
+                                                .background(MaterialTheme.colorScheme.primaryContainer)
+                                                .size(100.dp)
+                                                .padding(top = 10.dp, bottom = 18.dp, start = 10.dp, end = 10.dp)
+                                        )
+                                    }
+                                    Text(
+                                        text = subredditInfo?.displayNamePrefixed.toString(),
+                                        style = MaterialTheme.typography.headlineMedium
                                     )
                                     Text(
-                                        text = stringResource(id = R.string.community_join_button_text),
+                                        text = String.format(
+                                            stringResource(id = R.string.community_user_count_format),
+                                            subredditInfo?.subscribers?.toInt()?.prettyNumber().toString()
+                                        ),
                                         style = MaterialTheme.typography.labelLarge,
-                                        modifier = Modifier.padding(start = 10.dp)
+                                        modifier = Modifier.padding(top = 10.dp)
                                     )
+                                    Text(
+                                        text = subredditInfo?.public_description.toString(),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        modifier = Modifier.padding(top = 10.dp)
+                                    )
+                                    FilledTonalButton(
+                                        onClick = { /*TODO*/ },
+                                        modifier = Modifier.padding(top = 10.dp),
+                                        contentPadding = PaddingValues(start = 10.dp, end = 15.dp)
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_add),
+                                            contentDescription = stringResource(id = R.string.ic_add_content_desc)
+                                        )
+                                        Text(
+                                            text = stringResource(id = R.string.community_join_button_text),
+                                            style = MaterialTheme.typography.labelLarge,
+                                            modifier = Modifier.padding(start = 10.dp)
+                                        )
+                                    }
                                 }
                             }
                         }

@@ -2,11 +2,7 @@ package com.pineapple.app.view
 
 import android.content.Intent
 import android.net.Uri
-import android.text.Html
-import android.text.SpannableString
-import android.util.Log
 import androidx.compose.animation.*
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -26,39 +22,32 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.accompanist.flowlayout.FlowColumn
-import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.gson.Gson
 import com.pineapple.app.NavDestination
 import com.pineapple.app.R
 import com.pineapple.app.components.*
-import com.pineapple.app.model.gfycat.GfycatObject
 import com.pineapple.app.paging.RequestResult
 import com.pineapple.app.paging.RequestStatus
 import com.pineapple.app.model.reddit.*
 import com.pineapple.app.util.*
 import com.pineapple.app.viewmodel.PostDetailViewModel
 import kotlinx.coroutines.launch
-import okhttp3.internal.notify
 import org.json.JSONArray
-import org.json.JSONException
 import org.json.JSONObject
 import java.lang.Long.min
 import java.net.URLEncoder
@@ -324,7 +313,7 @@ fun CommentListView(
             repeat(commentData.length()) { index ->
                 val item = commentData.getJSONObject(index)
                 CommentBubble(
-                    commentData = item.getJSONObject("data"),
+                    commentDataJson = item.getJSONObject("data"),
                     viewModel = viewModel,
                     modifier = Modifier.animateEnterExit(
                         enter = slideInVertically(
@@ -548,7 +537,7 @@ fun CommentReplyBottomSheet(
             }
             viewModel.replyViewOriginalComment?.let {
                 CommentBubble(
-                    commentData = it.getJSONObject("data"),
+                    commentDataJson = it.getJSONObject("data"),
                     viewModel = viewModel,
                     modifier = Modifier.padding(vertical = 15.dp),
                     allowExpandReplies = false,
@@ -566,7 +555,7 @@ fun CommentReplyBottomSheet(
                     repeat(array.length()) { index ->
                         val item = array.getJSONObject(index)
                         CommentBubble(
-                            commentData = item.getJSONObject("data"),
+                            commentDataJson = item.getJSONObject("data"),
                             viewModel = viewModel,
                             modifier = Modifier
                                 .animateEnterExit(

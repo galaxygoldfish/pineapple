@@ -85,6 +85,10 @@
     <string name="post_view_hint_type_gif">GIF</string>
     <string name="post_view_comment_reply_sheet_title">Replies</string>
 
+    <string name="user_view_tab_post_title">Posts</string>
+    <string name="user_view_tab_comment_title">Comments</string>
+    <string name="user_view_tab_about_title">About</string>
+
     <string name="search_query_hint_text">Search all of reddit…</string>
     <string name="search_trending_subreddit_header">Trending communities</string>
     <string name="search_trending_users_header">Trending users</string>
