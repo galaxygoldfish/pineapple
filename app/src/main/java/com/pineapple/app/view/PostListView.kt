@@ -2,7 +2,6 @@ package com.pineapple.app.view
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
@@ -44,13 +42,14 @@ fun PostListView(
     scrollState: LazyListState? = null,
     topHeaderItem: (@Composable () -> Unit) = { }
 ) {
-    val viewModel = LocalContext.current.getViewModel(PostListViewModel::class.java)
+    val context = LocalContext.current
+    val viewModel = context.getViewModel(PostListViewModel::class.java)
     var currentPostFlow by remember { mutableStateOf<Flow<PagingData<PostItem>>?>(null) }
     var currentPosts by remember { mutableStateOf<LazyPagingItems<PostItem>?>(null) }
     val refreshState = rememberSwipeRefreshState(isRefreshing = viewModel.isRefreshingData)
 
     LaunchedEffect(key1 = subreddit, key2 = sort, key3 = time) {
-        currentPostFlow = viewModel.posts(subreddit, sort, time)
+        currentPostFlow = viewModel.posts(subreddit, sort, time, context)
     }
     currentPostFlow?.let { currentPosts = it.collectAsLazyPagingItems() }
 

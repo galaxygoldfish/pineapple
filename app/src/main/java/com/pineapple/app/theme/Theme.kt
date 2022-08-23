@@ -17,7 +17,7 @@ fun PineappleTheme(useDarkTheme: Boolean = isSystemInDarkTheme(), content: @Comp
 			dynamicDarkColorScheme(LocalContext.current)
 		}
 	} else {
-		LocalContext.current.getPreferences().getString("APP_THEME", "DEEP_SEA")?.let { key ->
+		LocalContext.current.getPreferences().getString("APP_THEME", "THEME_DEEP_SEA")?.let { key ->
 			themeOptionMap()[key]?.let { theme ->
 				if (!useDarkTheme) theme.first else theme.second
 			}

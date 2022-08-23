@@ -38,17 +38,22 @@ import com.pineapple.app.R
 import com.pineapple.app.components.Chip
 import com.pineapple.app.components.CommentInContext
 import com.pineapple.app.components.PostCard
-import com.pineapple.app.model.reddit.*
+import com.pineapple.app.model.reddit.CommentPreDataNull
+import com.pineapple.app.model.reddit.PostItem
+import com.pineapple.app.model.reddit.UserAbout
 import com.pineapple.app.theme.PineappleTheme
 import com.pineapple.app.util.surfaceColorAtElevation
 import com.pineapple.app.viewmodel.UserViewModel
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class,
+@Composable
+@OptIn(
+    ExperimentalMaterialApi::class,
+    ExperimentalMaterial3Api::class,
     ExperimentalFoundationApi::class
 )
-@Composable
 fun UserView(navController: NavController, user: String) {
     val viewModel: UserViewModel = viewModel()
+    viewModel.initNetworkProvider(LocalContext.current)
     val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val lazyColumnState = rememberLazyListState()
     var currentUserInfo by remember { mutableStateOf<UserAbout?>(null) }
@@ -69,7 +74,8 @@ fun UserView(navController: NavController, user: String) {
             sheetContent = { Text("dd") },
             sheetBackgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp),
             sheetShape = RoundedCornerShape(topEnd = 15.dp, topStart = 15.dp),
-            scrimColor = Color.Black.copy(0.4F)
+            scrimColor = Color.Black.copy(0.4F),
+            sheetState = bottomSheetState
         ) {
             Scaffold(
                 topBar = {

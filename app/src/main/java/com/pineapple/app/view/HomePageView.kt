@@ -59,7 +59,8 @@ object BottomNavDestinations {
 @OptIn(ExperimentalMaterial3Api::class,
     ExperimentalMaterialApi::class)
 fun HomePageView(navController: NavController) {
-    val viewModel = LocalContext.current.getViewModel(HomePageViewModel::class.java)
+    val context = LocalContext.current
+    val viewModel = context.getViewModel(HomePageViewModel::class.java)
     val bottomNavController = rememberNavController()
     val asynchronousScope = rememberCoroutineScope()
     val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
@@ -68,7 +69,7 @@ fun HomePageView(navController: NavController) {
         MaterialTheme.colorScheme.surfaceColorAtElevation(5.dp)
     )
     LaunchedEffect(true) {
-        viewModel.refreshTopCommunities()
+        viewModel.refreshTopCommunities(context)
     }
     ModalNavigationDrawer(
         drawerState = drawerState,

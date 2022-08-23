@@ -1,6 +1,5 @@
 package com.pineapple.app.view
 
-import android.widget.TextView
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -49,6 +48,7 @@ import org.commonmark.parser.Parser
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 fun SubredditView(navController: NavController, subreddit: String) {
     val viewModel: SubredditViewModel = viewModel()
+    val context = LocalContext.current
     var subredditInfo by remember { mutableStateOf<SubredditData?>(null) }
     var currentBottomSheet by remember { mutableStateOf(0) }
     val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
@@ -63,7 +63,7 @@ fun SubredditView(navController: NavController, subreddit: String) {
 
     viewModel.currentSubreddit = subreddit
     LaunchedEffect(true) {
-        viewModel.fetchInformation().collect {
+        viewModel.fetchInformation(context).collect {
             subredditInfo = it.data
         }
     }

@@ -31,6 +31,7 @@ import com.pineapple.app.model.reddit.UserAbout
 import com.pineapple.app.network.GfycatNetworkService
 import com.pineapple.app.network.NetworkServiceBuilder.GFYCAT_BASE_URL
 import com.pineapple.app.network.NetworkServiceBuilder.apiService
+import com.pineapple.app.network.RedditNetworkProvider
 import com.pineapple.app.theme.PineappleTheme
 import com.pineapple.app.util.calculateRatioHeight
 import com.pineapple.app.util.convertUnixToRelativeTime
@@ -306,7 +307,7 @@ fun CommentBubble(
     var body = ""
     var author = ""
     var replies = JSONArray()
-
+    val context = LocalContext.current
     try {
         commentDataJson?.apply {
             body = getString("body")
@@ -331,7 +332,7 @@ fun CommentBubble(
                 var userInformation by remember { mutableStateOf<UserAbout?>(null) }
                 LaunchedEffect(key1 = author) {
                     if (author != "[deleted]" && author.isNotBlank()) {
-                        userInformation = viewModel.redditService.fetchUserInfo(author).data
+                        userInformation = RedditNetworkProvider(context).fetchUserInfo(author).data
                     }
                 }
                 AnimatedVisibility(visible = true) {

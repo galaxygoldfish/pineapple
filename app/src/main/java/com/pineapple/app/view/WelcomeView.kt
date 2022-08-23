@@ -1,12 +1,10 @@
 package com.pineapple.app.view
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -15,7 +13,6 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.pineapple.app.NavDestination
 import com.pineapple.app.R
 import com.pineapple.app.util.getPreferences
-import com.pineapple.app.util.surfaceColorAtElevation
 
 @Composable
 fun WelcomeView(navController: NavController) {

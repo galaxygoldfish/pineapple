@@ -36,9 +36,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
-@OptIn(ExperimentalFoundationApi::class)
 fun SearchView(navController: NavController) {
     val viewModel = LocalContext.current.getViewModel(SearchViewModel::class.java)
+    viewModel.initNetworkProvider(LocalContext.current)
     Surface(modifier = Modifier.fillMaxSize()) {
         Column {
             AnimatedVisibility(visible = viewModel.currentSearchQuery.text.isEmpty()) {

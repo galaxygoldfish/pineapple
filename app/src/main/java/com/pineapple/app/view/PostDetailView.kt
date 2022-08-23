@@ -43,7 +43,8 @@ import com.pineapple.app.R
 import com.pineapple.app.components.*
 import com.pineapple.app.paging.RequestResult
 import com.pineapple.app.paging.RequestStatus
-import com.pineapple.app.model.reddit.*
+import com.pineapple.app.model.reddit.PostData
+import com.pineapple.app.model.reddit.PostListing
 import com.pineapple.app.util.*
 import com.pineapple.app.viewmodel.PostDetailViewModel
 import kotlinx.coroutines.launch
@@ -64,7 +65,8 @@ fun PostDetailView(
     uid: String,
     link: String
 ) {
-    val viewModel = LocalContext.current.getViewModel(PostDetailViewModel::class.java)
+    val context = LocalContext.current
+    val viewModel = context.getViewModel(PostDetailViewModel::class.java)
     var postData by remember { mutableStateOf<PostData?>(null) }
     var commentData by remember { mutableStateOf<JSONArray?>(null) }
     val requestStatus = remember { mutableStateOf<RequestResult<Any>?>(null) }
@@ -75,7 +77,7 @@ fun PostDetailView(
     rememberSystemUiController().setStatusBarColor(color = MaterialTheme.colorScheme.surfaceVariant)
 
     LaunchedEffect(true) {
-        viewModel.postRequestFlow().collect { result ->
+        viewModel.postRequestFlow(context).collect { result ->
             requestStatus.value = result
             result.data?.apply {
                 postData = Gson()

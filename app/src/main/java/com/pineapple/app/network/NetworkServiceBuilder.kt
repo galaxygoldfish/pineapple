@@ -9,7 +9,8 @@ import retrofit2.converter.scalars.ScalarsConverterFactory
 
 object NetworkServiceBuilder {
 
-    const val REDDIT_BASE_URL = "https://api.reddit.com/"
+    const val REDDIT_BASE_URL = "https://www.reddit.com"
+    const val OAUTH_BASE_URL = "https://oauth.reddit.com/"
     const val GFYCAT_BASE_URL = "https://api.gfycat.com/v1/gfycats/"
 
     private val gsonObject = GsonBuilder().setLenient().create()
