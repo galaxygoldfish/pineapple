@@ -5,11 +5,11 @@ plugins {
 
 android {
     namespace 'com.pineapple.app'
-    compileSdk 32
+    compileSdk 33
     defaultConfig {
         applicationId "com.pineapple.app"
         minSdk 24
-        targetSdk 32
+        targetSdk 33
         versionCode 1
         versionName "v1.0-beta"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -52,22 +52,22 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
 
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.1'
-    implementation 'androidx.activity:activity-compose:1.4.0'
+    implementation 'androidx.core:core-ktx:1.8.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.5.1'
+    implementation 'androidx.activity:activity-compose:1.5.1'
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
-    implementation 'androidx.compose.material3:material3:1.0.0-alpha11'
-    implementation 'androidx.compose.material:material:1.2.0-beta01'
+    implementation 'androidx.compose.material3:material3:1.0.0-beta01'
+    implementation 'androidx.compose.material:material:1.3.0-beta01'
     implementation "androidx.paging:paging-runtime:$paging_version"
-    implementation "androidx.paging:paging-compose:1.0.0-alpha14"
+    implementation "androidx.paging:paging-compose:1.0.0-alpha16"
 
     implementation "com.google.accompanist:accompanist-navigation-animation:$accompanist_version"
-    implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
     implementation "com.google.accompanist:accompanist-swiperefresh:$accompanist_version"
     implementation "com.google.accompanist:accompanist-flowlayout:$accompanist_version"
+    implementation "com.google.accompanist:accompanist-insets:$accompanist_version"
     implementation 'com.google.code.gson:gson:2.8.9'
-    implementation "com.google.android.exoplayer:exoplayer:2.17.1"
+    implementation "com.google.android.exoplayer:exoplayer:2.18.1"
 
     implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
     implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"

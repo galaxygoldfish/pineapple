@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -26,9 +27,9 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.pineapple.app.NavDestination
 import com.pineapple.app.R
 import com.pineapple.app.components.Chip
+import com.pineapple.app.components.PostCard
 import com.pineapple.app.components.SmallListCard
 import com.pineapple.app.components.TextOnlyTextField
-import com.pineapple.app.components.PostCard
 import com.pineapple.app.util.getViewModel
 import com.pineapple.app.viewmodel.SearchViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -52,7 +53,7 @@ fun SearchView(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(20.dp)
-                    .clip(RoundedCornerShape(10.dp))
+                    .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.secondaryContainer.copy(0.7F)),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -101,7 +102,7 @@ fun SearchView(navController: NavController) {
                 )
                 Column {
                     LazyRow(
-                        modifier = Modifier.padding(horizontal = 20.dp)
+                        modifier = Modifier.padding(start = 20.dp)
                     ) {
                         itemsIndexed(categories) { index, item ->
                             Chip(
@@ -128,14 +129,7 @@ fun SearchView(navController: NavController) {
                             itemsIndexed(viewModel.currentPostList) { _, item ->
                                 PostCard(
                                     postData = item.data,
-                                    navController = navController,
-                                    onClick = {
-                                        val permalink = item.data.permalink.split("/")
-                                        val sub = permalink[2]
-                                        val uid = permalink[4]
-                                        val link = permalink[5]
-                                        navController.navigate("${NavDestination.PostDetailView}/$sub/$uid/$link")
-                                    }
+                                    navController = navController
                                 )
                             }
                         }
@@ -332,13 +326,6 @@ fun AllResultSearchView(
                         PostCard(
                             postData = item.data,
                             navController = navController,
-                            onClick = {
-                                val permalink = item.data.permalink.split("/")
-                                val sub = permalink[2]
-                                val uid = permalink[4]
-                                val link = permalink[5]
-                                navController.navigate("${NavDestination.PostDetailView}/$sub/$uid/$link")
-                            },
                             modifier = Modifier.animateEnterExit(
                                 enter = slideInVertically(animationSpec = spring(0.8F)) { it * (index + 10) }
                             )

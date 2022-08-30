@@ -2,17 +2,25 @@ package com.pineapple.app.view
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.paging.PagingData
@@ -32,7 +40,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class,
+    ExperimentalFoundationApi::class
+)
 @Composable
 fun PostListView(
     navController: NavController,
@@ -70,37 +80,34 @@ fun PostListView(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
     ) {
-        if (currentPosts?.loadState?.isLoading() == true) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .size(50.dp),
-                    strokeWidth = 2.dp,
-                    color = MaterialTheme.colorScheme.secondary
-                )
-            }
-        }
         AnimatedVisibility(
-            visible = currentPosts?.itemSnapshotList?.isNotEmpty() == true,
+            visible = currentPosts?.itemSnapshotList != null,
             enter = fadeIn(),
             exit = fadeOut()
         ) {
-            LazyColumn(state = scrollState ?: rememberLazyListState()) {
+            LazyColumn(
+                state = scrollState ?: rememberLazyListState(),
+                modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection())
+            ) {
                 item {
                     topHeaderItem.invoke()
+                }
+                stickyHeader {
+                    AnimatedVisibility(
+                        visible = currentPosts?.loadState?.isLoading() == true,
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
+                        LinearProgressIndicator(
+                            modifier = Modifier.fillMaxWidth(),
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
                 }
                 currentPosts?.let {
                     itemsIndexed(it) { index, item ->
                         PostCard(
                             postData = item!!.data,
-                            onClick = {
-                                val permalink = item.data.permalink.split("/")
-                                val sub = permalink[2]
-                                val uid = permalink[4]
-                                val link = permalink[5]
-                                navController.navigate("${NavDestination.PostDetailView}/$sub/$uid/$link")
-                            },
                             navController = navController,
                             modifier = Modifier.animateEnterExit(
                                 enter = slideInVertically(animationSpec = spring(0.8F)) { it * (index + 1) }

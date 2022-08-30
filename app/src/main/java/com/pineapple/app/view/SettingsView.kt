@@ -1,52 +1,45 @@
 package com.pineapple.app.view
 
 import android.content.Intent
-import android.media.MediaPlayer
 import android.os.Build
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.SwitchDefaults
 import androidx.compose.material3.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.pineapple.app.MainActivity
 import com.pineapple.app.R
 import com.pineapple.app.components.SheetHandle
 import com.pineapple.app.theme.PineappleTheme
 import com.pineapple.app.theme.themeOptionMap
 import com.pineapple.app.util.getPreferences
-import com.pineapple.app.util.surfaceColorAtElevation
 import kotlinx.coroutines.launch
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 fun SettingsView(navController: NavController) {
     val sharedPreferences = LocalContext.current.getPreferences()
-    val bottomSheetState =
-        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
-    rememberSystemUiController().apply {
-        setStatusBarColor(MaterialTheme.colorScheme.surfaceVariant)
-        setNavigationBarColor(MaterialTheme.colorScheme.surface)
-    }
+    val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    val topAppBarBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     PineappleTheme {
         ModalBottomSheetLayout(
             sheetState = bottomSheetState,
@@ -71,9 +64,7 @@ fun SettingsView(navController: NavController) {
                                 )
                             }
                         },
-                        colors = TopAppBarDefaults.smallTopAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
+                        scrollBehavior = topAppBarBehavior
                     )
                 }
             ) {
@@ -84,6 +75,7 @@ fun SettingsView(navController: NavController) {
                         start = it.calculateStartPadding(LayoutDirection.Ltr),
                         end = it.calculateEndPadding(LayoutDirection.Ltr)
                     )
+                        .nestedScroll(topAppBarBehavior.nestedScrollConnection)
                 ) {
                     if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S) {
                         item {
@@ -180,11 +172,12 @@ fun SettingsPreferenceItem(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceEvenly,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .clickable {
-                onClick?.invoke()
-                if (useSwitch) switchState = !switchState
-            }
+                    onClick?.invoke()
+                    if (useSwitch) switchState = !switchState
+                }
         ) {
             Icon(
                 painter = icon,
@@ -192,7 +185,9 @@ fun SettingsPreferenceItem(
                 modifier = Modifier.padding(start = 20.dp)
             )
             Column(
-                modifier = Modifier.padding(start = 20.dp).weight(1F)
+                modifier = Modifier
+                    .padding(start = 20.dp)
+                    .weight(1F)
             ) {
                 Text(
                     text = title,

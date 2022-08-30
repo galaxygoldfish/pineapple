@@ -12,10 +12,7 @@ import com.pineapple.app.model.reddit.CondensedUserAboutListing
 import com.pineapple.app.model.reddit.PostItem
 import com.pineapple.app.model.reddit.SubredditItem
 import com.pineapple.app.model.reddit.UserAboutListing
-import com.pineapple.app.network.NetworkServiceBuilder.REDDIT_BASE_URL
-import com.pineapple.app.network.NetworkServiceBuilder.apiService
 import com.pineapple.app.network.RedditNetworkProvider
-import com.pineapple.app.network.RedditNetworkService
 
 class SearchViewModel : ViewModel() {
 

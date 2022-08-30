@@ -22,6 +22,7 @@
     <string name="ic_emergency_home_content_desc">Warning</string>
     <string name="ic_event_available_content_desc">Calendar available</string>
     <string name="ic_event_note_content_desc">Calendar</string>
+    <string name="ic_flag_content_desc">Report</string>
     <string name="ic_forum_content_desc">Chat bubbles</string>
     <string name="ic_group_content_desc">Two people</string>
     <string name="ic_hourglass_bottom_content_desc">Hourglass</string>
@@ -31,6 +32,7 @@
     <string name="ic_login_content_desc">Log in</string>
     <string name="ic_logout_content_desc">Log out</string>
     <string name="ic_menu_content_desc">Menu</string>
+    <string name="ic_more_vert_content_desc">More options</string>
     <string name="ic_nights_stay_content_desc">Moon and stars</string>
     <string name="ic_open_in_full_content_desc">Expand</string>
     <string name="ic_palette_content_desc">Color palette</string>
@@ -84,6 +86,10 @@
     <string name="post_view_comments_expand_replies">View replies</string>
     <string name="post_view_hint_type_gif">GIF</string>
     <string name="post_view_comment_reply_sheet_title">Replies</string>
+
+    <string name="post_options_view_item_format">View %1$s</string>
+    <string name="post_options_view_in_browser">View in browser</string>
+    <string name="post_options_report_item">Report post</string>
 
     <string name="user_view_tab_post_title">Posts</string>
     <string name="user_view_tab_comment_title">Comments</string>

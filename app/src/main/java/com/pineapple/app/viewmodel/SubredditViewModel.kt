@@ -5,12 +5,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.pineapple.app.paging.RequestResult
-import com.pineapple.app.network.NetworkServiceBuilder
-import com.pineapple.app.network.NetworkServiceBuilder.REDDIT_BASE_URL
-import com.pineapple.app.network.NetworkServiceBuilder.apiService
 import com.pineapple.app.network.RedditNetworkProvider
-import com.pineapple.app.network.RedditNetworkService
+import com.pineapple.app.paging.RequestResult
 import kotlinx.coroutines.flow.flow
 
 class SubredditViewModel : ViewModel() {

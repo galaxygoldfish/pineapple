@@ -4,12 +4,15 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.animation.*
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -21,31 +24,44 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.accompanist.flowlayout.FlowColumn
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.google.accompanist.insets.LocalWindowInsets
+import com.google.accompanist.insets.statusBarsHeight
+import com.google.accompanist.insets.statusBarsPadding
 import com.google.gson.Gson
+import com.pineapple.app.MainActivity
 import com.pineapple.app.NavDestination
 import com.pineapple.app.R
-import com.pineapple.app.components.*
-import com.pineapple.app.paging.RequestResult
-import com.pineapple.app.paging.RequestStatus
+import com.pineapple.app.components.CommentBubble
+import com.pineapple.app.components.FlairBar
+import com.pineapple.app.components.MultiTypeMediaView
+import com.pineapple.app.components.VideoControls
 import com.pineapple.app.model.reddit.PostData
 import com.pineapple.app.model.reddit.PostListing
-import com.pineapple.app.util.*
+import com.pineapple.app.paging.RequestResult
+import com.pineapple.app.paging.RequestStatus
+import com.pineapple.app.util.calculateRatioHeight
+import com.pineapple.app.util.getViewModel
+import com.pineapple.app.util.prettyNumber
 import com.pineapple.app.viewmodel.PostDetailViewModel
 import kotlinx.coroutines.launch
 import org.json.JSONArray
@@ -57,7 +73,8 @@ import java.net.URLEncoder
 @OptIn(
     ExperimentalMaterial3Api::class,
     ExperimentalAnimationApi::class,
-    ExperimentalMaterialApi::class
+    ExperimentalMaterialApi::class,
+    ExperimentalComposeUiApi::class
 )
 fun PostDetailView(
     navController: NavController,
@@ -72,9 +89,9 @@ fun PostDetailView(
     val requestStatus = remember { mutableStateOf<RequestResult<Any>?>(null) }
     val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val postDetailContainerState = rememberLazyListState()
+    val topAppBarBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     viewModel.postData = Triple(subreddit, uid, link)
-    rememberSystemUiController().setStatusBarColor(color = MaterialTheme.colorScheme.surfaceVariant)
 
     LaunchedEffect(true) {
         viewModel.postRequestFlow(context).collect { result ->
@@ -85,7 +102,7 @@ fun PostDetailView(
                     .data.children[0].data
                 // Have to manually parse comment data because reddit decides to be "efficient" and
                 // page comment results so there is no way of preventing Gson from throwing an exception
-                // when reddit puts a paging object instead of a comment object 🙄🖐
+                // when reddit puts a paging object instead of a comment object 🙄
                 commentData = (this[1] as JSONObject)
                     .getJSONObject("data")
                     .getJSONArray("children")
@@ -96,7 +113,7 @@ fun PostDetailView(
         sheetContent = {
             CommentReplyBottomSheet(viewModel, bottomSheetState)
         },
-        sheetBackgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp),
+        sheetBackgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
         sheetState = bottomSheetState,
         scrimColor = Color.Black.copy(0.3F)
     ) {
@@ -112,9 +129,7 @@ fun PostDetailView(
                             )
                         }
                     },
-                    colors = TopAppBarDefaults.smallTopAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
+                    scrollBehavior = topAppBarBehavior
                 )
             }
         ) {
@@ -146,12 +161,14 @@ fun PostDetailView(
                 exit = fadeOut()
             ) {
                 LazyColumn(
-                    modifier = Modifier.padding(
-                        top = it.calculateTopPadding(),
-                        start = it.calculateStartPadding(LayoutDirection.Ltr),
-                        end = it.calculateEndPadding(LayoutDirection.Ltr),
-                        bottom = it.calculateBottomPadding()
-                    ),
+                    modifier = Modifier
+                        .padding(
+                            top = it.calculateTopPadding(),
+                            start = it.calculateStartPadding(LayoutDirection.Ltr),
+                            end = it.calculateEndPadding(LayoutDirection.Ltr),
+                            bottom = it.calculateBottomPadding()
+                        )
+                        .nestedScroll(topAppBarBehavior.nestedScrollConnection),
                     state = postDetailContainerState
                 ) {
                     postData?.let { post ->
@@ -244,7 +261,6 @@ fun HeaderBar(post: PostData, modifier: Modifier) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InteractionBar(postData: PostData?) {
     Row(
@@ -358,7 +374,11 @@ fun PostContentView(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(start = 20.dp, end = 20.dp, top = 15.dp)
-                            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(10.dp)),
+                            .border(
+                                1.dp,
+                                MaterialTheme.colorScheme.outline,
+                                RoundedCornerShape(10.dp)
+                            ),
                         onClick = {
                             Intent(Intent.ACTION_VIEW).apply {
                                 data = Uri.parse(post.url)
@@ -383,7 +403,11 @@ fun PostContentView(
                                     .width(100.dp)
                                     .height(65.dp)
                                     .clip(RoundedCornerShape(10.dp))
-                                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(10.dp)),
+                                    .border(
+                                        1.dp,
+                                        MaterialTheme.colorScheme.outline,
+                                        RoundedCornerShape(10.dp)
+                                    ),
                                 contentScale = ContentScale.FillHeight,
                             )
                             Column(
@@ -496,10 +520,11 @@ fun CommentReplyBottomSheet(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val commentReplyScrollState = rememberScrollState()
+    val statusBarHeight = with (LocalDensity.current) { LocalWindowInsets.current.statusBars.top.toDp() }
     val headerBackground = animateColorAsState(
         if (bottomSheetState.isVisible) {
             if (commentReplyScrollState.value == 0) {
-                MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
+                MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
             } else {
                 MaterialTheme.colorScheme.surfaceColorAtElevation(10.dp)
             }
@@ -507,7 +532,6 @@ fun CommentReplyBottomSheet(
             MaterialTheme.colorScheme.surfaceVariant
         }
     )
-    rememberSystemUiController().setStatusBarColor(headerBackground.value)
     Column {
         Column(
             modifier = Modifier.background(headerBackground.value)
@@ -515,7 +539,7 @@ fun CommentReplyBottomSheet(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 15.dp),
+                    .padding(top = statusBarHeight + 15.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
@@ -574,7 +598,8 @@ fun CommentReplyBottomSheet(
                                         .getJSONObject("data")
                                         .getJSONArray("children")
                                 }
-                            }
+                            },
+                            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(5.dp)
                         )
                     }
                 }

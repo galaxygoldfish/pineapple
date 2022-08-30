@@ -13,7 +13,8 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.pineapple.app.model.reddit.FlairRichItem
 import java.util.Locale
-import kotlin.math.*
+import kotlin.math.ln
+import kotlin.math.pow
 
 
 fun Int.prettyNumber() : String {

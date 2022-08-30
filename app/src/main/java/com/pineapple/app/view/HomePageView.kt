@@ -1,30 +1,23 @@
 package com.pineapple.app.view
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.*
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Divider
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults.smallTopAppBarColors
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -36,15 +29,12 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.google.accompanist.insets.navigationBarsHeight
+import com.google.accompanist.insets.statusBarsHeight
 import com.pineapple.app.NavDestination
 import com.pineapple.app.R
 import com.pineapple.app.components.FilterBottomSheet
-import com.pineapple.app.components.drawerCustomShape
 import com.pineapple.app.util.getViewModel
-import com.pineapple.app.util.surfaceColorAtElevation
 import com.pineapple.app.viewmodel.HomePageViewModel
 import kotlinx.coroutines.launch
 
@@ -65,22 +55,15 @@ fun HomePageView(navController: NavController) {
     val asynchronousScope = rememberCoroutineScope()
     val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    rememberSystemUiController().setSystemBarsColor(
-        MaterialTheme.colorScheme.surfaceColorAtElevation(5.dp)
-    )
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val lazyListScrollState = rememberLazyListState()
+
     LaunchedEffect(true) {
         viewModel.refreshTopCommunities(context)
     }
     ModalNavigationDrawer(
         drawerState = drawerState,
-        drawerShape = drawerCustomShape(
-            localConfig = LocalConfiguration.current,
-            context = LocalContext.current,
-            widthRatio = 0.78F
-        ),
         gesturesEnabled = true,
-        drawerTonalElevation = 3.dp,
-        drawerContainerColor = MaterialTheme.colorScheme.surface,
         scrimColor = Color.Black.copy(0.3F),
         drawerContent = {
             HomeNavigationDrawer(navController, viewModel)
@@ -95,13 +78,43 @@ fun HomePageView(navController: NavController) {
                 )
             },
             sheetState = bottomSheetState,
-            scrimColor = Color.Black.copy(0.3F),
-            sheetShape = RoundedCornerShape(topEnd = 10.dp, topStart = 10.dp)
+            scrimColor = Color.Black.copy(0.3F)
         ) {
             Scaffold(
+                floatingActionButton = {
+                    FloatingActionButton(
+                        onClick = { /*TODO*/ },
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_add),
+                            contentDescription = stringResource(id = R.string.ic_add_content_desc)
+                        )
+                    }
+                },
                 topBar = {
                     if (viewModel.selectedTabItem != 1) {
-                        Surface(tonalElevation = 1.dp) {
+                        Column {
+                            Spacer(
+                                modifier = Modifier
+                                    .statusBarsHeight()
+                                    .fillMaxWidth()
+                                    .background(
+                                        animateColorAsState(
+                                            targetValue = if (
+                                                remember {
+                                                    derivedStateOf {
+                                                        lazyListScrollState.firstVisibleItemScrollOffset
+                                                    }
+                                                }.value > 0
+                                            ) {
+                                                MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
+                                            } else {
+                                                MaterialTheme.colorScheme.surface
+                                            }
+                                        ).value
+                                    )
+                            )
                             CenterAlignedTopAppBar(
                                 title = {
                                     Text(
@@ -131,14 +144,13 @@ fun HomePageView(navController: NavController) {
                                         )
                                     }
                                 },
-                                colors = smallTopAppBarColors(MaterialTheme.colorScheme.surfaceColorAtElevation(5.dp))
+                                scrollBehavior = scrollBehavior
                             )
                         }
                     }
                 },
                 bottomBar = {
                     data class NavItem(var text: Int, var icon: Int, var contentDesc: Int)
-
                     val navbarItems = listOf(
                         NavItem(
                             R.string.home_bottom_bar_item_browse,
@@ -157,10 +169,7 @@ fun HomePageView(navController: NavController) {
                             R.drawable.ic_person, R.string.ic_person_content_desc
                         )
                     )
-                    NavigationBar(
-                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(5.dp),
-                        tonalElevation = 0.dp
-                    ) {
+                    NavigationBar {
                         navbarItems.forEachIndexed { index, item ->
                             NavigationBarItem(
                                 selected = viewModel.selectedTabItem == index,
@@ -205,6 +214,7 @@ fun HomePageView(navController: NavController) {
                                     subreddit = "all",
                                     sort = viewModel.currentSortType.value.toLowerCase(Locale.current),
                                     time = viewModel.currentSortTime.value,
+                                    scrollState = lazyListScrollState
                                 )
                             }
                             composable("${BottomNavDestinations.Home}/{sub}/{sort}") {
@@ -212,7 +222,8 @@ fun HomePageView(navController: NavController) {
                                     PostListView(
                                         navController = navController,
                                         subreddit = args.getString("sub")!!,
-                                        sort = args.getString("sort")!!
+                                        sort = args.getString("sort")!!,
+                                        scrollState = lazyListScrollState
                                     )
                                 }
                             }
@@ -223,7 +234,8 @@ fun HomePageView(navController: NavController) {
                             // Account
                         }
                     }
-                }
+                },
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
             )
         }
     }
@@ -232,17 +244,28 @@ fun HomePageView(navController: NavController) {
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun HomeNavigationDrawer(navController: NavController, viewModel: HomePageViewModel) {
-    Column(modifier = Modifier.fillMaxWidth(0.78F)) {
+    val navItemColors = NavigationDrawerItemDefaults.colors(
+        unselectedContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
+    )
+    Column(
+        modifier = Modifier
+            .fillMaxWidth(0.78F)
+            .fillMaxHeight()
+            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp))
+            .clip(RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
+    ) {
         Column(
             modifier = Modifier
                 .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
+            Spacer(modifier = Modifier.statusBarsHeight(additional = 30.dp))
             Icon(
                 painter = painterResource(id = R.drawable.ic_pineapple_transparent),
                 contentDescription = stringResource(id = R.string.ic_pineapple_transparent_content_desc),
                 tint = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.padding(top = 30.dp, start = 20.dp, bottom = 23.dp)
+                modifier = Modifier
+                    .padding(top = 30.dp, start = 20.dp, bottom = 23.dp)
             )
             NavigationDrawerItem(
                 label = { Text(stringResource(id = R.string.home_nav_drawer_home_title)) },
@@ -254,7 +277,8 @@ fun HomeNavigationDrawer(navController: NavController, viewModel: HomePageViewMo
                     )
                 },
                 onClick = { },
-                modifier = Modifier.padding(top = 5.dp)
+                modifier = Modifier.padding(top = 5.dp),
+                colors = navItemColors
             )
             NavigationDrawerItem(
                 label = { Text(stringResource(id = R.string.home_nav_drawer_settings_title)) },
@@ -266,7 +290,8 @@ fun HomeNavigationDrawer(navController: NavController, viewModel: HomePageViewMo
                     )
                 },
                 onClick = { navController.navigate(NavDestination.SettingsView) },
-                modifier = Modifier.padding(top = 5.dp)
+                modifier = Modifier.padding(top = 5.dp),
+                colors = navItemColors
             )
             NavigationDrawerItem(
                 label = { Text(stringResource(id = R.string.home_nav_drawer_account_button)) },
@@ -278,7 +303,8 @@ fun HomeNavigationDrawer(navController: NavController, viewModel: HomePageViewMo
                     )
                 },
                 onClick = { /*TODO*/ },
-                modifier = Modifier.padding(top = 5.dp)
+                modifier = Modifier.padding(top = 5.dp),
+                colors = navItemColors
             )
             Divider(modifier = Modifier.padding(vertical = 20.dp, horizontal = 5.dp))
             Text(
@@ -286,35 +312,41 @@ fun HomeNavigationDrawer(navController: NavController, viewModel: HomePageViewMo
                 style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier.padding(start = 5.dp, bottom = 10.dp)
             )
-            viewModel.popularSubreddits.forEach { item ->
-                NavigationDrawerItem(
-                    label = {
-                        Text(
-                            text = item.data.displayNamePrefixed,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    },
-                    selected = false,
-                    icon = {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_atr_dots),
-                            contentDescription = stringResource(id = R.string.ic_atr_dots_content_desc),
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primaryContainer)
-                                .size(25.dp)
-                                .padding(4.dp) // Icon padding
-                        )
-                    },
-                    onClick = {
-                        navController.navigate("${NavDestination.SubredditView}/${
-                            item.data.url.replace("r/", "").replace("/", "")
-                        }")
-                    },
-                    modifier = Modifier.padding(top = 5.dp)
-                )
+            Column {
+                viewModel.popularSubreddits.forEach { item ->
+                    NavigationDrawerItem(
+                        label = {
+                            Text(
+                                text = item.data.displayNamePrefixed,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        },
+                        selected = false,
+                        icon = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_atr_dots),
+                                contentDescription = stringResource(id = R.string.ic_atr_dots_content_desc),
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.primaryContainer)
+                                    .size(25.dp)
+                                    .padding(4.dp) // Icon padding
+                            )
+                        },
+                        onClick = {
+                            navController.navigate(
+                                "${NavDestination.SubredditView}/${
+                                    item.data.url.replace("r/", "").replace("/", "")
+                                }"
+                            )
+                        },
+                        modifier = Modifier.padding(top = 5.dp),
+                        colors = navItemColors
+                    )
+                }
+                Spacer(modifier = Modifier.navigationBarsHeight(additional = 15.dp))
             }
         }
         // If logged in then show user's joined communities, else show popular subreddits

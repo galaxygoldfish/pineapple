@@ -17,8 +17,9 @@ import com.pineapple.app.network.NetworkServiceBuilder.apiService
 import com.pineapple.app.network.downloadBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.*
-import java.net.URLDecoder
+import java.io.File
+import java.io.FileOutputStream
+import java.io.OutputStream
 
 class MediaDetailViewModel : ViewModel() {
 

@@ -30,14 +30,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.pineapple.app.R
 import com.pineapple.app.components.FilterBottomSheet
 import com.pineapple.app.components.MDDocument
 import com.pineapple.app.model.reddit.SubredditData
 import com.pineapple.app.theme.PineappleTheme
 import com.pineapple.app.util.prettyNumber
-import com.pineapple.app.util.surfaceColorAtElevation
 import com.pineapple.app.viewmodel.SubredditViewModel
 import kotlinx.coroutines.launch
 import org.commonmark.node.Document
@@ -54,12 +52,6 @@ fun SubredditView(navController: NavController, subreddit: String) {
     val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberLazyListState()
-
-    rememberSystemUiController().setSystemBarsColor(
-        if (scrollState.firstVisibleItemIndex != 0) {
-            MaterialTheme.colorScheme.surfaceVariant
-        } else MaterialTheme.colorScheme.surface
-    )
 
     viewModel.currentSubreddit = subreddit
     LaunchedEffect(true) {

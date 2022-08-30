@@ -6,12 +6,17 @@ import android.os.Looper
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -32,19 +37,22 @@ import coil.size.Size
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.Player.*
+import com.google.android.exoplayer2.Player.Listener
+import com.google.android.exoplayer2.Player.STATE_READY
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.ui.StyledPlayerView
 import com.google.android.exoplayer2.upstream.DefaultDataSource
+import com.pineapple.app.NavDestination
 import com.pineapple.app.R
 import com.pineapple.app.model.gfycat.GfycatObject
+import com.pineapple.app.model.reddit.UserAbout
+import com.pineapple.app.model.reddit.UserAboutListing
 import com.pineapple.app.network.GfycatNetworkService
 import com.pineapple.app.theme.PineappleTheme
 import com.pineapple.app.util.toDp
 import java.net.URLDecoder
 
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
 fun ExoVideoPlayer(
     url: String,
     previewUrl: String,
@@ -265,7 +273,6 @@ fun MultiTypeMediaView(
 }
 
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
 fun VideoControls(
     player: MutableState<Player?>,
     postTitle: String,
@@ -524,6 +531,54 @@ fun ImageGifControls(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun UserAvatarIcon(
+    userInfo: UserAboutListing?,
+    onClick: () -> Unit
+) {
+    Box {
+        AnimatedVisibility(
+            visible = userInfo == null || userInfo.data.subreddit.is_default_icon,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            AvatarPlaceholderIcon(
+                modifier = Modifier
+                    .padding(top = 15.dp, start = 15.dp, end = 10.dp)
+                    .clickable {
+                        onClick.invoke()
+                    }
+                    .size(35.dp)
+            )
+        }
+        AnimatedVisibility(
+            visible = userInfo != null && !userInfo.data.subreddit.is_default_icon,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(
+                        userInfo?.data?.snoovatar_img.toString().ifBlank {
+                            userInfo?.data?.icon_img
+                        }
+                    )
+                    .crossfade(true)
+                    .build().data,
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(top = 15.dp, start = 15.dp, end = 10.dp)
+                    .clickable {
+                        onClick.invoke()
+                    }
+                    .size(35.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.FillWidth,
+            )
         }
     }
 }

@@ -9,14 +9,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.pineapple.app.NavDestination
 import com.pineapple.app.R
 import com.pineapple.app.util.getPreferences
 
 @Composable
 fun WelcomeView(navController: NavController) {
-    rememberSystemUiController().setSystemBarsColor(MaterialTheme.colorScheme.surface)
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.surface

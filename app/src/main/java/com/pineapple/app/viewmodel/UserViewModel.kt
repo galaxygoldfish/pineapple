@@ -10,10 +10,7 @@ import androidx.lifecycle.ViewModel
 import com.pineapple.app.model.reddit.CommentPreDataNull
 import com.pineapple.app.model.reddit.PostItem
 import com.pineapple.app.model.reddit.UserAbout
-import com.pineapple.app.network.NetworkServiceBuilder.REDDIT_BASE_URL
-import com.pineapple.app.network.NetworkServiceBuilder.apiService
 import com.pineapple.app.network.RedditNetworkProvider
-import com.pineapple.app.network.RedditNetworkService
 
 class UserViewModel : ViewModel() {
 
@@ -21,6 +18,7 @@ class UserViewModel : ViewModel() {
     var currentlySelectedTab by mutableStateOf(0)
     var userPostList = mutableStateListOf<PostItem>()
     var userCommentList = mutableStateListOf<CommentPreDataNull>()
+    var currentContentList = mutableStateListOf<Any>(userPostList)
 
     fun initNetworkProvider(context: Context) {
         redditNetworkProvider = RedditNetworkProvider(context)

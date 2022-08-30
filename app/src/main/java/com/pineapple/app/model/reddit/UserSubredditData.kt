@@ -8,5 +8,6 @@ data class UserSubredditData(
     var public_description: String,
     var subreddit_type: String,
     var user_is_subscriber: Boolean,
-    var display_name_prefixed: String
+    var display_name_prefixed: String,
+    var is_default_icon: Boolean
 )

@@ -1,22 +1,22 @@
 package com.pineapple.app
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
-import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedContentScope.SlideDirection.Companion.Down
+import androidx.compose.animation.AnimatedContentScope.SlideDirection.Companion.Left
+import androidx.compose.animation.AnimatedContentScope.SlideDirection.Companion.Right
+import androidx.compose.animation.AnimatedContentScope.SlideDirection.Companion.Up
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
+import androidx.core.view.WindowCompat
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
+import com.google.accompanist.navigation.animation.AnimatedNavHost
+import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.pineapple.app.theme.PineappleTheme
 import com.pineapple.app.util.getPreferences
-import com.pineapple.app.util.getViewModel
 import com.pineapple.app.view.*
-import com.pineapple.app.viewmodel.MediaDetailViewModel
 
 object NavDestination {
     const val WelcomeView = "welcome"
@@ -34,6 +34,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             PineappleTheme {
                 NavigationHost()
@@ -45,8 +46,8 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalAnimationApi::class)
     fun NavigationHost() {
         navigationController = rememberAnimatedNavController()
-        val onboardingComplete = getPreferences().getBoolean("ONBOARDING_COMPLETE", false)!!
-        NavHost(
+        val onboardingComplete = getPreferences().getBoolean("ONBOARDING_COMPLETE", false)
+        AnimatedNavHost(
             navController = navigationController,
             startDestination = if (onboardingComplete) {
                 NavDestination.HomePageView
@@ -60,7 +61,11 @@ class MainActivity : ComponentActivity() {
             composable(NavDestination.HomePageView) {
                 HomePageView(navController = navigationController)
             }
-            composable("${NavDestination.PostDetailView}/{subreddit}/{uid}/{link}") {
+            composable(
+                route = "${NavDestination.PostDetailView}/{subreddit}/{uid}/{link}",
+                enterTransition = { slideIntoContainer(towards = Up) },
+                exitTransition = { slideOutOfContainer(towards = Down) }
+            ) {
                 PostDetailView(
                     navController = navigationController,
                     subreddit = it.arguments!!.getString("subreddit")!!,
@@ -68,13 +73,21 @@ class MainActivity : ComponentActivity() {
                     link = it.arguments!!.getString("link")!!
                 )
             }
-            composable("${NavDestination.SubredditView}/{subreddit}") {
+            composable(
+                route = "${NavDestination.SubredditView}/{subreddit}",
+                enterTransition = { slideIntoContainer(towards = Up) },
+                exitTransition = { slideOutOfContainer(towards = Down) }
+            ) {
                 SubredditView(
                     navController = navigationController,
                     subreddit = it.arguments!!.getString("subreddit")!!
                 )
             }
-            composable("${NavDestination.MediaDetailView}/{mediaType}/{encodedUrl}/{domain}/{title}") {
+            composable(
+                route = "${NavDestination.MediaDetailView}/{mediaType}/{encodedUrl}/{domain}/{title}",
+                enterTransition = { expandIn() },
+                exitTransition = { slideOutOfContainer(towards = Down) }
+            ) {
                 MediaDetailView(
                     navController = navigationController,
                     mediaType = it.arguments!!.getString("mediaType")!!,
@@ -83,10 +96,18 @@ class MainActivity : ComponentActivity() {
                     titleText = it.arguments!!.getString("title")!!
                 )
             }
-            composable(NavDestination.SettingsView) {
+            composable(
+                route = NavDestination.SettingsView,
+                enterTransition = { slideIntoContainer(towards = Left) },
+                exitTransition = { slideOutOfContainer(towards = Right) }
+            ) {
                 SettingsView(navController = navigationController)
             }
-            composable("${NavDestination.UserView}/{user}") {
+            composable(
+                route = "${NavDestination.UserView}/{user}",
+                enterTransition = { slideIntoContainer(towards = Up) },
+                exitTransition = { slideOutOfContainer(towards = Down) }
+            ) {
                 UserView(
                     navController = navigationController,
                     user = it.arguments!!.getString("user")!!

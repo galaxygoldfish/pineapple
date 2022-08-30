@@ -86,7 +86,7 @@ fun Chip(
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    unselectedBackground: Color = MaterialTheme.colorScheme.surface
+    unselectedBackground: Color = Color.Transparent
 ) {
     Row(
         modifier = modifier

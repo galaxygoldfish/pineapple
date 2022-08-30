@@ -1,29 +1,29 @@
 package com.pineapple.app.components
 
+import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material.BottomSheetState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.google.accompanist.flowlayout.FlowRow
-import com.pineapple.app.NavDestination
 import com.pineapple.app.R
-import com.pineapple.app.util.surfaceColorAtElevation
-import com.pineapple.app.view.BottomNavDestinations
 import kotlinx.coroutines.launch
+import java.io.FileDescriptor
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -54,6 +54,7 @@ fun FilterBottomSheet(
         modifier = Modifier
             .background(MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp))
             .fillMaxWidth()
+            .navigationBarsPadding()
     ) {
         Row(
             modifier = Modifier
@@ -65,7 +66,7 @@ fun FilterBottomSheet(
         ) { }
         Text(
             text = stringResource(id = R.string.home_filter_sheet_sort_header),
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier.padding(top = 15.dp, start = 20.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -82,14 +83,14 @@ fun FilterBottomSheet(
             tempSortType.value.equals("Controversial", true)) {
             Text(
                 text = stringResource(id = R.string.home_filter_sheet_time_header),
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.padding(start = 20.dp, top = 15.dp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             FlowRow(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 20.dp, end = 15.dp, top = 10.dp)
+                    .padding(start = 20.dp, end = 10.dp, top = 10.dp)
             ) {
                 timeChips.forEach { item ->
                     SortChipItem(item = item, sortVar = tempTimePeriod)
@@ -127,15 +128,86 @@ private fun SortChipItem(
     sortVar: MutableState<String>
 ) {
     val chipText = stringResource(id = item.first)
+    val allTimeText = stringResource(id = R.string.home_filter_sheet_time_all)
     Chip(
         text = chipText,
-        selected = sortVar.value.equals(chipText, true),
+        selected = sortVar.value.let {
+            it.equals(chipText, true)
+                    || (chipText == allTimeText && it.equals(
+                allTimeText.split(" ")[0], true
+            ))
+        },
         icon = painterResource(id = item.second),
         contentDescription = stringResource(id = item.third),
         unselectedBackground = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
         onClick = {
-            sortVar.value = chipText.toLowerCase(Locale.current)
+            sortVar.value = (if (chipText != allTimeText) {
+                chipText.toLowerCase(Locale.current)
+            } else {
+                Log.e("DD", allTimeText.split(" ")[0].toLowerCase(Locale.current))
+                allTimeText.split(" ")[0].toLowerCase(Locale.current)
+            })
         },
         modifier = Modifier.padding(bottom = 10.dp)
     )
+}
+
+@Composable
+fun DialogContainer(
+    title: String = "",
+    actionButtons: (@Composable RowScope.() -> Unit)? = null,
+    content: @Composable () -> Unit
+) {
+    Column(
+        modifier = Modifier.clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp))
+    ) {
+        if (title.isNotBlank()) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(top = 24.dp, start = 24.dp)
+            )
+        }
+        Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)) {
+            content.invoke()
+        }
+        actionButtons?.let {
+            Row(
+                modifier = Modifier.padding(top = 8.dp, bottom = 24.dp, start = 24.dp, end = 24.dp),
+                horizontalArrangement = Arrangement.End
+            ) {
+                it.invoke(this)
+            }
+        }
+    }
+}
+
+@Composable
+fun DialogListItem(
+    text: String,
+    icon: Painter,
+    contentDescription: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth()
+            .clickable { onClick.invoke() },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            painter = icon,
+            contentDescription = contentDescription,
+            modifier = Modifier.padding(top = 10.dp, bottom = 10.dp),
+            tint = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(start = 24.dp),
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
 }

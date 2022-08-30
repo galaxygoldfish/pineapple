@@ -3,14 +3,12 @@ package com.pineapple.app.network
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.util.Log
-import com.google.common.net.HttpHeaders.USER_AGENT
 import com.pineapple.app.BuildConfig
 import com.pineapple.app.model.reddit.*
 import com.pineapple.app.network.NetworkServiceBuilder.OAUTH_BASE_URL
 import com.pineapple.app.network.NetworkServiceBuilder.REDDIT_BASE_URL
 import com.pineapple.app.network.NetworkServiceBuilder.apiService
 import com.pineapple.app.network.NetworkServiceBuilder.rawApiService
-import okhttp3.Credentials
 
 class RedditNetworkProvider(context: Context) {
 
@@ -33,7 +31,7 @@ class RedditNetworkProvider(context: Context) {
 
         val tokenExpireEpoch = sharedPreferences.getLong("API_ACCESS_TOKEN_EXPIRE", 0)
         if (currentUnixTime >= tokenExpireEpoch
-            && (sharedPreferences.getString("API_ACCESS_TOKEN", ""))!!.isBlank()
+            || (sharedPreferences.getString("API_ACCESS_TOKEN", ""))!!.isBlank()
         ) {
             Log.e("TAG", "authenticating userless")
             authNetworkService.authenticateUserless().let {
