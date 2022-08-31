@@ -24,6 +24,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -538,7 +539,10 @@ fun ImageGifControls(
 @Composable
 fun UserAvatarIcon(
     userInfo: UserAboutListing?,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+        .padding(top = 15.dp, start = 15.dp, end = 10.dp)
+        .size(35.dp)
 ) {
     Box {
         AnimatedVisibility(
@@ -547,12 +551,9 @@ fun UserAvatarIcon(
             exit = fadeOut()
         ) {
             AvatarPlaceholderIcon(
-                modifier = Modifier
-                    .padding(top = 15.dp, start = 15.dp, end = 10.dp)
-                    .clickable {
+                modifier = modifier.clickable {
                         onClick.invoke()
                     }
-                    .size(35.dp)
             )
         }
         AnimatedVisibility(
@@ -570,12 +571,9 @@ fun UserAvatarIcon(
                     .crossfade(true)
                     .build().data,
                 contentDescription = null,
-                modifier = Modifier
-                    .padding(top = 15.dp, start = 15.dp, end = 10.dp)
-                    .clickable {
-                        onClick.invoke()
-                    }
-                    .size(35.dp)
+                modifier = modifier.clickable {
+                    onClick.invoke()
+                }
                     .clip(CircleShape),
                 contentScale = ContentScale.FillWidth,
             )

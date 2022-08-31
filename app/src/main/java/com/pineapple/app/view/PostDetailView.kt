@@ -10,21 +10,21 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -33,30 +33,24 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.accompanist.flowlayout.FlowColumn
 import com.google.accompanist.insets.LocalWindowInsets
-import com.google.accompanist.insets.statusBarsHeight
-import com.google.accompanist.insets.statusBarsPadding
 import com.google.gson.Gson
-import com.pineapple.app.MainActivity
 import com.pineapple.app.NavDestination
 import com.pineapple.app.R
-import com.pineapple.app.components.CommentBubble
-import com.pineapple.app.components.FlairBar
-import com.pineapple.app.components.MultiTypeMediaView
-import com.pineapple.app.components.VideoControls
+import com.pineapple.app.components.*
 import com.pineapple.app.model.reddit.PostData
 import com.pineapple.app.model.reddit.PostListing
+import com.pineapple.app.model.reddit.UserAboutListing
+import com.pineapple.app.network.RedditNetworkProvider
 import com.pineapple.app.paging.RequestResult
 import com.pineapple.app.paging.RequestStatus
 import com.pineapple.app.util.calculateRatioHeight
@@ -73,8 +67,7 @@ import java.net.URLEncoder
 @OptIn(
     ExperimentalMaterial3Api::class,
     ExperimentalAnimationApi::class,
-    ExperimentalMaterialApi::class,
-    ExperimentalComposeUiApi::class
+    ExperimentalMaterialApi::class
 )
 fun PostDetailView(
     navController: NavController,
@@ -90,6 +83,7 @@ fun PostDetailView(
     val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val postDetailContainerState = rememberLazyListState()
     val topAppBarBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    var expandedDropDownMenu by remember { mutableStateOf(false) }
 
     viewModel.postData = Triple(subreddit, uid, link)
 
@@ -129,7 +123,90 @@ fun PostDetailView(
                             )
                         }
                     },
-                    scrollBehavior = topAppBarBehavior
+                    scrollBehavior = topAppBarBehavior,
+                    actions = {
+                        Box {
+                            IconButton(onClick = { expandedDropDownMenu = true }) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_more_vert),
+                                    contentDescription = stringResource(id = R.string.ic_more_vert_content_desc)
+                                )
+                            }
+                            androidx.compose.animation.AnimatedVisibility(visible = expandedDropDownMenu) {
+                                DropdownMenu(
+                                    expanded = expandedDropDownMenu,
+                                    onDismissRequest = { expandedDropDownMenu = false }
+                                ) {
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                text = String.format(
+                                                    stringResource(id = R.string.post_options_view_item_format),
+                                                    postData?.author ?: "user"
+                                                )
+                                            )
+                                        },
+                                        leadingIcon = {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.ic_person),
+                                                contentDescription = stringResource(id = R.string.ic_person_content_desc)
+                                            )
+                                        },
+                                        onClick = {
+                                            postData?.author?.let {
+                                                navController.navigate("${NavDestination.UserView}/${it}")
+                                            }
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                text = String.format(
+                                                    stringResource(id = R.string.post_options_view_item_format),
+                                                    postData?.subredditNamePrefixed ?: "community"
+                                                )
+                                            )
+                                        },
+                                        leadingIcon = {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.ic_atr_dots),
+                                                contentDescription = stringResource(id = R.string.ic_atr_dots_content_desc)
+                                            )
+                                        },
+                                        onClick = {
+                                            postData?.subreddit?.let {
+                                                navController.navigate("${NavDestination.SubredditView}/${it}")
+                                            }
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(stringResource(id = R.string.post_options_view_in_browser))
+                                        },
+                                        leadingIcon = {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.ic_logout),
+                                                contentDescription = stringResource(id = R.string.ic_logout_content_desc)
+                                            )
+                                        },
+                                        onClick = {   }
+                                    )
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(stringResource(id = R.string.post_options_report_item))
+                                        },
+                                        leadingIcon = {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.ic_flag),
+                                                contentDescription = stringResource(id = R.string.ic_flag_content_desc)
+                                            )
+                                        },
+                                        onClick = {   }
+                                    )
+                                }
+                            }
+                        }
+                    }
                 )
             }
         ) {
@@ -175,10 +252,12 @@ fun PostDetailView(
                         item {
                             HeaderBar(
                                 post = post,
-                                modifier = Modifier.animateEnterExit(enter = slideInVertically(
-                                    animationSpec = spring(0.8F)
-                                ) { it * 2 }
-                                )
+                                modifier = Modifier.animateEnterExit(
+                                    enter = slideInVertically(
+                                        animationSpec = spring(0.8F)
+                                    ) { it * 2 }
+                                ),
+                                navController = navController
                             )
                         }
                         item {
@@ -223,7 +302,12 @@ fun PostDetailView(
 }
 
 @Composable
-fun HeaderBar(post: PostData, modifier: Modifier) {
+fun HeaderBar(post: PostData, modifier: Modifier, navController: NavController) {
+    var userInformation by remember { mutableStateOf<UserAboutListing?>(null) }
+    val context = LocalContext.current
+    LaunchedEffect(key1 = post.author) {
+        userInformation = RedditNetworkProvider(context).fetchUserInfo(post.author)
+    }
     Column(modifier = modifier) {
         Text(
             text = post.title,
@@ -236,15 +320,12 @@ fun HeaderBar(post: PostData, modifier: Modifier) {
                 )
         )
         Row(modifier = Modifier.padding(top = 15.dp, start = 21.dp)) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_avatar_placeholder),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer)
-                    .size(35.dp)
-                    .padding(top = 5.dp)
+            UserAvatarIcon(
+                userInfo = userInformation,
+                onClick = {
+                    navController.navigate("${NavDestination.UserView}/${post.author}")
+                },
+                modifier = Modifier.size(35.dp)
             )
             Column(modifier = Modifier.padding(start = 10.dp)) {
                 Text(

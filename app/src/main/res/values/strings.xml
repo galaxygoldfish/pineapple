@@ -2,6 +2,7 @@
 
     <string name="app_name">Pineapple</string>
 
+    <string name="ic_edit_content_desc">New</string>
     <string name="ic_account_circle_content_desc">Account</string>
     <string name="ic_add_content_desc">Add</string>
     <string name="ic_arrow_back_content_desc">Back arrow</string>
@@ -105,6 +106,11 @@
     <string name="search_view_all_users">View all user results</string>
     <string name="search_view_all_posts">View all post results</string>
     <string name="search_view_all_communities">View all communities</string>
+
+    <string name="chat_nothing_here_header_text">There\'s nothing here yet…</string>
+
+    <string name="account_unauthenticated_header_text">You\'re logged out</string>
+    <string name="account_unauthenticated_subtitle_text">Sign in with Reddit to access all features of the app.</string>
 
     <string name="community_user_count_format">%1$s Members</string>
     <string name="community_join_button_text">Join</string>

@@ -1,6 +1,6 @@
 package com.pineapple.app.view
 
-import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -82,14 +82,16 @@ fun HomePageView(navController: NavController) {
         ) {
             Scaffold(
                 floatingActionButton = {
-                    FloatingActionButton(
-                        onClick = { /*TODO*/ },
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_add),
-                            contentDescription = stringResource(id = R.string.ic_add_content_desc)
-                        )
+                    if (viewModel.selectedTabItem == 0) {
+                        FloatingActionButton(
+                            onClick = { /*TODO*/ },
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_add),
+                                contentDescription = stringResource(id = R.string.ic_add_content_desc)
+                            )
+                        }
                     }
                 },
                 topBar = {
@@ -115,37 +117,61 @@ fun HomePageView(navController: NavController) {
                                         ).value
                                     )
                             )
-                            CenterAlignedTopAppBar(
-                                title = {
-                                    Text(
-                                        text = stringResource(id = R.string.home_top_bar_title_default),
-                                        style = MaterialTheme.typography.titleLarge
-                                    )
-                                },
-                                navigationIcon = {
-                                    IconButton(onClick = {
-                                        asynchronousScope.launch { drawerState.open() }
-                                    }) {
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.ic_menu),
-                                            contentDescription = stringResource(id = R.string.ic_menu_content_desc)
+                            if (viewModel.selectedTabItem == 0) {
+                                CenterAlignedTopAppBar(
+                                    title = {
+                                        Text(
+                                            text = stringResource(id = R.string.home_top_bar_title_default),
+                                            style = MaterialTheme.typography.titleLarge
                                         )
-                                    }
-                                },
-                                actions = {
-                                    IconButton(
-                                        onClick = {
-                                            asynchronousScope.launch { bottomSheetState.show() }
+                                    },
+                                    navigationIcon = {
+                                        IconButton(onClick = {
+                                            asynchronousScope.launch { drawerState.open() }
+                                        }) {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.ic_menu),
+                                                contentDescription = stringResource(id = R.string.ic_menu_content_desc)
+                                            )
                                         }
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.ic_discover_tune),
-                                            contentDescription = stringResource(id = R.string.ic_discover_tune_content_desc)
+                                    },
+                                    actions = {
+                                        IconButton(
+                                            onClick = {
+                                                asynchronousScope.launch { bottomSheetState.show() }
+                                            }
+                                        ) {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.ic_discover_tune),
+                                                contentDescription = stringResource(id = R.string.ic_discover_tune_content_desc)
+                                            )
+                                        }
+                                    },
+                                    scrollBehavior = scrollBehavior
+                                )
+                            } else {
+                                SmallTopAppBar(
+                                    title = {
+                                        Text(
+                                            when (viewModel.selectedTabItem) {
+                                                2 -> stringResource(id = R.string.home_bottom_bar_item_chats)
+                                                3 -> stringResource(id = R.string.home_bottom_bar_item_account)
+                                                else -> stringResource(id = R.string.home_bottom_bar_item_search)
+                                            }
                                         )
+                                    },
+                                    navigationIcon = {
+                                        IconButton(onClick = {
+                                            asynchronousScope.launch { drawerState.open() }
+                                        }) {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.ic_menu),
+                                                contentDescription = stringResource(id = R.string.ic_menu_content_desc)
+                                            )
+                                        }
                                     }
-                                },
-                                scrollBehavior = scrollBehavior
-                            )
+                                )
+                            }
                         }
                     }
                 },
@@ -230,8 +256,12 @@ fun HomePageView(navController: NavController) {
                             composable(BottomNavDestinations.Search) {
                                 SearchView(navController)
                             }
-                            // Chats
-                            // Account
+                            composable(BottomNavDestinations.Chats) {
+                                ChatView(navController)
+                            }
+                            composable(BottomNavDestinations.Account) {
+                                AccountView(navController)
+                            }
                         }
                     }
                 },

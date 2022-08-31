@@ -86,9 +86,12 @@ fun PostCard(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row {
-                        UserAvatarIcon(userInfo = userInfo) {
-                            navController.navigate("${NavDestination.UserView}/${postData.author}")
-                        }
+                        UserAvatarIcon(
+                            userInfo = userInfo,
+                            onClick = {
+                                navController.navigate("${NavDestination.UserView}/${postData.author}")
+                            }
+                        )
                         Column(
                             modifier = Modifier.padding(top = 18.dp)
                         ) {
