@@ -1,6 +1,8 @@
 package com.pineapple.app
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.*
@@ -11,6 +13,7 @@ import androidx.compose.animation.AnimatedContentScope.SlideDirection.Companion.
 import androidx.compose.runtime.Composable
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavHostController
+import androidx.navigation.navDeepLink
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -58,7 +61,23 @@ class MainActivity : ComponentActivity() {
             composable(NavDestination.WelcomeView) {
                 WelcomeView(navController = navigationController)
             }
-            composable(NavDestination.HomePageView) {
+            composable(route = NavDestination.HomePageView) {
+                Log.e("D", "dbbedbddsdddssddsdssddsds")
+                HomePageView(navController = navigationController)
+            }
+            composable(
+                route = "${NavDestination.HomePageView}/{error}/{code}/{state}",
+                deepLinks = listOf(
+                    navDeepLink {
+                        uriPattern = "pineapple://login?error={error}&code={code}&state={state}"
+                    }
+                )
+            ) {
+                getPreferences()
+                    .edit()
+                    .putString("API_LOGIN_AUTH_CODE", it.arguments?.getString("code"))
+                    .putBoolean("USER_GUEST", false)
+                    .commit()
                 HomePageView(navController = navigationController)
             }
             composable(
@@ -115,4 +134,10 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        navigationController.handleDeepLink(intent)
+    }
+
 }

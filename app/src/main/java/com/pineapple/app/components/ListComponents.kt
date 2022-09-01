@@ -87,7 +87,9 @@ fun PostCard(
                 ) {
                     Row {
                         UserAvatarIcon(
-                            userInfo = userInfo,
+                            snoovatarImage = userInfo?.data?.snoovatar_img ?: "",
+                            iconImage = userInfo?.data?.subreddit?.icon_img ?: "",
+                            defaultIcon = userInfo?.data?.subreddit?.is_default_icon ?: true,
                             onClick = {
                                 navController.navigate("${NavDestination.UserView}/${postData.author}")
                             }

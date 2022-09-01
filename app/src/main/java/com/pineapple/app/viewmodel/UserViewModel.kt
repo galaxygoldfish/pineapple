@@ -37,7 +37,6 @@ class UserViewModel : ViewModel() {
             userCommentList.apply {
                 clear()
                 addAll(getUserComments(user).data.children)
-
                 Log.e("DD", getUserComments(user).kind)
             }
         }

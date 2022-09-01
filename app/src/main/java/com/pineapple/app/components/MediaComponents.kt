@@ -538,7 +538,9 @@ fun ImageGifControls(
 
 @Composable
 fun UserAvatarIcon(
-    userInfo: UserAboutListing?,
+    defaultIcon: Boolean = true,
+    iconImage: String,
+    snoovatarImage: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
         .padding(top = 15.dp, start = 15.dp, end = 10.dp)
@@ -546,7 +548,7 @@ fun UserAvatarIcon(
 ) {
     Box {
         AnimatedVisibility(
-            visible = userInfo == null || userInfo.data.subreddit.is_default_icon,
+            visible = defaultIcon,
             enter = fadeIn(),
             exit = fadeOut()
         ) {
@@ -557,17 +559,13 @@ fun UserAvatarIcon(
             )
         }
         AnimatedVisibility(
-            visible = userInfo != null && !userInfo.data.subreddit.is_default_icon,
+            visible = !defaultIcon,
             enter = fadeIn(),
             exit = fadeOut()
         ) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(
-                        userInfo?.data?.snoovatar_img.toString().ifBlank {
-                            userInfo?.data?.icon_img
-                        }
-                    )
+                    .data(snoovatarImage.ifBlank { iconImage })
                     .crossfade(true)
                     .build().data,
                 contentDescription = null,

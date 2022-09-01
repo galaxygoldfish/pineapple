@@ -48,7 +48,10 @@ object BottomNavDestinations {
 @Composable
 @OptIn(ExperimentalMaterial3Api::class,
     ExperimentalMaterialApi::class)
-fun HomePageView(navController: NavController) {
+fun HomePageView(
+    navController: NavController,
+    authCode: String? = null
+) {
     val context = LocalContext.current
     val viewModel = context.getViewModel(HomePageViewModel::class.java)
     val bottomNavController = rememberNavController()

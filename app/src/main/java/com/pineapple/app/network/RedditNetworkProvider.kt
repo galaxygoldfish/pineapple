@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.util.Log
 import com.pineapple.app.BuildConfig
+import com.pineapple.app.model.auth.AuthResponse
 import com.pineapple.app.model.reddit.*
 import com.pineapple.app.network.NetworkServiceBuilder.OAUTH_BASE_URL
 import com.pineapple.app.network.NetworkServiceBuilder.REDDIT_BASE_URL
@@ -28,19 +29,49 @@ class RedditNetworkProvider(context: Context) {
 
     private suspend fun tokenVerity(): String {
         val currentUnixTime = System.currentTimeMillis()
-
         val tokenExpireEpoch = sharedPreferences.getLong("API_ACCESS_TOKEN_EXPIRE", 0)
-        if (currentUnixTime >= tokenExpireEpoch
-            || (sharedPreferences.getString("API_ACCESS_TOKEN", ""))!!.isBlank()
-        ) {
+
+        fun processAuthResponse(authResponse: AuthResponse) {
+            sharedPreferences.edit().apply {
+                putString("API_ACCESS_TOKEN", authResponse.accessToken)
+                putLong("API_ACCESS_TOKEN_EXPIRE", System.currentTimeMillis() + authResponse.expires)
+                putString("API_ACCESS_TOKEN_TYPE", authResponse.tokenType)
+                putString("API_ACCESS_TOKEN_REFRESH_TOKEN", authResponse.refreshToken)
+                commit()
+            }
+        }
+
+        suspend fun authUserless() {
             Log.e("TAG", "authenticating userless")
-            authNetworkService.authenticateUserless().let {
-                sharedPreferences.edit().apply {
-                    putString("API_ACCESS_TOKEN", it.accessToken)
-                    putLong("API_ACCESS_TOKEN_EXPIRE", System.currentTimeMillis() + it.expires)
-                    putString("API_ACCESS_TOKEN_TYPE", it.tokenType)
-                    commit()
-                }
+            processAuthResponse(authNetworkService.authenticateUserless())
+        }
+
+        if (sharedPreferences.getString("API_ACCESS_TOKEN", "")!!.isBlank()) {
+            if (sharedPreferences.getBoolean("USER_GUEST", true)) {
+                authUserless()
+            } else {
+                Log.e("TAG", "authenticating user")
+                processAuthResponse(
+                    authNetworkService.authenticateUser(
+                        authCode = sharedPreferences.getString("API_LOGIN_AUTH_CODE", "").toString()
+                    )
+                )
+            }
+        } else if (currentUnixTime >= tokenExpireEpoch) {
+            val refreshToken = sharedPreferences.getString("API_ACCESS_TOKEN_REFRESH_TOKEN", "").toString()
+            if (sharedPreferences.getBoolean("USER_GUEST", true)) {
+                authUserless()
+            } else if (refreshToken.isNotBlank()) {
+                Log.e("TAG", "refreshing token user")
+                processAuthResponse(
+                    authNetworkService.refreshAuthToken(refreshToken = refreshToken)
+                )
+            } else {
+                processAuthResponse(
+                    authNetworkService.authenticateUser(
+                        authCode = sharedPreferences.getString("API_LOGIN_AUTH_CODE", "").toString()
+                    )
+                )
             }
         }
         return sharedPreferences.let {
@@ -90,6 +121,10 @@ class RedditNetworkProvider(context: Context) {
 
     suspend fun getUserComments(user: String) : ListingBase<CommentPreDataNull> {
         return redditNetworkService.getUserComments(tokenVerity(), USER_AGENT, user)
+    }
+
+    suspend fun fetchAccountInfo() : AboutAccount {
+        return redditNetworkService.getCurrentAccountInfo(tokenVerity(), USER_AGENT)
     }
 
 }

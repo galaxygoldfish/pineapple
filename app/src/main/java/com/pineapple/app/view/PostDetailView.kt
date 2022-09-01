@@ -321,7 +321,9 @@ fun HeaderBar(post: PostData, modifier: Modifier, navController: NavController) 
         )
         Row(modifier = Modifier.padding(top = 15.dp, start = 21.dp)) {
             UserAvatarIcon(
-                userInfo = userInformation,
+                snoovatarImage = userInformation?.data?.snoovatar_img ?: "",
+                iconImage = userInformation?.data?.subreddit?.icon_img ?: "",
+                defaultIcon = userInformation?.data?.subreddit?.is_default_icon ?: true,
                 onClick = {
                     navController.navigate("${NavDestination.UserView}/${post.author}")
                 },
