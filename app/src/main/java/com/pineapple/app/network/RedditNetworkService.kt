@@ -45,8 +45,6 @@ interface RedditNetworkService {
         @Path("sort") sort: String,
         @Query("t") time: String,
         @Query("after") after: String? = null,
-        @Query("nsfw") nsfw: Int = 0,
-        @Query("include_over_18") over18: String = "off",
         @Query("raw_json") rawJson: Int = 1
     ) : PostListing
 
@@ -57,8 +55,6 @@ interface RedditNetworkService {
         @Path("name") subreddit: String,
         @Path("id") postID: String,
         @Path("post") post: String,
-        @Query("nsfw") nsfw: Int = 0,
-        @Query("include_over_18") over18: String = "off",
         @Query("raw_json") rawJson: Int = 1
     ) : String
 
@@ -81,8 +77,6 @@ interface RedditNetworkService {
         @Header("Authorization") authorization: String,
         @Header("User-Agent") userAgent: String,
         @Path("subreddit") subreddit: String,
-        @Query("nsfw") nsfw: Int = 0,
-        @Query("include_over_18") over18: String = "off",
         @Query("raw_json") rawJson: Int = 1
     ) : SubredditInfo
 
@@ -91,8 +85,6 @@ interface RedditNetworkService {
         @Header("Authorization") authorization: String,
         @Header("User-Agent") userAgent: String,
         @Path("user") user: String,
-        @Query("nsfw") nsfw: Int = 0,
-        @Query("include_over_18") over18: String = "off",
         @Query("raw_json") rawJson: Int = 1
     ) : UserAboutListing
 
@@ -102,8 +94,6 @@ interface RedditNetworkService {
         @Header("Authorization") authorization: String,
         @Header("User-Agent") userAgent: String,
         @Query("q") query: String,
-        @Query("nsfw") nsfw: Int = 0,
-        @Query("include_over_18") over18: String = "off",
         @Query("raw_json") rawJson: Int = 1
     ) : Listing<PostItem>
 
@@ -113,8 +103,6 @@ interface RedditNetworkService {
         @Header("User-Agent") userAgent: String,
         @Query("q") query: String,
         @Query("type") type: String = "sr",
-        @Query("nsfw") nsfw: Int = 0,
-        @Query("include_over_18") over18: String = "off",
         @Query("raw_json") rawJson: Int = 1
     ) : Listing<SubredditItem>
 
@@ -124,8 +112,6 @@ interface RedditNetworkService {
         @Header("User-Agent") userAgent: String,
         @Query("q") query: String,
         @Query("type") type: String = "user",
-        @Query("nsfw") nsfw: Int = 0,
-        @Query("include_over_18") over18: String = "off",
         @Query("raw_json") rawJson: Int = 1
     ) : ListingBase<UserAboutListing>
 
@@ -134,8 +120,6 @@ interface RedditNetworkService {
         @Header("Authorization") authorization: String,
         @Header("User-Agent") userAgent: String,
         @Path("user") user: String,
-        @Query("nsfw") nsfw: Int = 0,
-        @Query("include_over_18") over18: String = "off",
         @Query("raw_json") rawJson: Int = 1
     ) : ListingBase<PostItem>
 
@@ -144,8 +128,6 @@ interface RedditNetworkService {
         @Header("Authorization") authorization: String,
         @Header("User-Agent") userAgent: String,
         @Path("user") user: String,
-        @Query("nsfw") nsfw: Int = 0,
-        @Query("include_over_18") over18: String = "off",
         @Query("raw_json") rawJson: Int = 1
     ) : ListingBase<CommentPreDataNull>
 

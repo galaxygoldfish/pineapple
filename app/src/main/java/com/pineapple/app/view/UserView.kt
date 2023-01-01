@@ -82,7 +82,7 @@ fun UserView(navController: NavController, user: String) {
         ) {
             Scaffold(
                 topBar = {
-                    SmallTopAppBar(
+                    TopAppBar(
                         title = {
                             AnimatedVisibility(
                                 visible = remember {
@@ -190,7 +190,8 @@ fun UserView(navController: NavController, user: String) {
                                                     text = desc,
                                                     style = MaterialTheme.typography.bodyMedium,
                                                     modifier = Modifier.padding(
-                                                        bottom = 20.dp
+                                                        bottom = 20.dp,
+                                                        top = 10.dp
                                                     )
                                                 )
                                             }
@@ -210,6 +211,9 @@ fun UserView(navController: NavController, user: String) {
                                                 selected = viewModel.currentlySelectedTab == 0,
                                                 onClick = {
                                                     viewModel.apply {
+                                                        coroutineScope.launch {
+                                                            lazyColumnState.animateScrollToItem(1)
+                                                        }
                                                         currentlySelectedTab = 0
                                                         val tempList = mutableListOf<PostItem>()
                                                         tempList.addAll(userPostList)
@@ -227,8 +231,12 @@ fun UserView(navController: NavController, user: String) {
                                                 selected = viewModel.currentlySelectedTab == 1,
                                                 onClick = {
                                                     viewModel.apply {
+                                                        coroutineScope.launch {
+                                                            lazyColumnState.animateScrollToItem(1)
+                                                        }
                                                         currentlySelectedTab = 1
-                                                        val tempList = mutableListOf<CommentPreDataNull>()
+                                                        val tempList =
+                                                            mutableListOf<CommentPreDataNull>()
                                                         tempList.addAll(userCommentList)
                                                         userCommentList.clear()
                                                         userCommentList.addAll(tempList)
@@ -265,45 +273,51 @@ fun UserView(navController: NavController, user: String) {
                                         }
                                     )
                                 }
-                                when (viewModel.currentlySelectedTab) {
-                                    0 -> {
-                                        itemsIndexed(viewModel.userPostList) { index, item ->
-                                            PostCard(
-                                                postData = item.data,
-                                                navController = navController,
-                                                modifier = Modifier.animateEnterExit(
-                                                    enter = slideInVertically(
-                                                        animationSpec = spring(
-                                                            0.8F
-                                                        )
-                                                    ) { spec -> spec * (index + 4) }
-                                                )
+                                itemsIndexed(viewModel.userPostList) { index, item ->
+                                    AnimatedVisibility(visible = viewModel.currentlySelectedTab == 0) {
+                                        PostCard(
+                                            postData = item.data,
+                                            navController = navController,
+                                            modifier = Modifier.animateEnterExit(
+                                                enter = slideInVertically(
+                                                    animationSpec = spring(
+                                                        0.8F
+                                                    )
+                                                ) { spec -> spec * (index + 4) }
                                             )
-                                        }
+                                        )
                                     }
-                                    1 -> {
-                                        itemsIndexed(viewModel.userCommentList) { index, item ->
-                                            CommentInContext(
-                                                commentData = item.data,
-                                                navController = navController,
-                                                modifier = Modifier.animateEnterExit(
-                                                    enter = slideInVertically(
-                                                        animationSpec = spring(
-                                                            0.8F
-                                                        )
-                                                    ) { spec -> spec * (index + 4) }
-                                                )
+                                }
+                                itemsIndexed(viewModel.userCommentList) { index, item ->
+                                    AnimatedVisibility(visible = viewModel.currentlySelectedTab == 1) {
+                                        CommentInContext(
+                                            commentData = item.data,
+                                            navController = navController,
+                                            modifier = Modifier.animateEnterExit(
+                                                enter = slideInVertically(
+                                                    animationSpec = spring(
+                                                        0.8F
+                                                    )
+                                                ) { spec -> spec * (index + 4) }
                                             )
-                                        }
+                                        )
                                     }
                                 }
                                 if (viewModel.currentlySelectedTab == 2) {
                                     item {
-                                        Column() {
-                                            Card(
+                                        currentUserInfo?.let { userAbout ->
+                                            Column {
+                                                Row {
+                                                    Card(
+                                                        shape = RoundedCornerShape(10.dp),
+                                                        colors = CardDefaults.cardColors(
+                                                            containerColor = MaterialTheme.colorScheme
+                                                                .surfaceColorAtElevation(1.dp)
+                                                        )
+                                                    ) {
 
-                                            ) {
-
+                                                    }
+                                                }
                                             }
                                         }
                                     }

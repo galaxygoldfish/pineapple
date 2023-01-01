@@ -1,5 +1,6 @@
 package com.pineapple.app.view
 
+import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -32,9 +33,8 @@ import com.pineapple.app.components.SmallListCard
 import com.pineapple.app.components.TextOnlyTextField
 import com.pineapple.app.util.getViewModel
 import com.pineapple.app.viewmodel.SearchViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.GlobalScope.coroutineContext
 
 @Composable
 fun SearchView(navController: NavController) {
@@ -64,14 +64,32 @@ fun SearchView(navController: NavController) {
                         contentDescription = stringResource(id = R.string.ic_search_content_desc),
                         modifier = Modifier.padding(15.dp)
                     )
+                    val coroutineContext = remember { newSingleThreadContext("PineappleSearch") }
                     TextOnlyTextField(
                         textFieldValue = viewModel.currentSearchQuery,
                         hint = stringResource(id = R.string.search_query_hint_text),
                         onValueChange = {
                             viewModel.apply {
                                 currentSearchQuery = it
-                                CoroutineScope(Dispatchers.Main).launch {
-                                    if (it.text.length > 2) updateSearchResults()
+                                coroutineContext.executor.asCoroutineDispatcher().cancelChildren()
+                                CoroutineScope(coroutineContext.executor.asCoroutineDispatcher()).launch {
+                                    Log.e("SEARCH", "COROUTINE STARTED: ${it.text}")
+                                    if (it.text.length >= 2) {
+                                        Log.e("SEARCH", "WAITING FOR: ${it.text}")
+                                        delay(1000L)
+                                        Log.e("SEARCH", "READY TO SEARCH: ${it.text}")
+                                        updateSearchResults()
+                                    } else if (it.text.isEmpty()) {
+                                        viewModel.apply {
+                                            currentPostList.clear()
+                                            currentUserList.clear()
+                                            currentSubredditList.clear()
+                                        }
+                                        cancel()
+                                    } else {
+                                        Log.e("SEARCH", "FAILED CHECK FOR: ${it.text}; EXITING COROUTINE")
+                                        cancel()
+                                    }
                                 }
                             }
                         },

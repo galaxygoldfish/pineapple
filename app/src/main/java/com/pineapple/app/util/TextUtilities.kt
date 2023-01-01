@@ -66,17 +66,22 @@ fun List<FlairRichItem>.parseFlair(darkTheme: Boolean): Pair<AnnotatedString, Ma
 }
 
 fun Long.convertUnixToRelativeTime() : String{
-    val longTime = this * 1000
+    val longTime = this * 1000L
     val currentTime = System.currentTimeMillis()
-    val secondMs = 1000;
-    val minuteMs = 60 * secondMs
-    val hourMs = 60 * minuteMs
-    val dayMs = 24 * hourMs
+    val secondMs = 1000L
+    val minuteMs = 60L * secondMs
+    val hourMs = 60L * minuteMs
+    val dayMs = 24L * hourMs
+    val weekMs = 7L * dayMs
+    val monthMs = 30L * dayMs
+    val yearMs = 12L * monthMs
     val timeDifference = currentTime - longTime
      return when {
-        timeDifference < minuteMs -> "now"
-        timeDifference < 50 * minuteMs -> "${timeDifference / minuteMs}m"
-        timeDifference < 24 * hourMs -> "${timeDifference / hourMs}h"
-        else -> "${timeDifference / dayMs}d"
+         timeDifference > yearMs -> "${timeDifference / yearMs}y"
+         timeDifference < 12L * monthMs -> "${timeDifference / monthMs}mo"
+         timeDifference < 30L * dayMs -> "${timeDifference / dayMs}d"
+         timeDifference < 24L * hourMs -> "${timeDifference / hourMs}h"
+         timeDifference < 60L * minuteMs -> "${timeDifference / minuteMs}m"
+         else -> "now"
     }
 }

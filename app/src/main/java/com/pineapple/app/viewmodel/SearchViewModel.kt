@@ -45,30 +45,14 @@ class SearchViewModel : ViewModel() {
     }
 
     suspend fun updateSearchResults() {
-        if (currentSearchQuery.text.length > 2) {
+        if (currentSearchQuery.text.length >= 2) {
             networkService.apply {
-                when (currentSearchFilter) {
-                    0 -> {
-                        searchPosts(currentSearchQuery.text).data.children
-                            .processToList(currentPostList)
-                        searchCommunities(currentSearchQuery.text).data.children
-                            .processToList(currentSubredditList)
-                        searchUsers(currentSearchQuery.text).data.children
-                            .processToList(currentUserList)
-                    }
-                    1 -> {
-                        searchPosts(currentSearchQuery.text).data.children
-                            .processToList(currentPostList)
-                    }
-                    2 -> {
-                        searchCommunities(currentSearchQuery.text).data.children
-                            .processToList(currentSubredditList)
-                    }
-                    3 -> {
-                        searchUsers(currentSearchQuery.text).data.children
-                            .processToList(currentUserList)
-                    }
-                }
+                searchPosts(currentSearchQuery.text).data.children
+                    .processToList(currentPostList)
+                searchCommunities(currentSearchQuery.text).data.children
+                    .processToList(currentSubredditList)
+                searchUsers(currentSearchQuery.text).data.children
+                    .processToList(currentUserList)
             }
         }
     }

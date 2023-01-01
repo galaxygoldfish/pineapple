@@ -1,5 +1,6 @@
 package com.pineapple.app.view
 
+import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -9,6 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
@@ -34,6 +36,7 @@ import com.google.accompanist.insets.statusBarsHeight
 import com.pineapple.app.NavDestination
 import com.pineapple.app.R
 import com.pineapple.app.components.FilterBottomSheet
+import com.pineapple.app.theme.PineappleTheme
 import com.pineapple.app.util.getViewModel
 import com.pineapple.app.viewmodel.HomePageViewModel
 import kotlinx.coroutines.launch
@@ -48,15 +51,13 @@ object BottomNavDestinations {
 @Composable
 @OptIn(ExperimentalMaterial3Api::class,
     ExperimentalMaterialApi::class)
-fun HomePageView(
-    navController: NavController,
-    authCode: String? = null
-) {
+fun HomePageView(navController: NavController) {
     val context = LocalContext.current
     val viewModel = context.getViewModel(HomePageViewModel::class.java)
     val bottomNavController = rememberNavController()
     val asynchronousScope = rememberCoroutineScope()
-    val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    val bottomSheetState =
+        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val lazyListScrollState = rememberLazyListState()
@@ -64,219 +65,229 @@ fun HomePageView(
     LaunchedEffect(true) {
         viewModel.refreshTopCommunities(context)
     }
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        gesturesEnabled = true,
-        scrimColor = Color.Black.copy(0.3F),
-        drawerContent = {
-            HomeNavigationDrawer(navController, viewModel)
-        }
-    ) {
-        ModalBottomSheetLayout(
-            sheetContent = {
-                FilterBottomSheet(
-                    timePeriod = viewModel.currentSortTime,
-                    sortType = viewModel.currentSortType,
-                    bottomSheetState = bottomSheetState
-                )
-            },
-            sheetState = bottomSheetState,
-            scrimColor = Color.Black.copy(0.3F)
+    PineappleTheme {
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            gesturesEnabled = true,
+            scrimColor = Color.Black.copy(0.3F),
+            drawerContent = {
+                HomeNavigationDrawer(navController, bottomNavController, viewModel)
+            }
         ) {
-            Scaffold(
-                floatingActionButton = {
-                    if (viewModel.selectedTabItem == 0) {
-                        FloatingActionButton(
-                            onClick = { /*TODO*/ },
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_add),
-                                contentDescription = stringResource(id = R.string.ic_add_content_desc)
-                            )
-                        }
-                    }
+            ModalBottomSheetLayout(
+                sheetContent = {
+                    FilterBottomSheet(
+                        timePeriod = viewModel.currentSortTime,
+                        sortType = viewModel.currentSortType,
+                        bottomSheetState = bottomSheetState
+                    )
                 },
-                topBar = {
-                    if (viewModel.selectedTabItem != 1) {
-                        Column {
-                            Spacer(
-                                modifier = Modifier
-                                    .statusBarsHeight()
-                                    .fillMaxWidth()
-                                    .background(
-                                        animateColorAsState(
-                                            targetValue = if (
-                                                remember {
-                                                    derivedStateOf {
-                                                        lazyListScrollState.firstVisibleItemScrollOffset
-                                                    }
-                                                }.value > 0
-                                            ) {
-                                                MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
-                                            } else {
-                                                MaterialTheme.colorScheme.surface
-                                            }
-                                        ).value
-                                    )
-                            )
-                            if (viewModel.selectedTabItem == 0) {
-                                CenterAlignedTopAppBar(
-                                    title = {
-                                        Text(
-                                            text = stringResource(id = R.string.home_top_bar_title_default),
-                                            style = MaterialTheme.typography.titleLarge
-                                        )
-                                    },
-                                    navigationIcon = {
-                                        IconButton(onClick = {
-                                            asynchronousScope.launch { drawerState.open() }
-                                        }) {
-                                            Icon(
-                                                painter = painterResource(id = R.drawable.ic_menu),
-                                                contentDescription = stringResource(id = R.string.ic_menu_content_desc)
-                                            )
-                                        }
-                                    },
-                                    actions = {
-                                        IconButton(
-                                            onClick = {
-                                                asynchronousScope.launch { bottomSheetState.show() }
-                                            }
-                                        ) {
-                                            Icon(
-                                                painter = painterResource(id = R.drawable.ic_discover_tune),
-                                                contentDescription = stringResource(id = R.string.ic_discover_tune_content_desc)
-                                            )
-                                        }
-                                    },
-                                    scrollBehavior = scrollBehavior
+                sheetState = bottomSheetState,
+                scrimColor = Color.Black.copy(0.3F)
+            ) {
+                Scaffold(
+                    floatingActionButton = {
+                        if (viewModel.selectedTabItem == 0) {
+                            FloatingActionButton(
+                                onClick = { /*TODO*/ },
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_add),
+                                    contentDescription = stringResource(id = R.string.ic_add_content_desc)
                                 )
-                            } else {
-                                SmallTopAppBar(
-                                    title = {
-                                        Text(
-                                            when (viewModel.selectedTabItem) {
-                                                2 -> stringResource(id = R.string.home_bottom_bar_item_chats)
-                                                3 -> stringResource(id = R.string.home_bottom_bar_item_account)
-                                                else -> stringResource(id = R.string.home_bottom_bar_item_search)
+                            }
+                        }
+                    },
+                    topBar = {
+                        if (viewModel.selectedTabItem != 1) {
+                            Column {
+                                Spacer(
+                                    modifier = Modifier
+                                        .statusBarsHeight()
+                                        .fillMaxWidth()
+                                        .background(
+                                            animateColorAsState(
+                                                targetValue = if (
+                                                    remember {
+                                                        derivedStateOf {
+                                                            lazyListScrollState.firstVisibleItemScrollOffset
+                                                        }
+                                                    }.value > 0
+                                                ) {
+                                                    MaterialTheme.colorScheme.surfaceColorAtElevation(
+                                                        2.dp
+                                                    )
+                                                } else {
+                                                    MaterialTheme.colorScheme.surface
+                                                }
+                                            ).value
+                                        )
+                                )
+                                if (viewModel.selectedTabItem == 0) {
+                                    CenterAlignedTopAppBar(
+                                        title = {
+                                            Text(
+                                                text = stringResource(id = R.string.home_top_bar_title_default),
+                                                style = MaterialTheme.typography.titleLarge
+                                            )
+                                        },
+                                        navigationIcon = {
+                                            IconButton(onClick = {
+                                                asynchronousScope.launch { drawerState.open() }
+                                            }) {
+                                                Icon(
+                                                    painter = painterResource(id = R.drawable.ic_menu),
+                                                    contentDescription = stringResource(id = R.string.ic_menu_content_desc)
+                                                )
                                             }
+                                        },
+                                        actions = {
+                                            IconButton(
+                                                onClick = {
+                                                    asynchronousScope.launch { bottomSheetState.show() }
+                                                }
+                                            ) {
+                                                Icon(
+                                                    painter = painterResource(id = R.drawable.ic_discover_tune),
+                                                    contentDescription = stringResource(id = R.string.ic_discover_tune_content_desc)
+                                                )
+                                            }
+                                        },
+                                        scrollBehavior = scrollBehavior
+                                    )
+                                } else {
+
+                                    SmallTopAppBar(
+                                        title = {
+                                            Text(
+                                                when (viewModel.selectedTabItem) {
+                                                    2 -> stringResource(id = R.string.home_bottom_bar_item_chats)
+                                                    3 -> stringResource(id = R.string.home_bottom_bar_item_account)
+                                                    else -> stringResource(id = R.string.home_bottom_bar_item_search)
+                                                }
+                                            )
+                                        },
+                                        navigationIcon = {
+                                            IconButton(onClick = {
+                                                asynchronousScope.launch { drawerState.open() }
+                                            }) {
+                                                Icon(
+                                                    painter = painterResource(id = R.drawable.ic_menu),
+                                                    contentDescription = stringResource(id = R.string.ic_menu_content_desc)
+                                                )
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    bottomBar = {
+                        data class NavItem(var text: Int, var icon: Int, var contentDesc: Int)
+
+                        val navbarItems = listOf(
+                            NavItem(
+                                R.string.home_bottom_bar_item_browse,
+                                R.drawable.ic_dashboard, R.string.ic_dashboard_content_desc
+                            ),
+                            NavItem(
+                                R.string.home_bottom_bar_item_search,
+                                R.drawable.ic_search, R.string.ic_search_content_desc
+                            ),
+                            NavItem(
+                                R.string.home_bottom_bar_item_chats,
+                                R.drawable.ic_forum, R.string.ic_forum_content_desc
+                            ),
+                            NavItem(
+                                R.string.home_bottom_bar_item_account,
+                                R.drawable.ic_person, R.string.ic_person_content_desc
+                            )
+                        )
+                        NavigationBar {
+                            navbarItems.forEachIndexed { index, item ->
+                                NavigationBarItem(
+                                    selected = viewModel.selectedTabItem == index,
+                                    label = {
+                                        Text(
+                                            text = stringResource(id = item.text),
+                                            style = MaterialTheme.typography.labelSmall
                                         )
                                     },
-                                    navigationIcon = {
-                                        IconButton(onClick = {
-                                            asynchronousScope.launch { drawerState.open() }
-                                        }) {
-                                            Icon(
-                                                painter = painterResource(id = R.drawable.ic_menu),
-                                                contentDescription = stringResource(id = R.string.ic_menu_content_desc)
-                                            )
-                                        }
+                                    icon = {
+                                        Icon(
+                                            painter = painterResource(id = item.icon),
+                                            contentDescription = stringResource(id = item.contentDesc)
+                                        )
+                                    },
+                                    onClick = {
+                                        viewModel.selectedTabItem = index
+                                        bottomNavController.navigate(
+                                            when (index) {
+                                                0 -> BottomNavDestinations.Home
+                                                1 -> BottomNavDestinations.Search
+                                                2 -> BottomNavDestinations.Chats
+                                                3 -> BottomNavDestinations.Account
+                                                else -> BottomNavDestinations.Home
+                                            }
+                                        )
                                     }
                                 )
                             }
                         }
-                    }
-                },
-                bottomBar = {
-                    data class NavItem(var text: Int, var icon: Int, var contentDesc: Int)
-                    val navbarItems = listOf(
-                        NavItem(
-                            R.string.home_bottom_bar_item_browse,
-                            R.drawable.ic_dashboard, R.string.ic_dashboard_content_desc
-                        ),
-                        NavItem(
-                            R.string.home_bottom_bar_item_search,
-                            R.drawable.ic_search, R.string.ic_search_content_desc
-                        ),
-                        NavItem(
-                            R.string.home_bottom_bar_item_chats,
-                            R.drawable.ic_forum, R.string.ic_forum_content_desc
-                        ),
-                        NavItem(
-                            R.string.home_bottom_bar_item_account,
-                            R.drawable.ic_person, R.string.ic_person_content_desc
-                        )
-                    )
-                    NavigationBar {
-                        navbarItems.forEachIndexed { index, item ->
-                            NavigationBarItem(
-                                selected = viewModel.selectedTabItem == index,
-                                label = {
-                                    Text(
-                                        text = stringResource(id = item.text),
-                                        style = MaterialTheme.typography.labelSmall
-                                    )
-                                },
-                                icon = {
-                                    Icon(
-                                        painter = painterResource(id = item.icon),
-                                        contentDescription = stringResource(id = item.contentDesc)
-                                    )
-                                },
-                                onClick = {
-                                    viewModel.selectedTabItem = index
-                                    bottomNavController.navigate(
-                                        when (index) {
-                                            0 -> BottomNavDestinations.Home
-                                            1 -> BottomNavDestinations.Search
-                                            2 -> BottomNavDestinations.Chats
-                                            3 -> BottomNavDestinations.Account
-                                            else -> BottomNavDestinations.Home
-                                        }
-                                    )
-                                }
-                            )
-                        }
-                    }
-                },
-                content = {
-                    Column(modifier = Modifier.padding(top = it.calculateTopPadding())) {
-                        NavHost(
-                            navController = bottomNavController,
-                            startDestination = BottomNavDestinations.Home,
-                            modifier = Modifier.padding(bottom = 80.dp)
-                        ) {
-                            composable(BottomNavDestinations.Home) {
-                                PostListView(
-                                    navController = navController,
-                                    subreddit = "all",
-                                    sort = viewModel.currentSortType.value.toLowerCase(Locale.current),
-                                    time = viewModel.currentSortTime.value,
-                                    scrollState = lazyListScrollState
-                                )
-                            }
-                            composable("${BottomNavDestinations.Home}/{sub}/{sort}") {
-                                it.arguments?.let { args ->
+                    },
+                    content = {
+                        Column(modifier = Modifier.padding(top = it.calculateTopPadding())) {
+                            NavHost(
+                                navController = bottomNavController,
+                                startDestination = BottomNavDestinations.Home,
+                                modifier = Modifier.padding(bottom = 80.dp)
+                            ) {
+                                composable(BottomNavDestinations.Home) {
                                     PostListView(
                                         navController = navController,
-                                        subreddit = args.getString("sub")!!,
-                                        sort = args.getString("sort")!!,
+                                        subreddit = "all",
+                                        sort = viewModel.currentSortType.value.toLowerCase(Locale.current),
+                                        time = viewModel.currentSortTime.value,
                                         scrollState = lazyListScrollState
                                     )
                                 }
-                            }
-                            composable(BottomNavDestinations.Search) {
-                                SearchView(navController)
-                            }
-                            composable(BottomNavDestinations.Chats) {
-                                ChatView(navController)
-                            }
-                            composable(BottomNavDestinations.Account) {
-                                AccountView(navController)
+                                composable("${BottomNavDestinations.Home}/{sub}/{sort}") {
+                                    it.arguments?.let { args ->
+                                        PostListView(
+                                            navController = navController,
+                                            subreddit = args.getString("sub")!!,
+                                            sort = args.getString("sort")!!,
+                                            scrollState = lazyListScrollState
+                                        )
+                                    }
+                                }
+                                composable(BottomNavDestinations.Search) {
+                                    SearchView(navController)
+                                }
+                                composable(BottomNavDestinations.Chats) {
+                                    ChatView(navController)
+                                }
+                                composable(BottomNavDestinations.Account) {
+                                    AccountView(navController)
+                                }
                             }
                         }
-                    }
-                },
-                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
-            )
+                    },
+                    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+                )
+            }
         }
     }
 }
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun HomeNavigationDrawer(navController: NavController, viewModel: HomePageViewModel) {
+fun HomeNavigationDrawer(
+    navController: NavController,
+    bottomNavController: NavController,
+    viewModel: HomePageViewModel
+) {
     val navItemColors = NavigationDrawerItemDefaults.colors(
         unselectedContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
     )
@@ -302,14 +313,14 @@ fun HomeNavigationDrawer(navController: NavController, viewModel: HomePageViewMo
             )
             NavigationDrawerItem(
                 label = { Text(stringResource(id = R.string.home_nav_drawer_home_title)) },
-                selected = true,
+                selected = bottomNavController.currentDestination?.route?.equals(BottomNavDestinations.Home) ?: true,
                 icon = {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_dashboard),
                         contentDescription = stringResource(id = R.string.ic_discover_tune_content_desc)
                     )
                 },
-                onClick = { },
+                onClick = { bottomNavController.navigate(BottomNavDestinations.Home) },
                 modifier = Modifier.padding(top = 5.dp),
                 colors = navItemColors
             )
@@ -328,14 +339,14 @@ fun HomeNavigationDrawer(navController: NavController, viewModel: HomePageViewMo
             )
             NavigationDrawerItem(
                 label = { Text(stringResource(id = R.string.home_nav_drawer_account_button)) },
-                selected = false,
+                selected = bottomNavController.currentDestination?.route?.equals(BottomNavDestinations.Account) ?: false,
                 icon = {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_account_circle),
                         contentDescription = stringResource(id = R.string.ic_account_circle_content_desc)
                     )
                 },
-                onClick = { /*TODO*/ },
+                onClick = { bottomNavController.navigate(BottomNavDestinations.Account) },
                 modifier = Modifier.padding(top = 5.dp),
                 colors = navItemColors
             )
@@ -343,6 +354,7 @@ fun HomeNavigationDrawer(navController: NavController, viewModel: HomePageViewMo
             Text(
                 text = stringResource(id = R.string.home_nav_drawer_popular_communities_header),
                 style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(start = 5.dp, bottom = 10.dp)
             )
             Column {

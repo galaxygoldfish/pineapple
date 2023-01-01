@@ -25,8 +25,7 @@ fun ChatView(navController: NavController) {
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { /*TODO*/ },
-                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                modifier = Modifier.padding(bottom = 24.dp)
+                containerColor = MaterialTheme.colorScheme.secondaryContainer
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_edit),
