@@ -44,6 +44,7 @@ import coil.request.ImageRequest
 import com.google.accompanist.flowlayout.FlowColumn
 import com.google.accompanist.insets.LocalWindowInsets
 import com.google.gson.Gson
+import com.pineapple.app.BuildConfig
 import com.pineapple.app.NavDestination
 import com.pineapple.app.R
 import com.pineapple.app.components.*
@@ -109,7 +110,8 @@ fun PostDetailView(
         },
         sheetBackgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
         sheetState = bottomSheetState,
-        scrimColor = Color.Black.copy(0.3F)
+        scrimColor = Color.Black.copy(0.3F),
+        modifier = Modifier.statusBarsPadding()
     ) {
         Scaffold(
             topBar = {
