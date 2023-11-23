@@ -1,4 +1,7 @@
 # Pineapple
+This app is no longer being developed due to new Reddit API pricing. If you would like to use it, please create your own API key and build the app using instructions below 👇
+
+
 Reddit client for Android highlighting Material Design 3 aspects, with dynamic color and a clean, more minimalistic design. (WIP)
 
 <img src="PineapplePreview.png">
