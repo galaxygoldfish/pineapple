@@ -16,7 +16,6 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
-        buildConfigField("String", "ClientSecret", ClientSecret)
     }
     buildTypes {
         release {

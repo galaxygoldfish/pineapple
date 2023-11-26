@@ -49,36 +49,47 @@ fun AccountView(navController: NavController) {
                 dismissOnClickOutside = true
             ),
             content = {
-                Column(
+                Card(
+                    shape = RoundedCornerShape(10.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
+                    ),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp)
+                        .padding(16.dp)
                 ) {
-                    Text(
-                        text = "Enter Client Secret",
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    OutlinedTextField(
-                        value = BuildConfig.ClientSecret,
-                        onValueChange = {
-                            clientSecret.value = it
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    FilledTonalButton(
-                        onClick = {
-                            if (clientSecret.value.isNotEmpty()) {
-                                sharedPreferences.edit().putString("CLIENT_SECRET", clientSecret.value).apply()
-                                showSecretDialog.value = false
-                            } else {
-                                showSecretDialog.value = false
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth()
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp)
                     ) {
-                        Text(text = "Save")
+                        Text(
+                            text = "Enter Client Secret",
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        OutlinedTextField(
+                            value = clientSecret.value,
+                            onValueChange = {
+                                clientSecret.value = it
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        FilledTonalButton(
+                            onClick = {
+                                if (clientSecret.value.isNotEmpty()) {
+                                    sharedPreferences.edit()
+                                        .putString("CLIENT_SECRET", clientSecret.value).apply()
+                                    showSecretDialog.value = false
+                                } else {
+                                    showSecretDialog.value = false
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(text = "Save")
+                        }
                     }
                 }
             }
@@ -95,32 +106,42 @@ fun AccountView(navController: NavController) {
                 dismissOnClickOutside = true
             ),
             content = {
-                Column(
+                Card(
+                    shape = RoundedCornerShape(10.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
+                    ),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp)
+                        .padding(16.dp)
                 ) {
-                    Text(
-                        text = "Client Secret is Empty",
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(
-                        text = "Please enter a valid client secret",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Text(
-                        text = "You can find your client secret at https://www.reddit.com/prefs/apps",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    FilledTonalButton(
-                        onClick = {
-                            showEmptySecretDialog.value = false
-                        },
-                        modifier = Modifier.fillMaxWidth()
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp)
                     ) {
-                        Text(text = "OK")
+                        Text(
+                            text = "Client Secret is Empty",
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = "Please enter a valid client secret",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            text = "You can find your client secret at https://www.reddit.com/prefs/apps",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        FilledTonalButton(
+                            onClick = {
+                                showEmptySecretDialog.value = false
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(text = "OK")
+                        }
                     }
                 }
             }
@@ -173,7 +194,10 @@ fun AccountView(navController: NavController) {
             Button(
                 onClick = {
                     showSecretDialog.value = true
-                }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
             ){
                 Text(text = "Enter Client Secret")
             }
@@ -186,7 +210,8 @@ fun AccountView(navController: NavController) {
                         Intent(ACTION_VIEW).apply {
                             data = Uri.parse(
                                 "https://www.reddit.com/api/v1/authorize.compact"
-                                        + "?client_id=${BuildConfig.ClientSecret}"
+                                        + "?client_id="
+                                        + navController.context.getPreferences().getString("CLIENT_SECRET","")
                                         + "&response_type=code"
                                         + "&state=${UUID.randomUUID()}"
                                         + "&redirect_uri=pineapple://login"
