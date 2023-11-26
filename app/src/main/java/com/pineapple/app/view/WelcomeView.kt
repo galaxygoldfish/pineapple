@@ -12,6 +12,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.pineapple.app.BuildConfig
 import com.pineapple.app.NavDestination
 import com.pineapple.app.R
 import com.pineapple.app.util.getPreferences
@@ -50,7 +51,7 @@ fun WelcomeView(navController: NavController) {
                         Intent(Intent.ACTION_VIEW).apply {
                             data = Uri.parse(
                                 "https://www.reddit.com/api/v1/authorize.compact"
-                                        + "?client_id=dcE5CW6FaoNpWasp243QwQ"
+                                        + "?client_id=${BuildConfig.ClientSecret}"
                                         + "&response_type=code"
                                         + "&state=${UUID.randomUUID()}"
                                         + "&redirect_uri=pineapple://login"
