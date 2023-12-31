@@ -1,10 +1,10 @@
 buildscript {
     ext {
-        compose_version = '1.4.0-alpha03'
-        accompanist_version = '0.24.3-alpha'
+        compose_version = '1.2.0-alpha11'
+        accompanist_version = '0.33.2-alpha'
         coil_version = '2.0.0-rc01'
         retrofit_version = '2.7.0'
-        paging_version = '3.1.1'
+        paging_version = '3.3.0-alpha02'
     }
 }
 plugins {
