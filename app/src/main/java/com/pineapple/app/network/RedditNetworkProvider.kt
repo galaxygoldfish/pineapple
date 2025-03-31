@@ -10,6 +10,8 @@ import com.pineapple.app.network.NetworkServiceBuilder.OAUTH_BASE_URL
 import com.pineapple.app.network.NetworkServiceBuilder.REDDIT_BASE_URL
 import com.pineapple.app.network.NetworkServiceBuilder.apiService
 import com.pineapple.app.network.NetworkServiceBuilder.rawApiService
+import com.pineapple.app.util.getPreferences
+import okhttp3.Credentials
 
 class RedditNetworkProvider(context: Context) {
 
@@ -26,6 +28,7 @@ class RedditNetworkProvider(context: Context) {
         it.getSharedPreferences(it.packageName, MODE_PRIVATE)
     }
     private val USER_AGENT = "android:com.pineapple.app:${BuildConfig.VERSION_NAME} (TEST)"
+    private val credUserName = context.getPreferences().getString("CLIENT_SECRET", "").orEmpty()
 
     private suspend fun tokenVerity(): String {
         val currentUnixTime = System.currentTimeMillis()
@@ -43,7 +46,11 @@ class RedditNetworkProvider(context: Context) {
 
         suspend fun authUserless() {
             Log.e("TAG", "authenticating userless")
-            processAuthResponse(authNetworkService.authenticateUserless())
+            processAuthResponse(
+                authNetworkService.authenticateUserless(
+                    Credentials.basic(username = credUserName, password = "")
+                )
+            )
         }
 
         if (sharedPreferences.getString("API_ACCESS_TOKEN", "")!!.isBlank()) {
@@ -53,6 +60,7 @@ class RedditNetworkProvider(context: Context) {
                 Log.e("TAG", "authenticating user")
                 processAuthResponse(
                     authNetworkService.authenticateUser(
+                        Credentials.basic(username = credUserName, password = ""),
                         authCode = sharedPreferences.getString("API_LOGIN_AUTH_CODE", "").toString()
                     )
                 )
@@ -64,11 +72,15 @@ class RedditNetworkProvider(context: Context) {
             } else if (refreshToken.isNotBlank()) {
                 Log.e("TAG", "refreshing token user")
                 processAuthResponse(
-                    authNetworkService.refreshAuthToken(refreshToken = refreshToken)
+                    authNetworkService.refreshAuthToken(
+                        Credentials.basic(username = credUserName, password = ""),
+                        refreshToken = refreshToken
+                    )
                 )
             } else {
                 processAuthResponse(
                     authNetworkService.authenticateUser(
+                        Credentials.basic(username = credUserName, password = ""),
                         authCode = sharedPreferences.getString("API_LOGIN_AUTH_CODE", "").toString()
                     )
                 )

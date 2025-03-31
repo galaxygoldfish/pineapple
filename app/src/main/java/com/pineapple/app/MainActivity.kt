@@ -6,10 +6,11 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.*
-import androidx.compose.animation.AnimatedContentScope.SlideDirection.Companion.Down
-import androidx.compose.animation.AnimatedContentScope.SlideDirection.Companion.Left
-import androidx.compose.animation.AnimatedContentScope.SlideDirection.Companion.Right
-import androidx.compose.animation.AnimatedContentScope.SlideDirection.Companion.Up
+import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.Down
+import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.Left
+import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.Right
+import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.Up
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavHostController
@@ -46,7 +47,7 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    @OptIn(ExperimentalAnimationApi::class)
+    @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
     fun NavigationHost() {
         navigationController = rememberAnimatedNavController()
         val onboardingComplete = getPreferences().getBoolean("ONBOARDING_COMPLETE", false)
