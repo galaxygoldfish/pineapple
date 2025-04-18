@@ -61,6 +61,8 @@ dependencies {
     implementation 'androidx.compose.material:material:1.6.0-beta01'
     implementation "androidx.paging:paging-runtime:$paging_version"
     implementation "androidx.paging:paging-compose:3.3.0-alpha02"
+    implementation "androidx.core:core-splashscreen:1.0.1"
+
 
     implementation "com.google.accompanist:accompanist-navigation-animation:$accompanist_version"
     implementation "com.google.accompanist:accompanist-swiperefresh:$accompanist_version"
