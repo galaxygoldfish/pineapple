@@ -3,8 +3,10 @@ package com.pineapple.app.network
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.util.Log
+import com.google.gson.Gson
 import com.pineapple.app.BuildConfig
 import com.pineapple.app.model.auth.AuthResponse
+import com.pineapple.app.model.auth.ErrorResponse
 import com.pineapple.app.model.reddit.*
 import com.pineapple.app.network.NetworkServiceBuilder.OAUTH_BASE_URL
 import com.pineapple.app.network.NetworkServiceBuilder.REDDIT_BASE_URL
@@ -12,6 +14,10 @@ import com.pineapple.app.network.NetworkServiceBuilder.apiService
 import com.pineapple.app.network.NetworkServiceBuilder.rawApiService
 import com.pineapple.app.util.getPreferences
 import okhttp3.Credentials
+import retrofit2.Response
+import java.lang.Exception
+
+class AuthException(message: String) : Exception(message)
 
 class RedditNetworkProvider(context: Context) {
 
@@ -30,17 +36,29 @@ class RedditNetworkProvider(context: Context) {
     private val USER_AGENT = "android:com.pineapple.app:${BuildConfig.VERSION_NAME} (TEST)"
     private val credUserName = context.getPreferences().getString("CLIENT_SECRET", "").orEmpty()
 
-    private suspend fun tokenVerity(): String {
+    suspend fun tokenVerity(clientSecret: String = credUserName): String {
         val currentUnixTime = System.currentTimeMillis()
         val tokenExpireEpoch = sharedPreferences.getLong("API_ACCESS_TOKEN_EXPIRE", 0)
 
-        fun processAuthResponse(authResponse: AuthResponse) {
-            sharedPreferences.edit().apply {
-                putString("API_ACCESS_TOKEN", authResponse.accessToken)
-                putLong("API_ACCESS_TOKEN_EXPIRE", System.currentTimeMillis() + authResponse.expires)
-                putString("API_ACCESS_TOKEN_TYPE", authResponse.tokenType)
-                putString("API_ACCESS_TOKEN_REFRESH_TOKEN", authResponse.refreshToken)
-                commit()
+        fun processAuthResponse(response: Response<AuthResponse>) {
+            if (response.isSuccessful) {
+                val authResponse = response.body() ?: throw AuthException("Auth response body is null")
+                sharedPreferences.edit().apply {
+                    putString("API_ACCESS_TOKEN", authResponse.accessToken)
+                    putLong("API_ACCESS_TOKEN_EXPIRE", System.currentTimeMillis() + authResponse.expires)
+                    putString("API_ACCESS_TOKEN_TYPE", authResponse.tokenType)
+                    putString("API_ACCESS_TOKEN_REFRESH_TOKEN", authResponse.refreshToken)
+                    commit()
+                }
+            } else {
+                val errorResponse = response.errorBody()?.string()?.let { json ->
+                    try {
+                        Gson().fromJson(json, ErrorResponse::class.java)
+                    } catch (e: Exception) {
+                        ErrorResponse("Cannot parse error response", response.message())
+                    }
+                } ?: ErrorResponse("Error: Body is null", response.message())
+                throw AuthException("Authentication failed: ${errorResponse.error ?: ""} ${errorResponse.message}")
             }
         }
 
@@ -48,7 +66,7 @@ class RedditNetworkProvider(context: Context) {
             Log.e("TAG", "authenticating userless")
             processAuthResponse(
                 authNetworkService.authenticateUserless(
-                    Credentials.basic(username = credUserName, password = "")
+                    Credentials.basic(username = clientSecret, password = "")
                 )
             )
         }
@@ -60,7 +78,7 @@ class RedditNetworkProvider(context: Context) {
                 Log.e("TAG", "authenticating user")
                 processAuthResponse(
                     authNetworkService.authenticateUser(
-                        Credentials.basic(username = credUserName, password = ""),
+                        Credentials.basic(username = clientSecret, password = ""),
                         authCode = sharedPreferences.getString("API_LOGIN_AUTH_CODE", "").toString()
                     )
                 )
@@ -73,14 +91,14 @@ class RedditNetworkProvider(context: Context) {
                 Log.e("TAG", "refreshing token user")
                 processAuthResponse(
                     authNetworkService.refreshAuthToken(
-                        Credentials.basic(username = credUserName, password = ""),
+                        Credentials.basic(username = clientSecret, password = ""),
                         refreshToken = refreshToken
                     )
                 )
             } else {
                 processAuthResponse(
                     authNetworkService.authenticateUser(
-                        Credentials.basic(username = credUserName, password = ""),
+                        Credentials.basic(username = clientSecret, password = ""),
                         authCode = sharedPreferences.getString("API_LOGIN_AUTH_CODE", "").toString()
                     )
                 )

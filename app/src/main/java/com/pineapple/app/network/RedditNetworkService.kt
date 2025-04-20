@@ -3,6 +3,7 @@ package com.pineapple.app.network
 import com.pineapple.app.BuildConfig
 import com.pineapple.app.model.auth.AuthResponse
 import com.pineapple.app.model.reddit.*
+import retrofit2.Response
 import retrofit2.http.*
 
 interface RedditNetworkService {
@@ -14,7 +15,7 @@ interface RedditNetworkService {
         @Field("grant_type") grantType: String = "https://oauth.reddit.com/grants/installed_client",
         @Field("device_id") deviceID: String = "DO_NOT_TRACK_THIS_DEVICE",
         @Field("User-Agent") userAgent: String = "android:com.pineapple.app:${BuildConfig.VERSION_NAME}"
-    ) : AuthResponse
+    ) : Response<AuthResponse>
 
     @FormUrlEncoded
     @POST("/api/v1/access_token")
@@ -24,7 +25,7 @@ interface RedditNetworkService {
         @Field("User-Agent") userAgent: String = "android:com.pineapple.app:${BuildConfig.VERSION_NAME}",
         @Field("code") authCode: String,
         @Field("redirect_uri") redirectURI: String = "pineapple://login"
-    ) : AuthResponse
+    ) : Response<AuthResponse>
 
     @FormUrlEncoded
     @POST("/api/v1/access_token")
@@ -33,7 +34,7 @@ interface RedditNetworkService {
         @Field("grant_type") grantType: String = "refresh_token",
         @Field("refresh_token") refreshToken: String,
         @Field("User-Agent") userAgent: String = "android:com.pineapple.app:${BuildConfig.VERSION_NAME}"
-    ) : AuthResponse
+    ) : Response<AuthResponse>
 
     @GET("r/{name}/{sort}")
     suspend fun fetchSubreddit(

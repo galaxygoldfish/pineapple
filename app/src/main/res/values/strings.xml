@@ -51,9 +51,16 @@
     <string name="ic_thumb_up_content_desc">Thumbs up</string>
     <string name="ic_trending_up_content_desc">Trending graph</string>
 
-    <string name="welcome_slogan_text">A new way to browse the frontpage of the internet.</string>
+    <string name="welcome_slogan_text">A new, material and personal way to browse the frontpage of the internet.</string>
     <string name="welcome_reddit_log_in_button">Sign in with Reddit</string>
     <string name="welcome_continue_guest_button">Continue as a guest</string>
+
+    <string name="provide_key_title_text">Please provide a client secret</string>
+    <string name="provide_key_subtitle_text">In order to use this app, you\'ll need a Reddit client secret. If you don\’t have a key yet, please follow the instructions linked below to create your own to use (it\'s free). </string>
+    <string name="provide_key_field_text">Client secret</string>
+    <string name="provide_key_field_error_supporting">Invalid client secret!</string>
+    <string name="provide_key_submit_button_text">Verify client secret</string>
+    <string name="provide_key_help_button_text">What is this and how do I get one?</string>
 
     <string name="home_top_bar_title_default">Home</string>
     <string name="home_bottom_bar_item_browse">Browse</string>

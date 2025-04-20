@@ -21,9 +21,11 @@ import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.pineapple.app.theme.PineappleTheme
 import com.pineapple.app.util.getPreferences
 import com.pineapple.app.view.*
+import androidx.core.content.edit
 
 object NavDestination {
     const val WelcomeView = "welcome"
+    const val KeyProviderView = "keyprovider"
     const val HomePageView = "home"
     const val PostDetailView = "detail"
     const val SubredditView = "subreddit"
@@ -62,8 +64,13 @@ class MainActivity : ComponentActivity() {
             composable(NavDestination.WelcomeView) {
                 WelcomeView(navController = navigationController)
             }
+            composable("${NavDestination.KeyProviderView}/{logintype}") {
+                KeyProviderView(
+                    navController = navigationController,
+                    loginType = it.arguments!!.getString("logintype")!!
+                )
+            }
             composable(route = NavDestination.HomePageView) {
-                Log.e("D", "dbbedbddsdddssddsdssddsds")
                 HomePageView(navController = navigationController)
             }
             composable(
@@ -74,11 +81,10 @@ class MainActivity : ComponentActivity() {
                     }
                 )
             ) {
-                getPreferences()
-                    .edit()
-                    .putString("API_LOGIN_AUTH_CODE", it.arguments?.getString("code"))
-                    .putBoolean("USER_GUEST", false)
-                    .commit()
+                getPreferences().edit(commit = true) {
+                        putString("API_LOGIN_AUTH_CODE", it.arguments?.getString("code"))
+                        putBoolean("USER_GUEST", false)
+                    }
                 HomePageView(navController = navigationController)
             }
             composable(
