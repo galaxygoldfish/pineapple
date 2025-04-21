@@ -71,7 +71,13 @@ fun PostCard(
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
                 ),
-                modifier = modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp),
+                modifier = modifier
+                    .padding(top = 12.dp, start = 12.dp, end = 12.dp)
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(0.7F),
+                        shape = RoundedCornerShape(10.dp)
+                    ),
                 onClick = {
                     val permalink = postData.permalink.split("/")
                     val sub = permalink[2]
@@ -308,7 +314,12 @@ fun SmallListCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 5.dp),
+            .padding(horizontal = 20.dp, vertical = 5.dp)
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant.copy(0.7F),
+                shape = RoundedCornerShape(10.dp)
+            ),
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
