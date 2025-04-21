@@ -254,7 +254,10 @@ fun AllResultSearchView(
         enter = fadeIn(),
         exit = fadeOut()
     ) {
-        LazyColumn(modifier = Modifier.padding(top = 15.dp)) {
+        LazyColumn(
+            modifier = Modifier.padding(top = 15.dp)
+                .navigationBarsPadding()
+        ) {
             stickyHeader {
                 StickyHeaderStyle(
                     text = stringResource(id = R.string.search_category_community),
@@ -375,7 +378,7 @@ fun PopularContentView(
     LaunchedEffect(refreshingSubredditData) {
         viewModel.requestSubreddits()
     }
-    Column {
+    Column(Modifier.navigationBarsPadding()) {
         if (viewModel.topSubredditList.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize()) {
                 CircularProgressIndicator(
