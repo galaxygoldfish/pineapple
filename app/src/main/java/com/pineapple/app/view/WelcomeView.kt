@@ -49,13 +49,15 @@ fun WelcomeView(navController: NavController) {
                 Text(
                     text = stringResource(id = R.string.app_name),
                     style = MaterialTheme.typography.displayMedium,
-                    modifier = Modifier.padding(top = 15.dp)
+                    modifier = Modifier.padding(top = 15.dp),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = stringResource(id = R.string.welcome_slogan_text),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(top = 15.dp),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Button(
                     onClick = {
@@ -66,8 +68,9 @@ fun WelcomeView(navController: NavController) {
                         .padding(top = 30.dp)
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_login),
-                        contentDescription = stringResource(id = R.string.ic_login_content_desc)
+                        painter = painterResource(id = R.drawable.ic_reddit),
+                        contentDescription = stringResource(id = R.string.ic_reddit_content_desc),
+                        modifier = Modifier.size(24.dp)
                     )
                     Text(
                         text = stringResource(id = R.string.welcome_reddit_log_in_button),

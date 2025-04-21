@@ -27,12 +27,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.core.content.edit
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.pineapple.app.MainActivity
 import com.pineapple.app.theme.PineappleTheme
 import com.pineapple.app.R
+import com.pineapple.app.util.getPreferences
 import com.pineapple.app.viewmodel.KeyProviderViewModel
 import kotlinx.coroutines.launch
 
@@ -44,6 +47,9 @@ fun KeyProviderView(
     val viewModel: KeyProviderViewModel = viewModel()
     val parentContext = navController.context as MainActivity
     val coroutineScope = rememberCoroutineScope()
+    parentContext.getPreferences().apply {
+        viewModel.clientSecretText = TextFieldValue(getString("CLIENT_SECRET", "") ?: "")
+    }
     Surface {
         if (viewModel.showLoadingState) {
             Box(

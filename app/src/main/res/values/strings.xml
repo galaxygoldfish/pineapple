@@ -50,6 +50,7 @@
     <string name="ic_thumb_down_content_desc">Thumbs down</string>
     <string name="ic_thumb_up_content_desc">Thumbs up</string>
     <string name="ic_trending_up_content_desc">Trending graph</string>
+    <string name="ic_reddit_content_desc">Reddit</string>
 
     <string name="welcome_slogan_text">A new, material and personal way to browse the frontpage of the internet.</string>
     <string name="welcome_reddit_log_in_button">Sign in with Reddit</string>

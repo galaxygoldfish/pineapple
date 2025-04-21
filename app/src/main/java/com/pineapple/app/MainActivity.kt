@@ -15,13 +15,13 @@ import androidx.compose.runtime.Composable
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.navDeepLink
-import com.google.accompanist.navigation.animation.AnimatedNavHost
-import com.google.accompanist.navigation.animation.composable
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.pineapple.app.theme.PineappleTheme
 import com.pineapple.app.util.getPreferences
 import com.pineapple.app.view.*
 import androidx.core.content.edit
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 
 object NavDestination {
     const val WelcomeView = "welcome"
@@ -51,9 +51,9 @@ class MainActivity : ComponentActivity() {
     @Composable
     @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
     fun NavigationHost() {
-        navigationController = rememberAnimatedNavController()
+        navigationController = rememberNavController()
         val onboardingComplete = getPreferences().getBoolean("ONBOARDING_COMPLETE", false)
-        AnimatedNavHost(
+        NavHost(
             navController = navigationController,
             startDestination = if (onboardingComplete) {
                 NavDestination.HomePageView
@@ -64,7 +64,11 @@ class MainActivity : ComponentActivity() {
             composable(NavDestination.WelcomeView) {
                 WelcomeView(navController = navigationController)
             }
-            composable("${NavDestination.KeyProviderView}/{logintype}") {
+            composable(
+                route = "${NavDestination.KeyProviderView}/{logintype}",
+                enterTransition = { slideIntoContainer(towards = Up) },
+                exitTransition = { slideOutOfContainer(towards = Down) }
+            ) {
                 KeyProviderView(
                     navController = navigationController,
                     loginType = it.arguments!!.getString("logintype")!!
