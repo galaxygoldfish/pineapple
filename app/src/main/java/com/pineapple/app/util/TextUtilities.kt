@@ -77,11 +77,13 @@ fun Long.convertUnixToRelativeTime() : String{
     val yearMs = 12L * monthMs
     val timeDifference = currentTime - longTime
      return when {
-         timeDifference > yearMs -> "${timeDifference / yearMs}y"
-         timeDifference < 12L * monthMs -> "${timeDifference / monthMs}mo"
-         timeDifference < 30L * dayMs -> "${timeDifference / dayMs}d"
-         timeDifference < 24L * hourMs -> "${timeDifference / hourMs}h"
+         timeDifference < minuteMs -> "${timeDifference / secondMs}s"
          timeDifference < 60L * minuteMs -> "${timeDifference / minuteMs}m"
-         else -> "now"
+         timeDifference < 24L * hourMs -> "${timeDifference / hourMs}h"
+         timeDifference < 30L * dayMs -> "${timeDifference / dayMs}d"
+         timeDifference < 7L * weekMs -> "${timeDifference / weekMs}w"
+         timeDifference < 12L * monthMs -> "${timeDifference / monthMs}mo"
+         timeDifference > yearMs -> "${timeDifference / yearMs}y"
+         else -> ""
     }
 }
