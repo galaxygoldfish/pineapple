@@ -5,6 +5,7 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -42,19 +43,17 @@ fun SearchView(navController: NavController) {
     viewModel.initNetworkProvider(LocalContext.current)
     Surface(modifier = Modifier.fillMaxSize()) {
         Column {
-            AnimatedVisibility(visible = viewModel.currentSearchQuery.text.isEmpty()) {
-                Text(
-                    text = stringResource(id = R.string.home_bottom_bar_item_search),
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(top = 30.dp, start = 21.dp)
-                )
-            }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.secondaryContainer.copy(0.7F)),
+                    .padding(start = 20.dp, end = 20.dp, top = 15.dp, bottom = 10.dp)
+                    .clip(MaterialTheme.shapes.small)
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(0.7F),
+                        shape = MaterialTheme.shapes.small
+                    ),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -96,6 +95,7 @@ fun SearchView(navController: NavController) {
                         textStyle = MaterialTheme.typography.bodyLarge
                     )
                 }
+
                 if (viewModel.currentSearchQuery.text.length >= 2) {
                     IconButton(
                         onClick = { viewModel.currentSearchQuery = TextFieldValue() }

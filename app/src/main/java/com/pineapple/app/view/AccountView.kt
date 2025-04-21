@@ -76,78 +76,11 @@ fun AccountView(navController: NavController) {
                             modifier = Modifier.fillMaxWidth()
                         )
                         Spacer(modifier = Modifier.height(10.dp))
-                        FilledTonalButton(
-                            onClick = {
-                                if (clientSecret.value.isNotEmpty()) {
-                                    sharedPreferences.edit()
-                                        .putString("CLIENT_SECRET", clientSecret.value).apply()
-                                    showSecretDialog.value = false
-                                } else {
-                                    showSecretDialog.value = false
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(text = "Save")
-                        }
                     }
                 }
             }
         )
     }
-
-    if (showEmptySecretDialog.value){
-        Dialog(
-            onDismissRequest = {
-                showEmptySecretDialog.value = false
-            },
-            properties = DialogProperties(
-                dismissOnBackPress = true,
-                dismissOnClickOutside = true
-            ),
-            content = {
-                Card(
-                    shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp)
-                    ) {
-                        Text(
-                            text = "Client Secret is Empty",
-                            style = MaterialTheme.typography.labelLarge
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Text(
-                            text = "Please enter a valid client secret",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Text(
-                            text = "You can find your client secret at https://www.reddit.com/prefs/apps",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        FilledTonalButton(
-                            onClick = {
-                                showEmptySecretDialog.value = false
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(text = "OK")
-                        }
-                    }
-                }
-            }
-        )
-    }
-
     var currentAccountData by remember { mutableStateOf<AboutAccount?>(null) }
     LaunchedEffect(key1 = true) {
         currentAccountData = RedditNetworkProvider(context).fetchAccountInfo()
