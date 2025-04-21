@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -31,6 +32,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.google.accompanist.insets.navigationBarsHeight
 import com.google.accompanist.insets.statusBarsHeight
 import com.pineapple.app.NavDestination
@@ -370,16 +373,31 @@ fun HomeNavigationDrawer(
                         },
                         selected = false,
                         icon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_atr_dots),
-                                contentDescription = stringResource(id = R.string.ic_atr_dots_content_desc),
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.primaryContainer)
-                                    .size(25.dp)
-                                    .padding(4.dp) // Icon padding
-                            )
+                            if (item.data.iconUrl.isNotEmpty()) {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data(item.data.iconUrl)
+                                        .crossfade(true)
+                                        .build().data,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.primaryContainer)
+                                        .size(25.dp),
+                                    contentScale = ContentScale.FillWidth,
+                                )
+                            } else {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_atr_dots),
+                                    contentDescription = stringResource(id = R.string.ic_atr_dots_content_desc),
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.primaryContainer)
+                                        .size(25.dp)
+                                        .padding(4.dp) // Icon padding
+                                )
+                            }
                         },
                         onClick = {
                             navController.navigate(
