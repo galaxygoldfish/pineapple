@@ -83,7 +83,8 @@ fun HomePageView(navController: NavController) {
                     )
                 },
                 sheetState = bottomSheetState,
-                scrimColor = Color.Black.copy(0.3F)
+                scrimColor = Color.Black.copy(0.3F),
+                sheetShape = MaterialTheme.shapes.small
             ) {
                 Scaffold(
                     floatingActionButton = {

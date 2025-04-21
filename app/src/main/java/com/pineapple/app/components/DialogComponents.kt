@@ -1,6 +1,7 @@
 package com.pineapple.app.components
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -79,21 +80,25 @@ fun FilterBottomSheet(
                 SortChipItem(item = item, sortVar = tempSortType)
             }
         }
-        if (tempSortType.value.equals("Top", true) ||
-            tempSortType.value.equals("Controversial", true)) {
-            Text(
-                text = stringResource(id = R.string.home_filter_sheet_time_header),
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(start = 20.dp, top = 15.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            FlowRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 20.dp, end = 10.dp, top = 10.dp)
-            ) {
-                timeChips.forEach { item ->
-                    SortChipItem(item = item, sortVar = tempTimePeriod)
+        AnimatedVisibility(
+            visible = (tempSortType.value.equals("Top", true) ||
+            tempSortType.value.equals("Controversial", true))
+        ) {
+            Column {
+                Text(
+                    text = stringResource(id = R.string.home_filter_sheet_time_header),
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(start = 20.dp, top = 15.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                FlowRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 20.dp, end = 10.dp, top = 10.dp)
+                ) {
+                    timeChips.forEach { item ->
+                        SortChipItem(item = item, sortVar = tempTimePeriod)
+                    }
                 }
             }
         }
