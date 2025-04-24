@@ -3,6 +3,7 @@ package com.pineapple.app.components
 import android.os.Build.VERSION.SDK_INT
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -539,16 +540,17 @@ fun ImageGifControls(
 @Composable
 fun UserAvatarIcon(
     defaultIcon: Boolean = true,
-    iconImage: String,
-    snoovatarImage: String,
+    iconImage: String?,
+    snoovatarImage: String?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
         .padding(top = 15.dp, start = 15.dp, end = 10.dp)
         .size(35.dp)
 ) {
+    val showDefaultIcon = (defaultIcon || (iconImage == null && snoovatarImage == null))
     Box {
         AnimatedVisibility(
-            visible = defaultIcon,
+            visible = showDefaultIcon,
             enter = fadeIn(),
             exit = fadeOut()
         ) {
@@ -559,13 +561,13 @@ fun UserAvatarIcon(
             )
         }
         AnimatedVisibility(
-            visible = !defaultIcon,
+            visible = !showDefaultIcon,
             enter = fadeIn(),
             exit = fadeOut()
         ) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(snoovatarImage.ifBlank { iconImage })
+                    .data(snoovatarImage?.ifBlank { null } ?: iconImage)
                     .crossfade(true)
                     .build().data,
                 contentDescription = null,

@@ -54,7 +54,7 @@ fun PostListView(
     topHeaderItem: (@Composable () -> Unit) = { }
 ) {
     val context = LocalContext.current
-    val viewModel = context.getViewModel(PostListViewModel::class.java)
+    val viewModel = remember { context.getViewModel(PostListViewModel::class.java) }
     var currentPostFlow by remember { mutableStateOf<Flow<PagingData<PostItem>>?>(null) }
     var currentPosts by remember { mutableStateOf<LazyPagingItems<PostItem>?>(null) }
     val refreshState = rememberSwipeRefreshState(isRefreshing = viewModel.isRefreshingData)
@@ -63,7 +63,6 @@ fun PostListView(
         currentPostFlow = viewModel.posts(subreddit, sort, time, context)
     }
     currentPostFlow?.let { currentPosts = it.collectAsLazyPagingItems() }
-
     SwipeRefresh(
         state = refreshState,
         onRefresh = {

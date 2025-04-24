@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.google.common.collect.Multimaps.index
 import com.pineapple.app.NavDestination
 import com.pineapple.app.R
 import com.pineapple.app.components.Chip
@@ -33,10 +34,12 @@ import com.pineapple.app.components.PostCard
 import com.pineapple.app.components.SmallListCard
 import com.pineapple.app.components.TextOnlyTextField
 import com.pineapple.app.util.getViewModel
+import com.pineapple.app.util.prettyNumber
 import com.pineapple.app.viewmodel.SearchViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.GlobalScope.coroutineContext
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun SearchView(navController: NavController) {
     val viewModel = LocalContext.current.getViewModel(SearchViewModel::class.java)
@@ -161,6 +164,7 @@ fun SearchView(navController: NavController) {
                             itemsIndexed(viewModel.currentSubredditList) { _, item ->
                                 SmallListCard(
                                     text = item.data.displayNamePrefixed,
+                                    subtitleText = "${item.data.subscribers.toInt().prettyNumber()} members",
                                     iconUrl = item.data.iconUrl.replace(";", "").replace("amp", ""),
                                     onClick = {
                                         navController.navigate("${NavDestination.SubredditView}/${
@@ -178,12 +182,27 @@ fun SearchView(navController: NavController) {
                         }
                         LazyColumn(modifier = Modifier.padding(top = 15.dp)) {
                             itemsIndexed(viewModel.currentUserList) { _, item ->
-                                SmallListCard(
-                                    text = item.data.name ?: "",
-                                    iconUrl = item.data.snoovatar_img ?: item.data.icon_img ?: "",
-                                    userIcon = true,
-                                    onClick = {  }
-                                )
+                                if (item.data.subreddit != null) {
+                                    SmallListCard(
+                                        text = "u/" + (item.data.name ?: ""),
+                                        iconUrl = "",
+                                        snoovatarImage = item.data.snoovatar_img,
+                                        iconImage = item.data.icon_img,
+                                        defaultIcon = item.data.subreddit!!.is_default_icon,
+                                        onClick = {
+                                            navController.navigate(
+                                                "${NavDestination.UserView}/${
+                                                    item.data.subreddit!!.display_name_prefixed.replace(
+                                                        "u/",
+                                                        ""
+                                                    )
+                                                }"
+                                            )
+                                        },
+                                        userIcon = true,
+                                        subtitleText = "${item.data.awardee_karma} karma"
+                                    )
+                                }
                             }
                         }
                     }
@@ -243,7 +262,9 @@ fun AllResultSearchView(
     if (!checkSearchStatus()) {
         Box(modifier = Modifier.fillMaxSize()) {
             CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center).size(50.dp),
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .size(50.dp),
                 strokeWidth = 2.dp,
                 color = MaterialTheme.colorScheme.secondary
             )
@@ -255,7 +276,8 @@ fun AllResultSearchView(
         exit = fadeOut()
     ) {
         LazyColumn(
-            modifier = Modifier.padding(top = 15.dp)
+            modifier = Modifier
+                .padding(top = 15.dp)
                 .navigationBarsPadding()
         ) {
             stickyHeader {
@@ -271,6 +293,7 @@ fun AllResultSearchView(
                     item {
                         SmallListCard(
                             text = item.data.displayNamePrefixed,
+                            subtitleText = "${item.data.subscribers.toInt().prettyNumber()} members",
                             iconUrl = item.data.iconUrl.replace(";", "")
                                 .replace("amp", ""),
                             onClick = {
@@ -306,12 +329,15 @@ fun AllResultSearchView(
                     ),
                 )
             }
+            //
             repeat((viewModel.currentUserList.size - 1).coerceAtMost(3)) { index ->
                 viewModel.currentUserList[index].let { item ->
                     item {
                         SmallListCard(
                             text = item.data.name ?: "",
-                            iconUrl = item.data.snoovatar_img ?: item.data.icon_img ?: "",
+                            iconImage = item.data.icon_img,
+                            snoovatarImage = item.data.snoovatar_img,
+                                    subtitleText = "${item.data.total_karma.toInt().prettyNumber()} karma",
                             onClick = {
                                 navController.navigate("${NavDestination.UserView}/${item.data.name}")
                             },
@@ -319,6 +345,7 @@ fun AllResultSearchView(
                             modifier = Modifier.animateEnterExit(
                                 enter = slideInVertically(animationSpec = spring(0.8F)) { it * (index + 7) }
                             ),
+                            iconUrl = ""
                         )
                     }
                 }
@@ -405,7 +432,8 @@ fun PopularContentView(
                 LazyColumn {
                     stickyHeader {
                         Row(
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
                                 .background(MaterialTheme.colorScheme.surface)
                                 .padding(vertical = 10.dp)
                                 .animateEnterExit(
@@ -429,6 +457,7 @@ fun PopularContentView(
                         SmallListCard(
                             text = item.data.displayNamePrefixed,
                             iconUrl = item.data.iconUrl.replace(";", "").replace("amp", ""),
+                            subtitleText = "${item.data.subscribers.toInt().prettyNumber()} members",
                             onClick = {
                                 navController.navigate(
                                     "${NavDestination.SubredditView}/${
@@ -438,12 +467,14 @@ fun PopularContentView(
                             },
                             modifier = Modifier.animateEnterExit(
                                 enter = slideInVertically(animationSpec = spring(0.5F)) { it * (index + 2) }
-                            )
+                            ),
+                            userIcon = false
                         )
                     }
                     stickyHeader {
                         Row(
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
                                 .background(MaterialTheme.colorScheme.surface)
                                 .padding(vertical = 10.dp)
                                 .animateEnterExit(
@@ -466,14 +497,18 @@ fun PopularContentView(
                     itemsIndexed(viewModel.topUserList) { index, item ->
                         SmallListCard(
                             text = item.data.display_name_prefixed,
-                            iconUrl = item.data.let { it.snoovatar_img?.ifBlank { it.icon_img ?: "" } ?: "" },
+                            iconUrl = "",
+                            snoovatarImage = item.data.snoovatar_img,
+                            iconImage = item.data.icon_img,
+                            defaultIcon = false,
                             onClick = {
                                 navController.navigate("${NavDestination.UserView}/${item.data.display_name_prefixed.replace("u/", "")}")
                             },
                             modifier = Modifier.animateEnterExit(
                                 enter = slideInVertically(animationSpec = spring(0.5F)) { it * (index + 7) }
                             ),
-                            userIcon = true
+                            userIcon = true,
+                            subtitleText = item.data.total_karma.toString() + " karma"
                         )
                     }
                 }

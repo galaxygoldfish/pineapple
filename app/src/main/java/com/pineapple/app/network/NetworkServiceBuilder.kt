@@ -14,9 +14,7 @@ object NetworkServiceBuilder {
     const val GFYCAT_BASE_URL = "https://api.gfycat.com/v1/gfycats/"
 
     private val gsonObject = GsonBuilder().setLenient().create()
-    private val okHttpClient = OkHttpClient.Builder().addInterceptor(
-        HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
-    ).build()
+    private val okHttpClient = OkHttpClient.Builder().build()
 
     fun getRetrofit(baseUrl: String): Retrofit {
         return Retrofit.Builder()

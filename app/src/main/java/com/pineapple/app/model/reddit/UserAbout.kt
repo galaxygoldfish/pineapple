@@ -10,7 +10,7 @@ data class UserAbout(
     var snoovatar_img: String?,
     var icon_img: String?,
     var name: String?,
-    var subreddit: UserSubredditData,
+    var subreddit: UserSubredditData?,
     var is_gold: Boolean,
     var total_karma: Long,
     var awardee_karma: Long,

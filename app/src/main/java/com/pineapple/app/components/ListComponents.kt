@@ -1,6 +1,7 @@
 package com.pineapple.app.components
 
 import android.text.TextUtils.replace
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -93,9 +94,9 @@ fun PostCard(
                 ) {
                     Row {
                         UserAvatarIcon(
-                            snoovatarImage = userInfo?.data?.snoovatar_img ?: "",
-                            iconImage = userInfo?.data?.subreddit?.icon_img ?: "",
-                            defaultIcon = userInfo?.data?.subreddit?.is_default_icon ?: true,
+                            snoovatarImage = userInfo?.data?.snoovatar_img,
+                            iconImage = userInfo?.data?.subreddit?.icon_img,
+                            defaultIcon = userInfo?.data?.subreddit?.is_default_icon == true,
                             onClick = {
                                 navController.navigate("${NavDestination.UserView}/${postData.author}")
                             }
@@ -228,13 +229,13 @@ fun PostCard(
                         }
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        FilledTonalIconButton(
+                        FilledIconButton(
                             onClick = { /*TODO*/ },
                             modifier = Modifier.size(35.dp)
                         ) {
                             Icon(
-                                painter = painterResource(id = R.drawable.ic_thumb_up),
-                                contentDescription = stringResource(id = R.string.ic_thumb_up_content_desc),
+                                painter = painterResource(id = R.drawable.ic_thumb_down),
+                                contentDescription = stringResource(id = R.string.ic_thumb_down_content_desc),
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -250,8 +251,8 @@ fun PostCard(
                             modifier = Modifier.size(35.dp)
                         ) {
                             Icon(
-                                painter = painterResource(id = R.drawable.ic_thumb_down),
-                                contentDescription = stringResource(id = R.string.ic_thumb_down_content_desc),
+                                painter = painterResource(id = R.drawable.ic_thumb_up),
+                                contentDescription = stringResource(id = R.string.ic_thumb_up_content_desc),
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -306,9 +307,13 @@ fun PostCard(
 @Composable
 fun SmallListCard(
     text: String,
+    subtitleText: String,
     iconUrl: String,
     onClick: () -> Unit,
     userIcon: Boolean = false,
+    snoovatarImage: String? = null,
+    iconImage: String? = null,
+    defaultIcon: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -327,7 +332,16 @@ fun SmallListCard(
         onClick = { onClick.invoke() }
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            if (iconUrl.isNotEmpty()) {
+            if (userIcon) {
+                UserAvatarIcon(
+                    snoovatarImage = snoovatarImage,
+                    iconImage = iconImage,
+                    defaultIcon = defaultIcon,
+                    onClick = { },
+                    modifier = Modifier.padding(12.dp)
+                        .size(30.dp)
+                )
+            } else if (iconUrl.isNotEmpty()) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(iconUrl)
@@ -336,7 +350,7 @@ fun SmallListCard(
                     contentDescription = null,
                     modifier = Modifier
                         .padding(12.dp)
-                        .size(25.dp)
+                        .size(30.dp)
                         .clip(CircleShape),
                     contentScale = ContentScale.FillWidth,
                 )
@@ -361,15 +375,22 @@ fun SmallListCard(
                         .padding(12.dp) // Actual container padding
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.primaryContainer)
-                        .size(25.dp)
+                        .size(30.dp)
                         .padding(4.dp) // Icon padding
                 )
             }
-            Text(
-                text = text,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(start = 4.dp)
-            )
+            Column(Modifier.padding(vertical = 12.dp)) {
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+                Text(
+                    text = subtitleText,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(start = 4.dp, top = 5.dp)
+                )
+            }
         }
     }
 }

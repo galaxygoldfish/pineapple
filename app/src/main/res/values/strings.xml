@@ -51,6 +51,7 @@
     <string name="ic_thumb_up_content_desc">Thumbs up</string>
     <string name="ic_trending_up_content_desc">Trending graph</string>
     <string name="ic_reddit_content_desc">Reddit</string>
+    <string name="ic_chat_bubble_content_desc">Chat bubble</string>
 
     <string name="welcome_slogan_text">A new, material and personal way to browse the frontpage of the internet.</string>
     <string name="welcome_reddit_log_in_button">Sign in with Reddit</string>
@@ -103,6 +104,8 @@
     <string name="user_view_tab_post_title">Posts</string>
     <string name="user_view_tab_comment_title">Comments</string>
     <string name="user_view_tab_about_title">About</string>
+    <string name="user_view_follow_button_label">Follow</string>
+    <string name="user_view_start_chat_button_label">Start chat</string>
 
     <string name="search_query_hint_text">Search all of reddit…</string>
     <string name="search_trending_subreddit_header">Trending communities</string>

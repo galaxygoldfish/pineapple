@@ -7,6 +7,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -43,6 +44,7 @@ import com.pineapple.app.components.Chip
 import com.pineapple.app.components.CommentInContext
 import com.pineapple.app.components.PostCard
 import com.pineapple.app.components.RoundedStarShape
+import com.pineapple.app.components.UserAvatarIcon
 import com.pineapple.app.model.reddit.CommentPreDataNull
 import com.pineapple.app.model.reddit.PostData
 import com.pineapple.app.model.reddit.PostItem
@@ -138,30 +140,58 @@ fun UserView(navController: NavController, user: String) {
                                 modifier = Modifier.nestedScroll(topAppBarBehavior.nestedScrollConnection)
                             ) {
                                 item {
-                                    AsyncImage(
-                                        model = ImageRequest.Builder(LocalContext.current)
-                                            .data(
-                                                currentUserInfo!!.snoovatar_img.toString()
-                                                    .ifBlank {
-                                                        currentUserInfo!!.icon_img
-                                                    }
-                                            )
-                                            .crossfade(true)
-                                            .build().data,
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .padding(start = 20.dp)
-                                            .size(100.dp)
-                                            .clip(CircleShape)
-                                            .animateEnterExit(
-                                                enter = slideInVertically(
-                                                    animationSpec = spring(
-                                                        0.8F
-                                                    )
-                                                ) { spec -> spec * 2 }
-                                            ),
-                                        contentScale = ContentScale.FillWidth,
-                                    )
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        UserAvatarIcon(
+                                            snoovatarImage = currentUserInfo!!.snoovatar_img,
+                                            iconImage = currentUserInfo!!.icon_img,
+                                            defaultIcon = currentUserInfo!!.subreddit?.is_default_icon == true,
+                                            onClick = {},
+                                            modifier = Modifier
+                                                .padding(start = 20.dp)
+                                                .size(100.dp)
+                                                .clip(CircleShape)
+                                                .animateEnterExit(
+                                                    enter = slideInVertically(
+                                                        animationSpec = spring(
+                                                            0.8F
+                                                        )
+                                                    ) { spec -> spec * 2 }
+                                                )
+                                        )
+                                        Column(
+                                            modifier = Modifier.padding(end = 20.dp),
+                                            horizontalAlignment = Alignment.End
+                                        ) {
+                                            FilledTonalButton(
+                                                onClick = { /* Follow user */ }
+                                            ) {
+                                                Icon(
+                                                    painter = painterResource(R.drawable.ic_add),
+                                                    contentDescription = stringResource(R.string.ic_add_content_desc)
+                                                )
+                                                Text(
+                                                    text = stringResource(R.string.user_view_follow_button_label),
+                                                    modifier = Modifier.padding(start = 10.dp)
+                                                )
+                                            }
+                                            OutlinedButton(
+                                                onClick = { /* Start chat */ }
+                                            ) {
+                                                Icon(
+                                                    painter = painterResource(R.drawable.ic_chat_bubble),
+                                                    contentDescription = stringResource(R.string.ic_chat_bubble_content_desc)
+                                                )
+                                                Text(
+                                                    text = stringResource(R.string.user_view_start_chat_button_label),
+                                                    modifier = Modifier.padding(start = 10.dp)
+                                                )
+                                            }
+                                        }
+                                    }
                                     Column(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -175,7 +205,7 @@ fun UserView(navController: NavController, user: String) {
                                             )
                                     ) {
                                         Text(
-                                            text = currentUserInfo!!.subreddit.display_name_prefixed,
+                                            text = currentUserInfo!!.subreddit!!.display_name_prefixed,
                                             style = MaterialTheme.typography.titleLarge,
                                             softWrap = false,
                                             overflow = TextOverflow.Ellipsis
@@ -184,7 +214,7 @@ fun UserView(navController: NavController, user: String) {
                                             text = currentUserInfo!!.name.toString(),
                                             style = MaterialTheme.typography.bodyLarge
                                         )
-                                        currentUserInfo!!.subreddit.public_description.let { desc ->
+                                        currentUserInfo!!.subreddit!!.public_description.let { desc ->
                                             if (desc.isNotBlank()) {
                                                 Text(
                                                     text = desc,
