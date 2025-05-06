@@ -157,4 +157,8 @@ class RedditNetworkProvider(context: Context) {
         return redditNetworkService.getCurrentAccountInfo(tokenVerity(), USER_AGENT)
     }
 
+    suspend fun castVote(id: String, dir: Int) {
+        redditNetworkService.castVote(tokenVerity(), USER_AGENT, id, dir)
+    }
+
 }

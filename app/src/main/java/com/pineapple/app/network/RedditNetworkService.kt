@@ -137,5 +137,12 @@ interface RedditNetworkService {
         @Query("raw_json") rawJson: Int = 1
     ) : AboutAccount
 
+    @POST("/api/vote")
+    suspend fun castVote(
+        @Header("Authorization") authorization: String,
+        @Header("User-Agent") userAgent: String,
+        @Query("id") id: String,
+        @Query("dir") dir: Int
+    )
 
 }

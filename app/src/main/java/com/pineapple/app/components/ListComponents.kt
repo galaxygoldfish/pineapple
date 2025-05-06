@@ -2,6 +2,7 @@ package com.pineapple.app.components
 
 import android.text.TextUtils.replace
 import android.util.Log
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -53,7 +54,9 @@ import java.net.URLEncoder
 fun PostCard(
     postData: PostData,
     navController: NavController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    // TODO: remove default parameter value for onClick because we want to require it always
+    onVoteClick: (intendedDirection: Int, currentDirection: MutableState<Int>) -> Unit = { a, b -> }
 ) {
     val gfycatNetworkService = remember { apiService<GfycatNetworkService>(GFYCAT_BASE_URL) }
     val redditNetworkService = RedditNetworkProvider(LocalContext.current)
@@ -133,6 +136,7 @@ fun PostCard(
                 val mediaLink = when (postData.postHint) {
                     "hosted:video" -> postData.secureMedia!!.reddit_video.fallback_url
                         .replace("amp;", "")
+
                     "rich:video" -> postData.url
                     else -> {
                         postData.preview?.images?.get(0)?.source?.url?.replace("amp;", "")
@@ -157,6 +161,7 @@ fun PostCard(
                                             actualWidth = LocalConfiguration.current.screenWidthDp - 44
                                         )
                                     }
+
                                     else -> {
                                         LocalContext.current.calculateRatioHeight(
                                             ratioHeight = postData.secureMedia?.reddit_video?.height?.toInt()
@@ -228,33 +233,81 @@ fun PostCard(
                             )
                         }
                     }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        FilledIconButton(
-                            onClick = { /*TODO*/ },
-                            modifier = Modifier.size(35.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_thumb_down),
-                                contentDescription = stringResource(id = R.string.ic_thumb_down_content_desc),
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                        Text(
-                            text = postData.ups
-                                .toInt()
-                                .prettyNumber(),
-                            style = MaterialTheme.typography.titleSmall,
-                            modifier = Modifier.padding(10.dp)
+                    // TODO: move this variable to the appropriate place
+                    val postLikeState = remember {
+                        mutableIntStateOf(
+                            if (postData.likes as? Boolean == true) 1 else (
+                                    if (postData.likes as? Boolean == false) -1 else 0
+                                    )
                         )
-                        FilledTonalIconButton(
-                            onClick = { /*TODO*/ },
-                            modifier = Modifier.size(35.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_thumb_up),
-                                contentDescription = stringResource(id = R.string.ic_thumb_up_content_desc),
-                                modifier = Modifier.size(20.dp)
+                    }
+                    // TODO: actually make an animation for changing state
+                    AnimatedContent(postLikeState) { likeState ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            when (likeState.intValue) {
+                                -1 -> {
+                                    FilledIconButton(
+                                        onClick = { onVoteClick(0, postLikeState) },
+                                        modifier = Modifier.size(35.dp)
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_thumb_down_filled),
+                                            contentDescription = stringResource(id = R.string.ic_thumb_down_content_desc),
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
+                                else -> {
+                                    FilledTonalIconButton(
+                                        onClick = { onVoteClick(-1, postLikeState) },
+                                        modifier = Modifier.size(35.dp)
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_thumb_down),
+                                            contentDescription = stringResource(id = R.string.ic_thumb_down_content_desc),
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
+                            }
+                            Text(
+                                text = postData.ups
+                                    .toInt()
+                                    .prettyNumber(),
+                                style = MaterialTheme.typography.titleSmall,
+                                modifier = Modifier.padding(10.dp)
                             )
+                            when (likeState.intValue) {
+                                1 -> {
+                                    FilledIconButton(
+                                        onClick = {
+                                            onVoteClick(0, postLikeState)
+                                        },
+                                        modifier = Modifier.size(35.dp)
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_thumb_up_filled),
+                                            contentDescription = stringResource(id = R.string.ic_thumb_down_content_desc),
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
+
+                                else -> {
+                                    FilledTonalIconButton(
+                                        onClick = {
+                                            onVoteClick(1, postLikeState)
+                                        },
+                                        modifier = Modifier.size(35.dp)
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_thumb_up),
+                                            contentDescription = stringResource(id = R.string.ic_thumb_down_content_desc),
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }

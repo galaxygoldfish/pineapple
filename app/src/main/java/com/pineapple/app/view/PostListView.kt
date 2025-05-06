@@ -58,7 +58,7 @@ fun PostListView(
     var currentPostFlow by remember { mutableStateOf<Flow<PagingData<PostItem>>?>(null) }
     var currentPosts by remember { mutableStateOf<LazyPagingItems<PostItem>?>(null) }
     val refreshState = rememberSwipeRefreshState(isRefreshing = viewModel.isRefreshingData)
-
+    val coroutineScope = rememberCoroutineScope()
     LaunchedEffect(key1 = subreddit, key2 = sort, key3 = time) {
         currentPostFlow = viewModel.posts(subreddit, sort, time, context)
     }
@@ -112,7 +112,20 @@ fun PostListView(
                             navController = navController,
                             modifier = Modifier.animateEnterExit(
                                 enter = slideInVertically(animationSpec = spring(0.8F)) { it * (index + 1) }
-                            )
+                            ),
+                            onVoteClick = { intendedDirection, actualDirection ->
+                                coroutineScope.launch {
+                                    viewModel.castPostVote(
+                                        id = item.data.name,
+                                        context = context,
+                                        direction = intendedDirection
+                                    )
+                                    // TODO add some sort of custom bottom toast that says you must login if not logged in
+                                    // TODO: add error handling in viewmodel function then update value of upvotedState only if success 200
+                                    actualDirection.value = intendedDirection
+                                }
+                            }
+                            // TODO: onDownvoteClick
                         )
                     }
                 }

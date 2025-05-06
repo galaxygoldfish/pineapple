@@ -18,4 +18,14 @@ class PostListViewModel : ViewModel() {
         NetworkPagingSource(RedditNetworkProvider(context), name, sort, time)
     }.flow
 
+    /**
+     * Cast vote on a given post (upvote, downvote, remove vote)
+     * @param id - The fullname of a post (found in the name field)
+     * @param context - The parent context
+     * @param direction - 1 for upvote, -1 for downvote, 0 for remove vote
+     */
+    suspend fun castPostVote(id: String, context: Context, direction: Int) {
+        RedditNetworkProvider(context).castVote(id, direction)
+    }
+
 }
