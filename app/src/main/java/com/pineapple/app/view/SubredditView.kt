@@ -78,7 +78,7 @@ fun SubredditView(navController: NavController, subreddit: String) {
         ) {
             Scaffold(
                 topBar = {
-                    SmallTopAppBar(
+                    TopAppBar(
                         title = {
                             AnimatedVisibility(
                                 visible = scrollState.firstVisibleItemIndex != 0,
@@ -128,7 +128,7 @@ fun SubredditView(navController: NavController, subreddit: String) {
                                 )
                             }
                         },
-                        colors = TopAppBarDefaults.smallTopAppBarColors(
+                        colors = TopAppBarDefaults.topAppBarColors(
                             containerColor = if (scrollState.firstVisibleItemIndex != 0) {
                                 MaterialTheme.colorScheme.surfaceVariant
                             } else MaterialTheme.colorScheme.surface

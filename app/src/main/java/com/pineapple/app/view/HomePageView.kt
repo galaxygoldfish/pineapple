@@ -162,7 +162,7 @@ fun HomePageView(navController: NavController) {
                                     )
                                 } else {
 
-                                    SmallTopAppBar(
+                                    TopAppBar(
                                         title = {
                                             Text(
                                                 when (viewModel.selectedTabItem) {
@@ -215,7 +215,7 @@ fun HomePageView(navController: NavController) {
                                     label = {
                                         Text(
                                             text = stringResource(id = item.text),
-                                            style = MaterialTheme.typography.labelSmall
+                                            style = MaterialTheme.typography.labelMedium
                                         )
                                     },
                                     icon = {

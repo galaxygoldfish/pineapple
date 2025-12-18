@@ -1,9 +1,11 @@
 package com.pineapple.app.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.pineapple.app.R
@@ -16,14 +18,52 @@ val Rubik = FontFamily(
 	Font(resId = R.font.rubik_light, weight = FontWeight.Thin)
 )
 
+// 105, 109, 113, 120, 140
+
+@OptIn(ExperimentalTextApi::class)
+val GSF_W105 = FontFamily(
+	Font(
+		resId = R.font.google_sans_flex,
+		variationSettings = FontVariation.Settings(FontVariation.width(105F))
+	)
+)
+@OptIn(ExperimentalTextApi::class)
+val GSF_W109 = FontFamily(
+	Font(
+		resId = R.font.google_sans_flex,
+		variationSettings = FontVariation.Settings(FontVariation.width(109F))
+	)
+)
+@OptIn(ExperimentalTextApi::class)
+val GSF_W113 = FontFamily(
+	Font(
+		resId = R.font.google_sans_flex,
+		variationSettings = FontVariation.Settings(FontVariation.width(113F))
+	)
+)
+@OptIn(ExperimentalTextApi::class)
+val GSF_W120 = FontFamily(
+	Font(
+		resId = R.font.google_sans_flex,
+		variationSettings = FontVariation.Settings(FontVariation.width(120F))
+	)
+)
+@OptIn(ExperimentalTextApi::class)
+val GSF_W140 = FontFamily(
+	Font(
+		resId = R.font.google_sans_flex,
+		variationSettings = FontVariation.Settings(FontVariation.width(140F))
+	)
+)
+
 val AppTypography = Typography(
 	displayLarge = TextStyle(
-		fontFamily = Rubik,
-		fontWeight = FontWeight.W400,
-		fontSize = 57.sp,
-		lineHeight = 64.sp,
-		letterSpacing = (-0.25).sp,
+		fontFamily = GSF_W140,
+		fontWeight = FontWeight.W500,
+		fontSize = 41.sp
 	),
+
+	/* NOT USED IN NEW VERSION --
 	displayMedium = TextStyle(
 		fontFamily = Rubik,
 		fontWeight = FontWeight.W400,
@@ -38,88 +78,68 @@ val AppTypography = Typography(
 		lineHeight = 28.sp,
 		letterSpacing = 0.sp,
 	),
+	// --------------------------- */
+
 	headlineLarge = TextStyle(
-		fontFamily = Rubik,
-		fontWeight = FontWeight.W400,
-		fontSize = 32.sp,
-		lineHeight = 40.sp,
-		letterSpacing = 0.sp,
+		fontFamily = GSF_W113,
+		fontWeight = FontWeight.W600,
+		fontSize = 36.sp
 	),
 	headlineMedium = TextStyle(
-		fontFamily = Rubik,
-		fontWeight = FontWeight.W400,
-		fontSize = 28.sp,
-		lineHeight = 36.sp,
-		letterSpacing = 0.sp,
+		fontFamily = GSF_W109,
+		fontWeight = FontWeight(430),
+		fontSize = 28.sp
 	),
-	headlineSmall = TextStyle(
+	/*headlineSmall = TextStyle(
 		fontFamily = Rubik,
 		fontWeight = FontWeight.W400,
 		fontSize = 20.sp,
 		lineHeight = 25.sp,
 		letterSpacing = 0.sp,
-	),
+	),*/
 	titleLarge = TextStyle(
-		fontFamily = Rubik,
-		fontWeight = FontWeight.W400,
-		fontSize = 22.sp,
-		lineHeight = 25.sp,
-		letterSpacing = 0.sp,
+		fontFamily = GSF_W109,
+		fontWeight = FontWeight.W600,
+		fontSize = 22.sp
 	),
 	titleMedium = TextStyle(
-		fontFamily = Rubik,
-		fontWeight = FontWeight.W400,
-		fontSize = 18.sp,
-		lineHeight = 28.sp,
-		letterSpacing = 0.sp,
+		fontFamily = GSF_W120,
+		fontWeight = FontWeight.W600,
+		fontSize = 16.sp
 	),
 	titleSmall = TextStyle(
-		fontFamily = Rubik,
-		fontWeight = FontWeight.Medium,
-		fontSize = 14.sp,
-		lineHeight = 20.sp,
-		letterSpacing = 0.1.sp,
-	),
-	labelLarge = TextStyle(
-		fontFamily = Rubik,
-		fontWeight = FontWeight.Medium,
-		fontSize = 14.sp,
-		lineHeight = 20.sp,
-		letterSpacing = 0.1.sp,
+		fontFamily = GSF_W120,
+		fontWeight = FontWeight.W700,
+		fontSize = 14.sp
 	),
 	bodyLarge = TextStyle(
-		fontFamily = Rubik,
-		fontWeight = FontWeight.W400,
-		fontSize = 16.sp,
-		lineHeight = 24.sp,
-		letterSpacing = 0.5.sp,
+		fontFamily = GSF_W109,
+		fontWeight = FontWeight.W600,
+		fontSize = 15.sp
 	),
 	bodyMedium = TextStyle(
-		fontFamily = Rubik,
-		fontWeight = FontWeight.W400,
-		fontSize = 15.sp,
-		lineHeight = 18.sp,
-		letterSpacing = 0.25.sp,
+		fontFamily = GSF_W109,
+		fontWeight = FontWeight.W600,
+		fontSize = 14.sp
 	),
 	bodySmall = TextStyle(
-		fontFamily = Rubik,
-		fontWeight = FontWeight.W400,
-		fontSize = 12.sp,
-		lineHeight = 16.sp,
-		letterSpacing = 0.4.sp,
+		fontFamily = GSF_W105,
+		fontWeight = FontWeight(440),
+		fontSize = 12.sp
+	),
+	labelLarge = TextStyle(
+		fontFamily = GSF_W120,
+		fontWeight = FontWeight.W700,
+		fontSize = 13.sp
 	),
 	labelMedium = TextStyle(
-		fontFamily = Rubik,
-		fontWeight = FontWeight.Medium,
-		fontSize = 12.sp,
-		lineHeight = 16.sp,
-		letterSpacing = 0.5.sp,
+		fontFamily = GSF_W109,
+		fontWeight = FontWeight(550),
+		fontSize = 12.sp
 	),
 	labelSmall = TextStyle(
-		fontFamily = Rubik,
-		fontWeight = FontWeight.Medium,
-		fontSize = 12.sp,
-		lineHeight = 16.sp,
-		letterSpacing = 0.5.sp,
+		fontFamily = GSF_W109,
+		fontWeight = FontWeight.W600,
+		fontSize = 10.sp
 	),
 )

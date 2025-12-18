@@ -53,7 +53,7 @@
     <string name="ic_reddit_content_desc">Reddit</string>
     <string name="ic_chat_bubble_content_desc">Chat bubble</string>
 
-    <string name="welcome_slogan_text">A new, material and personal way to browse the frontpage of the internet.</string>
+    <string name="welcome_slogan_text">A Material-ified version of the frontpage of the internet</string>
     <string name="welcome_reddit_log_in_button">Sign in with Reddit</string>
     <string name="welcome_continue_guest_button">Continue as a guest</string>
 

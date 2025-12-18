@@ -52,7 +52,7 @@ fun SettingsView(navController: NavController) {
         ) {
             Scaffold(
                 topBar = {
-                    SmallTopAppBar(
+                    TopAppBar(
                         title = {
                             Text(text = stringResource(id = R.string.settings_title_bar_text))
                         },

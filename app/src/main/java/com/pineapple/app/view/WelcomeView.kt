@@ -3,6 +3,7 @@ package com.pineapple.app.view
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -31,84 +32,83 @@ fun WelcomeView(navController: NavController) {
     val context = LocalContext.current
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.surface
+        color = MaterialTheme.colorScheme.primaryContainer
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
                     .padding(horizontal = 30.dp)
-                    .statusBarsPadding(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .statusBarsPadding()
+                    .navigationBarsPadding()
+                    .fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_pineapple_transparent),
-                    contentDescription = stringResource(id = R.string.app_name),
-                    modifier = Modifier.padding(top = 30.dp),
-                    tint = MaterialTheme.colorScheme.secondary
-                )
-                Text(
-                    text = stringResource(id = R.string.app_name),
-                    style = MaterialTheme.typography.displayMedium,
-                    modifier = Modifier.padding(top = 15.dp),
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = stringResource(id = R.string.welcome_slogan_text),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(top = 15.dp),
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Button(
-                    onClick = {
-                        navController.navigate("${NavDestination.KeyProviderView}/login")
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 30.dp)
+                Column(
+                    modifier = Modifier.padding(top = 60.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_reddit),
-                        contentDescription = stringResource(id = R.string.ic_reddit_content_desc),
-                        modifier = Modifier.size(24.dp)
+                        painter = painterResource(id = R.drawable.pineapple_filled),
+                        contentDescription = stringResource(id = R.string.app_name),
+                        modifier = Modifier.padding(top = 30.dp),
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Text(
-                        text = stringResource(id = R.string.welcome_reddit_log_in_button),
-                        style = MaterialTheme.typography.labelLarge,
-                        modifier = Modifier.padding(start = 15.dp)
+                        text = stringResource(id = R.string.app_name),
+                        style = MaterialTheme.typography.displayLarge,
+                        modifier = Modifier.padding(top = 15.dp),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Text(
+                        text = stringResource(id = R.string.welcome_slogan_text),
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(top = 15.dp),
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
-                OutlinedButton(
-                    onClick = {
-                        context.getPreferences().edit(commit = true) {
-                            putBoolean("USER_GUEST", true)
-                        }
-                        navController.navigate("${NavDestination.KeyProviderView}/guest")
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8F)
-                    )
+                Column(
+                    modifier = Modifier.padding(bottom = 30.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_person),
-                        contentDescription = stringResource(id = R.string.ic_person_content_desc)
-                    )
-                    Text(
-                        text = stringResource(id = R.string.welcome_continue_guest_button),
-                        style = MaterialTheme.typography.labelLarge,
-                        modifier = Modifier.padding(start = 15.dp)
-                    )
+                    Button(
+                        onClick = {
+                            navController.navigate("${NavDestination.KeyProviderView}/login")
+                        },
+                        modifier = Modifier
+                            .padding(top = 30.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            contentColor = MaterialTheme.colorScheme.primaryContainer
+                        )
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.welcome_reddit_log_in_button),
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(15.dp)
+                        )
+                    }
+                    OutlinedButton(
+                        onClick = {
+                            context.getPreferences().edit(commit = true) {
+                                putBoolean("USER_GUEST", true)
+                            }
+                            navController.navigate("${NavDestination.KeyProviderView}/guest")
+                        },
+                        modifier = Modifier.padding(top = 10.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8F)
+                        )
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.welcome_continue_guest_button),
+                            style = MaterialTheme.typography.labelLarge,
+                            modifier = Modifier.padding(5.dp)
+                        )
+                    }
                 }
-            }
-            Column(modifier = Modifier.align(Alignment.BottomEnd)) {
-                Icon(
-                    painter = painterResource(id = R.drawable.leaves_transparent),
-                    contentDescription = stringResource(id = R.string.ic_leaves_transparent_content_desc),
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    tint = MaterialTheme.colorScheme.secondary
-                )
             }
         }
     }
