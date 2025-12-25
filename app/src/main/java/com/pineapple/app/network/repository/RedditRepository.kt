@@ -18,6 +18,10 @@ import javax.inject.Singleton
 import com.google.gson.JsonElement
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import com.pineapple.app.network.model.reddit.Listing
+import com.google.gson.JsonObject
 
 
 @Singleton
@@ -31,6 +35,7 @@ class RedditRepository @Inject constructor(
     private val postDao = db.postDao()
     private val userDao = db.userDao()
     private val commentDao = db.commentDao()
+    private val gson = Gson()
 
     fun observePostWithUser(postId: String): Flow<PostWithUser?> =
         postDao.getPostWithUserFlow("t3_$postId")
@@ -71,13 +76,18 @@ class RedditRepository @Inject constructor(
                         val d = item.data
                         val thisFull = "t1_${d.id}"
                         // Process nested replies if present
+                        var replyChildren: List<CommentPreData> = emptyList()
                         d.replies?.let { je ->
                             if (je.isJsonObject) {
-                                val obj = je.asJsonObject
-                                val data = obj.getAsJsonObject("data")
-                                val children = data?.getAsJsonArray("children")
-                                children?.forEach { el ->
-                                    traverseAndCollect(el, thisFull)
+                                try {
+                                    val type = object : TypeToken<Listing<CommentPreData>>() {}.type
+                                    val listing = gson.fromJson<Listing<CommentPreData>>(je, type)
+                                    replyChildren = listing.data.children
+                                    replyChildren.forEach {
+                                        traverseAndCollect(it, thisFull)
+                                    }
+                                } catch (e: Exception) {
+                                    // ignore
                                 }
                             }
                         }
@@ -89,6 +99,15 @@ class RedditRepository @Inject constructor(
                         val thisFull = "t1_$id"
                         val parentIdRaw = data["parent_id"] as? String
                         val parentFull = parentIdRaw
+                        
+                        // Parse replies to calculate count
+                        var replyCount = 0
+                        val repliesAny = data["replies"]
+                         if (repliesAny is Map<*, *>) {
+                             val rdata = (repliesAny["data"] as? Map<*, *>)?.get("children") as? List<*>
+                             replyCount = rdata?.size ?: 0
+                         }
+                        
                         // if the parent matches the target comment's fullname (t1_$commentId), collect this as a reply
                         if (parentFull == "t1_$commentId") {
                             val author = data["author"] as? String
@@ -111,6 +130,7 @@ class RedditRepository @Inject constructor(
                                     ups = ups,
                                     sortKey = sortKey,
                                     depth = 1,
+                                    replyCount = replyCount,
                                     createdUtc = created,
                                     saved = saved,
                                     likes = likes,
@@ -120,7 +140,6 @@ class RedditRepository @Inject constructor(
                         }
 
                         // traverse nested replies if present
-                        val repliesAny = data["replies"]
                         if (repliesAny is Map<*, *>) {
                             val rdata = (repliesAny["data"] as? Map<*, *>)?.get("children") as? List<*>
                             rdata?.forEach { traverseAndCollect(it, thisFull) }
@@ -132,6 +151,16 @@ class RedditRepository @Inject constructor(
                             val dataObj = obj.getAsJsonObject("data")
                             val id = dataObj.get("id")?.asString ?: return
                             val parentRaw = dataObj.get("parent_id")?.asString
+                            
+                            var replyCount = 0
+                            val repliesElement = dataObj.get("replies")
+                            if (repliesElement != null && repliesElement.isJsonObject) {
+                                 val repliesObj = repliesElement.asJsonObject
+                                 val repliesData = repliesObj.getAsJsonObject("data")
+                                 val repliesChildren = repliesData?.getAsJsonArray("children")
+                                 replyCount = repliesChildren?.size() ?: 0
+                            }
+                            
                             if (parentRaw == "t1_$commentId") {
                                 val author = dataObj.get("author")?.asString
                                 val body = dataObj.get("body")?.asString
@@ -153,6 +182,7 @@ class RedditRepository @Inject constructor(
                                         ups = ups,
                                         sortKey = sortKey,
                                         depth = 1,
+                                        replyCount = replyCount,
                                         createdUtc = created,
                                         saved = saved,
                                         likes = likes,
@@ -451,6 +481,22 @@ class RedditRepository @Inject constructor(
                             val likes = d.likes
                             val permalink = d.permalink
                             val sortKey = counter++
+                            
+                            // Parse replies to calculate count
+                            var replyCount = 0
+                            d.replies?.let { je ->
+                                if (je.isJsonObject) {
+                                    try {
+                                        val type = object : TypeToken<Listing<CommentPreData>>() {}.type
+                                        val listing = gson.fromJson<Listing<CommentPreData>>(je, type)
+                                        val replyChildren = listing.data.children
+                                        replyCount = replyChildren.count { it.kind == "t1" }
+                                    } catch (e: Exception) {
+                                        // ignore
+                                    }
+                                }
+                            }
+                            
                             out.add(
                                 CommentEntity(
                                     id = "t1_$id",
@@ -462,6 +508,7 @@ class RedditRepository @Inject constructor(
                                     ups = ups,
                                     sortKey = sortKey,
                                     depth = 0,
+                                    replyCount = replyCount,
                                     createdUtc = created,
                                     saved = saved,
                                     likes = likes,
@@ -484,6 +531,22 @@ class RedditRepository @Inject constructor(
                         val likes = d.likes
                         val permalink = d.permalink
                         val sortKey = counter++
+                        
+                        // Parse replies to calculate count
+                        var replyCount = 0
+                        d.replies?.let { je ->
+                            if (je.isJsonObject) {
+                                try {
+                                    val type = object : TypeToken<Listing<CommentPreData>>() {}.type
+                                    val listing = gson.fromJson<Listing<CommentPreData>>(je, type)
+                                    val replyChildren = listing.data.children
+                                    replyCount = replyChildren.count { it.kind == "t1" }
+                                } catch (e: Exception) {
+                                    // ignore
+                                }
+                            }
+                        }
+
                         out.add(
                             CommentEntity(
                                 id = "t1_$id",
@@ -495,6 +558,7 @@ class RedditRepository @Inject constructor(
                                 ups = ups,
                                 sortKey = sortKey,
                                 depth = 0,
+                                replyCount = replyCount,
                                 createdUtc = created,
                                 saved = saved,
                                 likes = likes,
@@ -516,6 +580,15 @@ class RedditRepository @Inject constructor(
                         val likes = data["likes"] as? Boolean
                         val permalink = data["permalink"] as? String
                         val sortKey = counter++
+                        
+                        // Parse replies to calculate count
+                        var replyCount = 0
+                        val repliesAny = data["replies"]
+                         if (repliesAny is Map<*, *>) {
+                             val rdata = (repliesAny["data"] as? Map<*, *>)?.get("children") as? List<*>
+                             replyCount = rdata?.size ?: 0
+                         }
+
                         out.add(
                             CommentEntity(
                                 id = "t1_$id",
@@ -527,6 +600,7 @@ class RedditRepository @Inject constructor(
                                 ups = ups,
                                 sortKey = sortKey,
                                 depth = 0,
+                                replyCount = replyCount,
                                 createdUtc = created,
                                 saved = saved,
                                 likes = likes,

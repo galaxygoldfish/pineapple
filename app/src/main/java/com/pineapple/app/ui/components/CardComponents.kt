@@ -38,6 +38,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -318,24 +319,26 @@ fun CommentCard(
             val requiredPx = with(density) { (40.dp + 5.dp + 40.dp).toPx().toInt() }
 
             Box(modifier = Modifier.weight(1f, false)) {
-                Card(
-                    modifier = Modifier.clip(MaterialTheme.shapes.medium)
-                        .combinedClickable(
-                            enabled = true,
-                            onClick = { },
-                            onLongClick = onMoreClick
-                        ).onSizeChanged { cardHeightPx = it.height },
-                    shape = MaterialTheme.shapes.medium,
-                    colors = CardDefaults.cardColors(
-                        containerColor = containerColor
-                    )
-                ) {
-                    Text(
-                        text = commentWithUser?.comment?.body.toString()
-                            .trimIndent().trimStart(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(10.dp)
-                    )
+                Column {
+                    Card(
+                        modifier = Modifier.clip(MaterialTheme.shapes.medium)
+                            .combinedClickable(
+                                enabled = true,
+                                onClick = { },
+                                onLongClick = onMoreClick
+                            ).onSizeChanged { cardHeightPx = it.height },
+                        shape = MaterialTheme.shapes.medium,
+                        colors = CardDefaults.cardColors(
+                            containerColor = containerColor
+                        )
+                    ) {
+                        Text(
+                            text = commentWithUser?.comment?.body.toString()
+                                .trimIndent().trimStart(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(10.dp)
+                        )
+                    }
                 }
             }
 

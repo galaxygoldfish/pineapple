@@ -1,11 +1,13 @@
 package com.pineapple.app.network.paging
 
-// minimal mediator for comments
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadType
 import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
 import androidx.room.withTransaction
+import com.google.gson.Gson
+import com.google.gson.JsonObject
+import com.google.gson.reflect.TypeToken
 import com.pineapple.app.network.api.RedditApi
 import com.pineapple.app.network.caching.AppDatabase
 import com.pineapple.app.network.caching.entity.CommentEntity
@@ -13,6 +15,7 @@ import com.pineapple.app.network.caching.entity.UserEntity
 import com.pineapple.app.network.model.cache.CommentWithUser
 import com.pineapple.app.network.model.reddit.CommentPreData
 import com.pineapple.app.network.model.reddit.Listing
+import java.util.concurrent.atomic.AtomicInteger
 
 @OptIn(ExperimentalPagingApi::class)
 class CommentsRemoteMediator(
@@ -20,6 +23,8 @@ class CommentsRemoteMediator(
     private val db: AppDatabase,
     private val postId: String
 ) : RemoteMediator<Int, CommentWithUser>() {
+
+    private val gson = Gson()
 
     override suspend fun load(loadType: LoadType, state: PagingState<Int, CommentWithUser>): MediatorResult {
         return try {
@@ -30,127 +35,20 @@ class CommentsRemoteMediator(
 
             val response = redditApi.fetchCommentsByPostId(postId)
 
-            // defensively obtain children list from second element
-            val commentChildren = run {
-                val second = response.getOrNull(1)
-                when (second) {
-                    is Listing<*> -> (second.data.children as? List<*>) ?: emptyList()
-                    is Map<*, *> -> ((second["data"] as? Map<*, *>)?.get("children") as? List<*>) ?: emptyList()
-                    else -> emptyList<Any>()
-                }
-            }
+            // The first listing is the post itself (t3), the second is the comments (t1)
+            val commentsListing = response.getOrNull(1) 
+                ?: return MediatorResult.Success(endOfPaginationReached = true)
+            
+            // We expect the second item to be a Listing<CommentPreData>
+            val children = commentsListing.data.children
 
             val startIndex = db.commentDao().maxSortKeyForPost(postId)?.plus(1) ?: 0
+            val sortKeyCounter = AtomicInteger(startIndex)
 
             val out = mutableListOf<CommentEntity>()
-            var counter = startIndex
-
-            // parse either direct CommentPreData or Map or Listing children
-            commentChildren.forEach { itemAny ->
-                when (itemAny) {
-                    is CommentPreData -> {
-                        if (itemAny.kind != "t1") return@forEach
-                        val d = itemAny.data
-                        val id = d.id.ifEmpty { return@forEach }
-                        val author = d.author
-                        val body = d.body
-                        val bodyHtml = d.body_html
-                        val ups = try { d.ups?.toInt() ?: 0 } catch (_: Throwable) { 0 }
-                        val created = d.created_utc?.toLong()
-                        val saved = d.saved
-                        val likes = d.likes
-                        val permalink = d.permalink
-                        val sortKey = counter++
-                        out.add(
-                            CommentEntity(
-                                id = "t1_$id",
-                                postId = postId,
-                                parentId = null,
-                                author = author,
-                                body = body,
-                                bodyHtml = bodyHtml,
-                                ups = ups,
-                                sortKey = sortKey,
-                                depth = 0,
-                                createdUtc = created,
-                                saved = saved,
-                                likes = likes,
-                                permalink = permalink
-                            )
-                        )
-                    }
-                    is Listing<*> -> {
-                        val inner = itemAny.data.children
-                        inner.forEach { cpAny ->
-                            val cp = cpAny as? CommentPreData ?: return@forEach
-                            if (cp.kind != "t1") return@forEach
-                            val d = cp.data
-                            val id = d.id.ifEmpty { return@forEach }
-                            val author = d.author
-                            val body = d.body
-                            val bodyHtml = d.body_html
-                            val ups = try { d.ups?.toInt() ?: 0 } catch (_: Throwable) { 0 }
-                            val created = d.created_utc?.toLong()
-                            val saved = d.saved
-                            val likes = d.likes
-                            val permalink = d.permalink
-                            val sortKey = counter++
-                            out.add(
-                                CommentEntity(
-                                    id = "t1_$id",
-                                    postId = postId,
-                                    parentId = null,
-                                    author = author,
-                                    body = body,
-                                    bodyHtml = bodyHtml,
-                                    ups = ups,
-                                    sortKey = sortKey,
-                                    depth = 0,
-                                    createdUtc = created,
-                                    saved = saved,
-                                    likes = likes,
-                                    permalink = permalink
-                                )
-                            )
-                        }
-                    }
-                    is Map<*, *> -> {
-                        val kind = itemAny["kind"] as? String
-                        val data = itemAny["data"] as? Map<*, *>
-                        if (kind != "t1" || data == null) return@forEach
-                        val id = data["id"] as? String ?: return@forEach
-                        val author = data["author"] as? String
-                        val body = data["body"] as? String
-                        val bodyHtml = data["body_html"] as? String ?: ""
-                        val ups = try { ((data["ups"] as? Number)?.toLong() ?: 0L).toInt() } catch (_: Throwable) { 0 }
-                        val created = (data["created_utc"] as? Number)?.toLong()
-                        val saved = data["saved"] as? Boolean
-                        val likes = data["likes"] as? Boolean
-                        val permalink = data["permalink"] as? String
-                        val sortKey = counter++
-                        out.add(
-                            CommentEntity(
-                                id = "t1_$id",
-                                postId = postId,
-                                parentId = null,
-                                author = author,
-                                body = body,
-                                bodyHtml = bodyHtml,
-                                ups = ups,
-                                sortKey = sortKey,
-                                depth = 0,
-                                createdUtc = created,
-                                saved = saved,
-                                likes = likes,
-                                permalink = permalink
-                            )
-                        )
-                    }
-                    else -> {
-                        // unknown shape - skip
-                    }
-                }
-            }
+            
+            // IMPORTANT: Start depth at 0. Root comments are Depth 0.
+            processComments(children, postId, null, 0, out, sortKeyCounter)
 
             db.withTransaction {
                 if (out.isNotEmpty()) db.commentDao().upsertAll(out)
@@ -162,15 +60,80 @@ class CommentsRemoteMediator(
                 if (missing.isNotEmpty()) {
                     val placeholders = missing.map { name -> UserEntity(name = name, iconUrl = "", snoovatarUrl = "") }
                     db.userDao().insertAll(placeholders)
-
-                    // NOTE: On-demand fetching model: do NOT prefetch user profiles here.
-                    // Avatars and full user info should be fetched by the UI when the user row becomes visible.
                 }
             }
 
             MediatorResult.Success(endOfPaginationReached = true)
-        } catch (_: Exception) {
-            MediatorResult.Error(Exception("comments load failed"))
+        } catch (e: Exception) {
+            MediatorResult.Error(e)
+        }
+    }
+
+    private fun processComments(
+        children: List<CommentPreData>,
+        postId: String,
+        parentId: String?,
+        depth: Int,
+        out: MutableList<CommentEntity>,
+        sortKeyCounter: AtomicInteger
+    ) {
+        for (child in children) {
+            if (child.kind == "t1") {
+                val d = child.data
+                val id = d.id
+                if (id.isEmpty()) continue
+                
+                val entityId = "t1_$id"
+                val author = d.author
+                val body = d.body
+                val bodyHtml = d.body_html
+                val ups = try { d.ups?.toInt() ?: 0 } catch (_: Throwable) { 0 }
+                val created = d.created_utc?.toLong()
+                val saved = d.saved
+                val likes = d.likes
+                val permalink = d.permalink
+                val sortKey = sortKeyCounter.getAndIncrement()
+
+                // Parse replies to calculate count and recurse
+                var replyChildren: List<CommentPreData> = emptyList()
+                d.replies?.let { repliesElement ->
+                    if (repliesElement is JsonObject) {
+                        try {
+                            val type = object : TypeToken<Listing<CommentPreData>>() {}.type
+                            val listing = gson.fromJson<Listing<CommentPreData>>(repliesElement, type)
+                            replyChildren = listing.data.children
+                        } catch (e: Exception) {
+                            // Ignore parsing errors for replies
+                        }
+                    }
+                }
+                
+                val replyCount = replyChildren.count { it.kind == "t1" }
+
+                out.add(
+                    CommentEntity(
+                        id = entityId,
+                        postId = postId,
+                        parentId = parentId,
+                        author = author,
+                        body = body,
+                        bodyHtml = bodyHtml,
+                        ups = ups,
+                        sortKey = sortKey,
+                        depth = depth,
+                        replyCount = replyCount,
+                        createdUtc = created,
+                        saved = saved,
+                        likes = likes,
+                        permalink = permalink
+                    )
+                )
+
+                if (replyChildren.isNotEmpty()) {
+                    // Recurse: Ensure we increment depth
+                    processComments(replyChildren, postId, entityId, depth + 1, out, sortKeyCounter)
+                }
+            }
         }
     }
 }

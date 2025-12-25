@@ -14,6 +14,7 @@ data class CommentEntity(
     val ups: Int?,
     val sortKey: Int,
     val depth: Int = 0,
+    val replyCount: Int = 0,
     val createdUtc: Long? = null,
     val saved: Boolean? = null,
     val likes: Boolean? = null,
