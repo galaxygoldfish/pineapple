@@ -1,0 +1,88 @@
+<resources>
+
+    <!-- Content descriptions -->
+    <string name="ic_pineapple_logo_cdesc">Pineapple</string>
+    <string name="ic_back_cdesc">Back</string>
+    <string name="ic_reddit_cdesc">Reddit</string>
+    <string name="ic_help_cdesc">Help</string>
+    <string name="ic_forward_cdesc">Forward</string>
+    <string name="ic_filter_cdesc">Filter</string>
+    <string name="ic_menu_cdesc">Menu</string>
+    <string name="ic_more_vert_cdesc">More</string>
+    <string name="ic_upvote_cdesc">Upvote</string>
+    <string name="ic_downvote_cdesc">Downvote</string>
+    <string name="ic_bookmark_cdesc">Save</string>
+    <string name="ic_share_cdesc">Share</string>
+    <string name="ic_flag_cdesc">Flag</string>
+    <string name="ic_person_cdesc">Person</string>
+    <string name="ic_open_external_cdesc">Open</string>
+    <string name="ic_community_cdesc">Community</string>
+    <string name="ic_check_cdesc">Check</string>
+    <string name="ic_angry_cdesc">Angry</string>
+    <string name="ic_arrow_up_cdesc">Up</string>
+    <string name="ic_fire_cdesc">Fire</string>
+    <string name="ic_trending_cdesc">Trending</string>
+    <string name="ic_shine_cdesc">Shine</string>
+    <string name="ic_week_cdesc">Week</string>
+    <string name="ic_calendar_month_cdesc">Month</string>
+    <string name="ic_calendar_day_cdesc">Day</string>
+    <string name="ic_history_cdesc">History</string>
+    <string name="ic_hourglass_cdesc">Hourglass</string>
+    <string name="ic_browse_cdesc">Browse</string>
+    <string name="ic_search_cdesc">Search</string>
+    <string name="ic_chats_cdesc">Chats</string>
+    <string name="ic_plus_cdesc">Plus</string>
+    <string name="ic_settings_cdesc">Settings</string>
+    <string name="ic_close_cdesc">Close</string>
+    <string name="ic_copy_cdesc">Copy</string>
+
+    <!-- Welcome view -->
+    <string name="welcome_app_name">Pineapple</string>
+    <string name="welcome_slogan_text">A Material version of the frontpage of the internet</string>
+    <string name="welcome_sign_in_button">Sign in with Reddit</string>
+    <string name="welcome_continue_as_guest_button">Continue as guest</string>
+
+    <!-- Key provider view -->
+    <string name="provide_key_title_text">First, we\'ll need your client ID</string>
+    <string name="provide_key_subtitle_text">In order to keep this app free, each user must supply their own Reddit API client ID</string>
+    <string name="provide_key_entry_hint">Client secret</string>
+    <string name="provide_key_dev_button">Reddit Developer Dashboard</string>
+    <string name="provide_key_what_button">What\'s this?</string>
+    <string name="provide_key_entry_invalid">Invalid client secret!</string>
+
+    <!-- Home view -->
+    <string name="home_title">Home</string>
+    <string name="home_snackbar_auth_text">You must log in to perform this action</string>
+    <string name="home_snackbar_auth_login">Log in</string>
+    <string name="home_nav_home">Browse</string>
+    <string name="home_nav_search">Search</string>
+    <string name="home_nav_chats">Chats</string>
+    <string name="home_nav_account">Account</string>
+    <string name="home_drawer_settings">Settings</string>
+    <string name="home_drawer_communities">My communities</string>
+    <string name="home_drawer_communities_uless">Popular communities</string>
+    
+    <!-- Search view -->
+    <string name="search_placeholder">Search</string>
+    <string name="search_users">Users</string>
+    <string name="search_communities">Communities</string>
+    <string name="search_posts">Posts</string>
+
+    <!-- Post view -->
+    <string name="post_copied_comment">Copied comment</string>
+
+    <!-- Sort post sheet -->
+    <string name="sort_sheet_sort_header">Sort posts by</string>
+    <string name="sort_sheet_time_header">Time range</string>
+    <string name="sort_sheet_hot">Hot</string>
+    <string name="sort_sheet_new">New</string>
+    <string name="sort_sheet_rising">Rising</string>
+    <string name="sort_sheet_controversial">Controversial</string>
+    <string name="sort_sheet_top">Top</string>
+    <string name="sort_sheet_day">Day</string>
+    <string name="sort_sheet_week">Week</string>
+    <string name="sort_sheet_month">Month</string>
+    <string name="sort_sheet_year">Year</string>
+    <string name="sort_sheet_all">All time</string>
+
+</resources>

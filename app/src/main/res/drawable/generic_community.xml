@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Fallback community icon that reuses ic_community -->
+    <item>
+        <bitmap android:src="@drawable/ic_community" android:gravity="center" />
+    </item>
+</layer-list>
+
