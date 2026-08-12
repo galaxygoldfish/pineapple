@@ -38,4 +38,8 @@ interface CommentDao {
     @Query("SELECT COUNT(*) FROM comments WHERE parentId = :parentId")
     suspend fun countRepliesForComment(parentId: String): Int
 
+    @Transaction
+    @Query("SELECT * FROM comments WHERE author = :username ORDER BY createdUtc DESC")
+    fun pagingSourceForUser(username: String): PagingSource<Int, CommentWithUser>
+
 }

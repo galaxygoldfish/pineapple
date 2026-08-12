@@ -49,6 +49,7 @@ import com.pineapple.app.network.model.reddit.UserAboutListing
 import com.pineapple.app.ui.theme.FullCornerRadius
 import com.pineapple.app.ui.theme.MediumCornerRadius
 import com.pineapple.app.utilities.convertUnixToRelativeTime
+import com.pineapple.app.utilities.getBestUserImage
 import com.pineapple.app.utilities.prettyNumber
 
 /**
@@ -111,7 +112,7 @@ fun PostCard(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 userInfo?.let {
                     AsyncImage(
-                        model = it.data.snoovatar_img?.ifBlank { null } ?: it.data.icon_img,
+                        model = getBestUserImage(it.data.snoovatar_img, it.data.icon_img),
                         contentDescription = null,
                         modifier = Modifier.clip(CircleShape)
                             .size(35.dp)
@@ -269,10 +270,8 @@ fun CommentCard(
         Row {
             commentWithUser?.user?.let {
                 AsyncImage(
-                    model = it.snoovatarUrl?.ifBlank { null }
-                        ?: it.iconUrl,
+                    model = getBestUserImage(it.snoovatarUrl, it.iconUrl),
                     contentDescription = null,
-                    placeholder = painterResource(R.drawable.generic_avatar),
                     modifier = Modifier
                         .clip(CircleShape)
                         .size(17.dp)

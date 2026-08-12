@@ -22,6 +22,10 @@ interface PostDao {
     @Query("SELECT * FROM posts WHERE id IN (SELECT postId FROM search_results WHERE query = :q) ORDER BY (SELECT sortKey FROM search_results WHERE query = :q AND postId = posts.id) ASC")
     fun pagingSourceForSearchQuery(q: String): PagingSource<Int, PostWithUser>
 
+    @Transaction
+    @Query("SELECT * FROM posts WHERE author = :username ORDER BY createdUtc DESC")
+    fun pagingSourceForUser(username: String): PagingSource<Int, PostWithUser>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(posts: List<PostEntity>)
 

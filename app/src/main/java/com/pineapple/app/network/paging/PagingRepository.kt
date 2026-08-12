@@ -68,4 +68,34 @@ class PagingRepository @Inject constructor(
              pagingSourceFactory = { db.commentDao().pagingSourceForPost(postId) }
          )
      }
+
+    fun userPostsPager(username: String): Pager<Int, PostWithUser> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 25,
+                enablePlaceholders = false
+            ),
+            remoteMediator = UserPostsRemoteMediator(
+                redditApi = redditApi,
+                db = db,
+                username = username
+            ),
+            pagingSourceFactory = { db.postDao().pagingSourceForUser(username) }
+        )
+    }
+
+    fun userCommentsPager(username: String): Pager<Int, CommentWithUser> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 25,
+                enablePlaceholders = false
+            ),
+            remoteMediator = UserCommentsRemoteMediator(
+                redditApi = redditApi,
+                db = db,
+                username = username
+            ),
+            pagingSourceFactory = { db.commentDao().pagingSourceForUser(username) }
+        )
+    }
 }

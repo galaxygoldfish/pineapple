@@ -18,5 +18,6 @@ data class CommentEntity(
     val createdUtc: Long? = null,
     val saved: Boolean? = null,
     val likes: Boolean? = null,
-    val permalink: String? = null
+    val permalink: String? = null,
+    val linkTitle: String? = null
 )

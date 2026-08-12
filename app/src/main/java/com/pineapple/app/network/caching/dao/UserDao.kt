@@ -11,6 +11,9 @@ interface UserDao {
     @Query("SELECT * FROM users WHERE name = :name")
     suspend fun getUser(name: String): UserEntity?
 
+    @Query("SELECT * FROM users WHERE name = :name")
+    fun getUserFlow(name: String): kotlinx.coroutines.flow.Flow<UserEntity?>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(users: List<UserEntity>)
 }

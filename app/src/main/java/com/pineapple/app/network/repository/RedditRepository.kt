@@ -289,8 +289,10 @@ class RedditRepository @Inject constructor(
             val about = userAbout.data
             val userEntity = UserEntity(
                 name = about.name ?: authorName,
+                displayName = about.subreddit?.display_name,
                 iconUrl = about.icon_img ?: "",
-                snoovatarUrl = about.snoovatar_img ?: ""
+                snoovatarUrl = about.snoovatar_img ?: "",
+                createdUtc = about.created_utc
             )
             userDao.insertAll(listOf(userEntity))
         }
@@ -645,23 +647,30 @@ class RedditRepository @Inject constructor(
      */
     suspend fun fetchAndCacheUser(username: String) {
         if (username.isBlank()) return
-        // if user already exists and has an icon, skip
-        val existing = userDao.getUser(username)
-        if (existing != null && !existing.iconUrl.isNullOrEmpty()) return
-
+        
         try {
             val about = redditApi.fetchUserInfo(username)
             val u = about.data
             val userEntity = UserEntity(
                 name = u.name ?: username,
+                displayName = u.subreddit?.display_name,
                 iconUrl = u.icon_img ?: "",
-                snoovatarUrl = u.snoovatar_img ?: ""
+                snoovatarUrl = u.snoovatar_img ?: "",
+                totalKarma = u.total_karma,
+                linkKarma = u.link_karma,
+                commentKarma = u.comment_karma,
+                awardeeKarma = u.awardee_karma,
+                awarderKarma = u.awarder_karma,
+                createdUtc = u.created_utc
             )
             userDao.insertAll(listOf(userEntity))
         } catch (_: Exception) {
             // minimal: ignore failures; UI can retry or show placeholder
         }
     }
+
+    fun observeUser(username: String): Flow<UserEntity?> = 
+        userDao.getUserFlow(username)
 
     fun observeRepliesForComment(parentCommentFullId: String) =
         commentDao.getRepliesForCommentFlow(parentCommentFullId)

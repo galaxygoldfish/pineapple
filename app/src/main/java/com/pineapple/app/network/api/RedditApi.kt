@@ -189,6 +189,44 @@ interface RedditApi {
     ): List<Listing<CommentPreData>>
 
 
+    /**
+     * Fetch posts submitted by a specific user
+     * @param user The username of the user
+     * @param sort The sorting method (new, hot, top, etc.)
+     * @param time The time filter (all, year, month, etc.)
+     * @param after Pagination token
+     * @param rawJson Whether to get raw JSON (1) or not (0)
+     * @param limit Number of results to fetch
+     */
+    @GET("/user/{user}/submitted")
+    suspend fun fetchUserPosts(
+        @Path("user") user: String,
+        @Query("sort") sort: String = "new",
+        @Query("t") time: String = "all",
+        @Query("after") after: String? = null,
+        @Query("raw_json") rawJson: Int = 1,
+        @Query("limit") limit: Int = 25
+    ): PostListing
+
+    /**
+     * Fetch comments submitted by a specific user
+     * @param user The username of the user
+     * @param sort The sorting method (new, hot, top, etc.)
+     * @param time The time filter (all, year, month, etc.)
+     * @param after Pagination token
+     * @param rawJson Whether to get raw JSON (1) or not (0)
+     * @param limit Number of results to fetch
+     */
+    @GET("/user/{user}/comments")
+    suspend fun fetchUserComments(
+        @Path("user") user: String,
+        @Query("sort") sort: String = "new",
+        @Query("t") time: String = "all",
+        @Query("after") after: String? = null,
+        @Query("raw_json") rawJson: Int = 1,
+        @Query("limit") limit: Int = 25
+    ): Listing<CommentPreData>
+
 }
 
 /**

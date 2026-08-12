@@ -3,7 +3,7 @@ package com.pineapple.app.network.model.reddit
 import com.google.gson.JsonElement
 
 data class CommentPreData(
-    var kind: String,
+    var kind: String?,
     var data: CommentData
 )
 
@@ -18,7 +18,9 @@ data class CommentData(
     var replies: JsonElement? = null,
     var created_utc: Double? = null,
     var saved: Boolean? = null,
-    var likes: Boolean? = null
+    var likes: Boolean? = null,
+    var link_title: String? = null,
+    var link_id: String? = null
 )
 
 data class CommentDataNull(
