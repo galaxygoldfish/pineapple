@@ -154,4 +154,22 @@ class RedditAuthRepository @Inject constructor(
      */
     fun authorizationHeaderOrNull(): String? =
         _accessToken?.let { "$_tokenType $it" }
+
+    /**
+     * Clear all stored tokens and auth state, returning the app to a signed-out guest state.
+     */
+    fun logout() {
+        _accessToken = null
+        _refreshToken = null
+        _storedClientId = null
+        mmkv.removeValueForKey(MMKVKey.ACCESS_TOKEN)
+        mmkv.removeValueForKey(MMKVKey.REFRESH_TOKEN)
+        mmkv.removeValueForKey(MMKVKey.TOKEN_EXPIRES)
+        mmkv.removeValueForKey(MMKVKey.CLIENT_ID)
+        mmkv.removeValueForKey(MMKVKey.TOKEN_TYPE)
+        mmkv.removeValueForKey(MMKVKey.API_LOGIN_AUTH_CODE)
+        mmkv.removeValueForKey(MMKVKey.CURRENT_USERNAME)
+        mmkv.encode(MMKVKey.USER_GUEST, true)
+        mmkv.encode(MMKVKey.ONBOARDING_COMPLETE, false)
+    }
 }

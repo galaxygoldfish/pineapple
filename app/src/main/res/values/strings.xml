@@ -35,6 +35,7 @@
     <string name="ic_settings_cdesc">Settings</string>
     <string name="ic_close_cdesc">Close</string>
     <string name="ic_copy_cdesc">Copy</string>
+    <string name="ic_logout_cdesc">Log out</string>
 
     <!-- Welcome view -->
     <string name="welcome_app_name">Pineapple</string>
@@ -84,5 +85,17 @@
     <string name="sort_sheet_month">Month</string>
     <string name="sort_sheet_year">Year</string>
     <string name="sort_sheet_all">All time</string>
+
+    <!-- Account view -->
+    <string name="account_logged_out_title">Logged out</string>
+    <string name="account_sign_in_button">Sign in with Reddit</string>
+    <string name="account_karma_joined">Joined %1$s · %2$d karma</string>
+    <string name="account_view_profile">View profile</string>
+    <string name="account_settings">Settings</string>
+    <string name="account_logout">Log out</string>
+    <string name="account_logout_confirm_title">Log out?</string>
+    <string name="account_logout_confirm_message">You\'ll need to sign in again to vote, comment, and access your account</string>
+    <string name="account_logout_confirm_button">Log out</string>
+    <string name="account_cancel_button">Cancel</string>
 
 </resources>

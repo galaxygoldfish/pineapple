@@ -669,8 +669,35 @@ class RedditRepository @Inject constructor(
         }
     }
 
-    fun observeUser(username: String): Flow<UserEntity?> = 
+    fun observeUser(username: String): Flow<UserEntity?> =
         userDao.getUserFlow(username)
+
+    /**
+     * Fetch the currently authenticated user's own profile info and cache it locally.
+     * @return The username that was fetched and cached, or null if the request failed.
+     */
+    suspend fun fetchAndCacheMe(): String? {
+        return try {
+            val u = redditApi.fetchMe()
+            val username = u.name ?: return null
+            val userEntity = UserEntity(
+                name = username,
+                displayName = u.subreddit?.display_name,
+                iconUrl = u.icon_img ?: "",
+                snoovatarUrl = u.snoovatar_img ?: "",
+                totalKarma = u.total_karma,
+                linkKarma = u.link_karma,
+                commentKarma = u.comment_karma,
+                awardeeKarma = u.awardee_karma,
+                awarderKarma = u.awarder_karma,
+                createdUtc = u.created_utc
+            )
+            userDao.insertAll(listOf(userEntity))
+            username
+        } catch (_: Exception) {
+            null
+        }
+    }
 
     fun observeRepliesForComment(parentCommentFullId: String) =
         commentDao.getRepliesForCommentFlow(parentCommentFullId)

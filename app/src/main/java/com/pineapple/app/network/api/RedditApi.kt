@@ -8,6 +8,7 @@ import com.pineapple.app.network.model.reddit.ListingItem
 import com.pineapple.app.network.model.reddit.PostData
 import com.pineapple.app.network.model.reddit.PostListing
 import com.pineapple.app.network.model.reddit.SubredditItem
+import com.pineapple.app.network.model.reddit.UserAbout
 import com.pineapple.app.network.model.reddit.UserAboutListing
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -127,6 +128,15 @@ interface RedditApi {
         @Path("user") user: String,
         @Query("raw_json") rawJson: Int = 1
     ) : UserAboutListing
+
+    /**
+     * Fetch profile information about the currently authenticated user
+     * @return A [UserAbout] containing the logged in user's information
+     */
+    @GET("/api/v1/me")
+    suspend fun fetchMe(
+        @Query("raw_json") rawJson: Int = 1
+    ): UserAbout
 
     /**
      * Cast an upvote, downvote, or remove vote on a post or comment

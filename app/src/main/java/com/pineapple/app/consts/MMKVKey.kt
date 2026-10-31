@@ -12,4 +12,5 @@ object MMKVKey {
     const val REFRESH_TOKEN = "refresh_token"
     const val USER_GUEST = "user_guest"
     const val API_LOGIN_AUTH_CODE = "api_login_auth_code"
+    const val CURRENT_USERNAME = "current_username"
 }

@@ -371,7 +371,7 @@ fun HomeView(navController: NavController) {
                         }
                         PageDestinationKey.SEARCH -> SearchPage(navController)
                         PageDestinationKey.CHATS -> ChatPage()
-                        PageDestinationKey.ACCOUNT -> AccountPage()
+                        PageDestinationKey.ACCOUNT -> AccountPage(navController)
                     }
                 }
             }
