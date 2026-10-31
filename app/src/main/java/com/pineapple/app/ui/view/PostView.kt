@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -49,12 +50,14 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil3.compose.AsyncImage
 import com.pineapple.app.R
 import com.pineapple.app.consts.NavDestinationKey
 import com.pineapple.app.ui.components.AnimatedTonalToggleIconButton
 import com.pineapple.app.ui.components.CommentCard
+import com.pineapple.app.ui.components.CommentSkeleton
 import com.pineapple.app.ui.components.MeasuredAsyncImage
 import com.pineapple.app.ui.modal.CommentDetailSheet
 import com.pineapple.app.ui.modal.PostOptionSheet
@@ -74,6 +77,9 @@ fun PostView(navController: NavController, postID: String) {
     val postWithUser = viewModel.postState.collectAsState()
     val comments = viewModel.comments.collectAsLazyPagingItems()
     val isLoading = viewModel.isLoading.collectAsState()
+    val isLoadingComments = comments.itemCount == 0 &&
+            (comments.loadState.refresh is LoadState.Loading ||
+                    comments.loadState.mediator?.refresh is LoadState.Loading)
     val context = LocalContext.current
 
     LaunchedEffect(postID) {
@@ -368,6 +374,24 @@ fun PostView(navController: NavController, postID: String) {
                                                 )
                                             }
                                         }
+                                    }
+                                }
+
+                                if (isLoadingComments) {
+                                    val skeletonLines = listOf(
+                                        listOf(1f, 0.85f, 0.6f),
+                                        listOf(0.9f, 0.5f),
+                                        listOf(1f, 0.95f, 0.8f, 0.4f),
+                                        listOf(0.7f)
+                                    )
+                                    items(skeletonLines) { lines ->
+                                        CommentSkeleton(
+                                            lineWidthFractions = lines,
+                                            modifier = Modifier.padding(
+                                                horizontal = 15.dp,
+                                                vertical = 10.dp
+                                            )
+                                        )
                                     }
                                 }
 
