@@ -20,6 +20,7 @@ import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,9 +41,11 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.pineapple.app.R
+import com.pineapple.app.network.caching.entity.UserEntity
 import com.pineapple.app.network.model.cache.CommentWithUser
 import com.pineapple.app.network.model.reddit.PostData
 import com.pineapple.app.network.model.reddit.UserAboutListing
@@ -51,6 +54,7 @@ import com.pineapple.app.ui.theme.MediumCornerRadius
 import com.pineapple.app.utilities.convertUnixToRelativeTime
 import com.pineapple.app.utilities.getBestUserImage
 import com.pineapple.app.utilities.prettyNumber
+import com.pineapple.app.utilities.subredditName
 
 /**
  * A compact card representing a post to be used in list views
@@ -409,6 +413,202 @@ fun CommentCard(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * A roomier comment card for lists of a single user's comments. Mirrors the layout of [PostCard]:
+ * the author and community in the header, the post the comment was made on, the comment itself,
+ * and a row of actions.
+ * @param commentWithUser The comment to be displayed
+ * @param modifier The modifier to be applied to the card
+ * @param user The author, used for the avatar. Defaults to the user attached to the comment
+ * @param onClick Lambda invoked when the card is clicked
+ * @param onLongClick Lambda invoked when the card is long clicked
+ * @param onMoreClick Lambda invoked when the more button is clicked
+ * @param onUpvote Lambda invoked when the upvote button is toggled, with the new state and a
+ * callback to commit the visual change
+ * @param onDownvote Lambda invoked when the downvote button is toggled, with the new state and a
+ * callback to commit the visual change
+ */
+@Composable
+fun UserCommentCard(
+    commentWithUser: CommentWithUser,
+    modifier: Modifier = Modifier,
+    user: UserEntity? = commentWithUser.user,
+    onClick: () -> Unit = { },
+    onLongClick: () -> Unit = { },
+    onMoreClick: () -> Unit = { },
+    onUpvote: (Boolean, () -> Unit) -> Unit = { _, _ -> },
+    onDownvote: (Boolean, () -> Unit) -> Unit = { _, _ -> }
+) {
+    val comment = commentWithUser.comment
+    val context = LocalContext.current
+    val haptics = LocalHapticFeedback.current
+    var upvoteState by rememberSaveable(comment.id) { mutableStateOf(comment.likes == true) }
+    var downvoteState by rememberSaveable(comment.id) { mutableStateOf(comment.likes == false) }
+
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        ),
+        modifier = modifier
+            .clip(MaterialTheme.shapes.medium)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = {
+                    haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                    onLongClick()
+                }
+            )
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
+                AsyncImage(
+                    model = getBestUserImage(user?.snoovatarUrl, user?.iconUrl),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .size(35.dp)
+                )
+                Column(modifier = Modifier.padding(start = 10.dp)) {
+                    Text(
+                        text = "u/${comment.author ?: "[deleted]"}",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                    comment.subredditName()?.let {
+                        Text(
+                            text = "r/$it",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
+            comment.createdUtc?.let {
+                Text(
+                    text = it.convertUnixToRelativeTime(),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.outline,
+                    modifier = Modifier.padding(start = 10.dp)
+                )
+            }
+        }
+
+        comment.linkTitle?.let {
+            Text(
+                text = it,
+                style = MaterialTheme.typography.bodyLarge,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 14.dp)
+            )
+        }
+
+        Surface(
+            shape = MaterialTheme.shapes.medium,
+            color = MaterialTheme.colorScheme.surfaceContainer,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, top = 12.dp)
+        ) {
+            Text(
+                text = comment.body.orEmpty().trimIndent().trim(),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 8,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp)
+            )
+        }
+
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 13.dp, vertical = 12.dp)
+        ) {
+            Row {
+                FilledTonalIconButton(
+                    onClick = onMoreClick,
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier
+                        .padding(end = 3.dp)
+                        .width(33.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_more_vert),
+                        contentDescription = stringResource(R.string.ic_more_vert_cdesc)
+                    )
+                }
+                FilledTonalIconButton(
+                    onClick = {
+                        comment.permalink?.let { url ->
+                            val sendIntent = Intent().apply {
+                                action = Intent.ACTION_SEND
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_TEXT, "https://reddit.com$url")
+                            }
+                            context.startActivity(Intent.createChooser(sendIntent, "Share comment"))
+                        }
+                    },
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_share),
+                        contentDescription = stringResource(R.string.ic_share_cdesc)
+                    )
+                }
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                AnimatedTonalToggleIconButton(
+                    checked = downvoteState,
+                    onCheckedChange = { checked ->
+                        onDownvote(checked) {
+                            downvoteState = checked
+                            if (checked) upvoteState = false
+                        }
+                    },
+                    checkedIcon = painterResource(R.drawable.ic_downvote),
+                    uncheckedIcon = painterResource(R.drawable.ic_downvote),
+                    contentDescription = stringResource(R.string.ic_downvote_cdesc),
+                    modifier = Modifier.width(33.dp),
+                    uncheckedRadius = 30.dp,
+                    checkedRadius = MediumCornerRadius
+                )
+                comment.ups?.prettyNumber()?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.labelLarge,
+                        modifier = Modifier.padding(horizontal = 10.dp)
+                    )
+                }
+                AnimatedTonalToggleIconButton(
+                    checked = upvoteState,
+                    onCheckedChange = { checked ->
+                        onUpvote(checked) {
+                            upvoteState = checked
+                            if (checked) downvoteState = false
+                        }
+                    },
+                    checkedIcon = painterResource(R.drawable.ic_upvote),
+                    uncheckedIcon = painterResource(R.drawable.ic_upvote),
+                    contentDescription = stringResource(R.string.ic_upvote_cdesc),
+                    modifier = Modifier.width(33.dp),
+                    uncheckedRadius = 30.dp,
+                    checkedRadius = MediumCornerRadius
+                )
             }
         }
     }

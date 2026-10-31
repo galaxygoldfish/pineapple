@@ -2,6 +2,8 @@ package com.pineapple.app.ui.view
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -38,9 +40,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -57,15 +61,18 @@ import com.pineapple.app.R
 import com.pineapple.app.consts.NavDestinationKey
 import com.pineapple.app.network.model.cache.CommentWithUser
 import com.pineapple.app.network.model.reddit.PostData
-import com.pineapple.app.ui.components.CommentCard
+import com.pineapple.app.ui.components.UserCommentCard
 import com.pineapple.app.ui.components.PostCard
-import com.pineapple.app.ui.modal.CommentDetailSheet
+import com.pineapple.app.ui.modal.CommentOptionSheet
 import com.pineapple.app.ui.modal.PostOptionSheet
 import com.pineapple.app.ui.theme.PineappleTheme
 import com.pineapple.app.ui.viewmodel.UserViewModel
 import com.pineapple.app.utilities.getBestUserImage
+import com.pineapple.app.utilities.subredditName
 import com.pineapple.app.utilities.toPostData
 import com.pineapple.app.utilities.toUserAboutListing
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -76,8 +83,19 @@ import java.util.Locale
 fun UserView(navController: NavController, user: String) {
     val viewModel: UserViewModel = hiltViewModel()
     val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     var selectedIndex by remember { mutableIntStateOf(0) }
+    // The tab whose content is actually shown, which lags selectedIndex during the transition
+    var displayedIndex by remember { mutableIntStateOf(0) }
+    val contentAlpha = remember { Animatable(1f) }
+    val contentScale = remember { Animatable(1f) }
+    var tabJob by remember { mutableStateOf<Job?>(null) }
+    val tabContentModifier = Modifier.graphicsLayer {
+        alpha = contentAlpha.value
+        scaleX = contentScale.value
+        scaleY = contentScale.value
+    }
     val tabs = listOf("Posts", "Comments")
     
     var isRefreshing by remember { mutableStateOf(false) }
@@ -231,7 +249,27 @@ fun UserView(navController: NavController, user: String) {
                                 tabs.forEachIndexed { index, label ->
                                     toggleableItem(
                                         checked = selectedIndex == index,
-                                        onCheckedChange = { selectedIndex = index },
+                                        onCheckedChange = {
+                                            if (selectedIndex != index) {
+                                                selectedIndex = index
+                                                // Same transition as AnimatedContent's default (used for
+                                                // the home screen pages): fade the old content out, swap,
+                                                // then fade + scale the new content in. The scroll reset
+                                                // happens while the content is invisible.
+                                                tabJob?.cancel()
+                                                tabJob = scope.launch {
+                                                    contentAlpha.animateTo(0f, tween(90))
+                                                    displayedIndex = index
+                                                    if (listState.firstVisibleItemIndex >= 1) {
+                                                        // Stop at the tab bar (the sticky header, item 1)
+                                                        listState.scrollToItem(1)
+                                                    }
+                                                    contentScale.snapTo(0.92f)
+                                                    launch { contentScale.animateTo(1f, tween(220)) }
+                                                    contentAlpha.animateTo(1f, tween(220))
+                                                }
+                                            }
+                                        },
                                         label = label,
                                         weight = 1f
                                     )
@@ -244,7 +282,7 @@ fun UserView(navController: NavController, user: String) {
                         // Spacer
                     }
 
-                    if (tabs[selectedIndex] == "Posts") {
+                    if (tabs[displayedIndex] == "Posts") {
                         items(
                             count = postItems.itemCount,
                             key = { index -> postItems[index]?.post?.id ?: index }
@@ -254,7 +292,7 @@ fun UserView(navController: NavController, user: String) {
                             PostCard(
                                 postData = postData,
                                 userInfo = item.user?.toUserAboutListing(),
-                                modifier = Modifier
+                                modifier = tabContentModifier
                                     .padding(vertical = 5.dp, horizontal = 10.dp)
                                     .combinedClickable(
                                         onClick = {
@@ -298,55 +336,39 @@ fun UserView(navController: NavController, user: String) {
                                 }
                             )
                         }
-                    } else if (tabs[selectedIndex] == "Comments") {
+                    } else if (tabs[displayedIndex] == "Comments") {
                         items(
                             count = commentItems.itemCount,
                             key = { index -> commentItems[index]?.comment?.id ?: index }
                         ) { index ->
                             val item = commentItems[index] ?: return@items
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 10.dp, vertical = 5.dp)
-                            ) {
-                                Text(
-                                    text = item.comment.linkTitle ?: "Post",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier
-                                        .padding(start = 12.dp, bottom = 4.dp)
-                                        .clickable {
-                                            navController.navigate("${NavDestinationKey.PostView}/${item.comment.postId.removePrefix("t3_")}")
-                                        }
-                                )
-                                CommentCard(
-                                    commentWithUser = item,
-                                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                                    modifier = Modifier.combinedClickable(
-                                        onClick = {
-                                            navController.navigate("${NavDestinationKey.PostView}/${item.comment.postId.removePrefix("t3_")}")
-                                        },
-                                        onLongClick = {
-                                            selectedComment = item
-                                            showCommentOptions = true
-                                        }
-                                    ),
-                                    onMoreClick = {
-                                        selectedComment = item
-                                        showCommentOptions = true
-                                    },
-                                    onUpvote = { intention, onSuccess ->
-                                        onSuccess()
-                                        viewModel.updatePostVote(item.comment.id, if (intention) 1 else 0)
-                                    },
-                                    onDownvote = { intention, onSuccess ->
-                                        onSuccess()
-                                        viewModel.updatePostVote(item.comment.id, if (intention) -1 else 0)
-                                    }
-                                )
+                            val openPost = {
+                                navController.navigate("${NavDestinationKey.PostView}/${item.comment.postId.removePrefix("t3_")}")
                             }
+                            UserCommentCard(
+                                commentWithUser = item,
+                                user = item.user ?: userData,
+                                modifier = tabContentModifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 10.dp, vertical = 5.dp),
+                                onClick = openPost,
+                                onLongClick = {
+                                    selectedComment = item
+                                    showCommentOptions = true
+                                },
+                                onMoreClick = {
+                                    selectedComment = item
+                                    showCommentOptions = true
+                                },
+                                onUpvote = { intention, onSuccess ->
+                                    onSuccess()
+                                    viewModel.updatePostVote(item.comment.id, if (intention) 1 else 0)
+                                },
+                                onDownvote = { intention, onSuccess ->
+                                    onSuccess()
+                                    viewModel.updatePostVote(item.comment.id, if (intention) -1 else 0)
+                                }
+                            )
                         }
                     }
                 }
@@ -384,24 +406,30 @@ fun UserView(navController: NavController, user: String) {
         )
     }
     if (showCommentOptions && selectedComment != null) {
-        CommentDetailSheet(
-            commentWithUser = selectedComment!!,
+        val comment = selectedComment!!.comment
+        CommentOptionSheet(
+            comment = comment,
             onDismissRequest = { showCommentOptions = false },
-            onUpvote = { intention, onSuccess ->
-                onSuccess()
-                viewModel.updatePostVote(selectedComment!!.comment.id, if (intention) 1 else 0)
-            },
-            onDownvote = { intention, onSuccess ->
-                onSuccess()
-                viewModel.updatePostVote(selectedComment!!.comment.id, if (intention) -1 else 0)
-            },
-            onSaveClick = { newState, onSuccess ->
-                onSuccess()
-                viewModel.updatePostFavorite(newState, selectedComment!!.comment.id)
-            },
-            onViewUserClick = {
+            onViewCommunity = {
                 showCommentOptions = false
-                navController.navigate("${NavDestinationKey.UserView}/${selectedComment!!.comment.author}")
+                comment.subredditName()?.let {
+                    navController.navigate("${NavDestinationKey.CommunityView}/$it")
+                }
+            },
+            onOpenExternal = {
+                showCommentOptions = false
+                Intent(Intent.ACTION_VIEW).apply {
+                    this.data = "https://www.reddit.com${comment.permalink}".toUri()
+                    context.startActivity(this)
+                }
+            },
+            onReport = {
+                showCommentOptions = false
+                Intent(Intent.ACTION_VIEW).apply {
+                    this.data = ("https://www.reddit.com/report"
+                            + "?url=https://www.reddit.com${comment.permalink}").toUri()
+                    context.startActivity(this)
+                }
             }
         )
     }
